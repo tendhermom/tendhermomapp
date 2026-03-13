@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, AlertTriangle, Heart } from "lucide-react";
+import IonIcon from "@/components/IonIcon";
 import QuoteBlock from "@/components/cards/QuoteBlock";
 
 const weeklyUpdate = {
@@ -21,11 +21,11 @@ const symptoms = [
 ];
 
 const nigerianFoods = [
-  { name: "Egusi soup with spinach", benefit: "Iron & protein" },
-  { name: "Beans & plantain", benefit: "Folate & potassium" },
-  { name: "Okra soup", benefit: "Fiber & vitamins" },
-  { name: "Moi moi", benefit: "Protein & B vitamins" },
-  { name: "Garden egg", benefit: "Low calorie, high fiber" },
+  { name: "Egusi soup with spinach", benefit: "Iron & protein", icon: "nutrition" },
+  { name: "Beans & plantain", benefit: "Folate & potassium", icon: "leaf" },
+  { name: "Okra soup", benefit: "Fiber & vitamins", icon: "nutrition" },
+  { name: "Moi moi", benefit: "Protein & B vitamins", icon: "restaurant" },
+  { name: "Garden egg", benefit: "Low calorie, high fiber", icon: "leaf" },
 ];
 
 const warningFlags = [
@@ -38,38 +38,44 @@ const warningFlags = [
 const RecordsScreen = () => {
   return (
     <div className="space-y-5 pb-4">
+      {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Records</h2>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="ios-large-title text-foreground" style={{ fontSize: "28px" }}>
+          Records
+        </h1>
+        <p className="ios-footnote text-muted-foreground mt-1">
           Your pregnancy journey, week by week
         </p>
       </div>
 
-      {/* Weekly development */}
-      <div className="bg-card rounded-xl card-shadow p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">
-          🍼 Week {weeklyUpdate.week} Development
-        </h3>
-        <ul className="space-y-2">
+      {/* Weekly development - iOS grouped */}
+      <div className="ios-card-elevated p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🍼</span>
+          <h3 className="ios-title text-foreground">Week {weeklyUpdate.week} Development</h3>
+        </div>
+        <div className="space-y-2.5">
           {weeklyUpdate.development.map((item, i) => (
-            <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
-              {item}
-            </li>
+            <div key={i} className="flex items-start gap-2.5">
+              <IonIcon name="checkmark-circle" size={16} style={{ color: "hsl(var(--forest))", marginTop: "2px" }} />
+              <span className="ios-body text-foreground">{item}</span>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       {/* Symptoms */}
-      <div className="bg-card rounded-xl card-shadow p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">
-          🤰 What You May Feel
-        </h3>
+      <div className="ios-card p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🤰</span>
+          <h3 className="ios-title text-foreground">What You May Feel</h3>
+        </div>
         <div className="flex flex-wrap gap-2">
           {symptoms.map((s, i) => (
             <span
               key={i}
-              className="text-xs font-medium bg-secondary/20 text-foreground px-3 py-1.5 rounded-full"
+              className="ios-footnote font-medium px-3 py-[7px] rounded-full"
+              style={{ background: "hsl(var(--ios-grouped-bg))", color: "hsl(var(--text-secondary))" }}
             >
               {s}
             </span>
@@ -77,16 +83,26 @@ const RecordsScreen = () => {
         </div>
       </div>
 
-      {/* Nigerian foods */}
-      <div className="bg-card rounded-xl card-shadow p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">
-          🍲 Recommended Nigerian Foods
-        </h3>
-        <div className="space-y-2.5">
+      {/* Nigerian foods - iOS grouped list */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🍲</span>
+          <h3 className="ios-title text-foreground">Nigerian Foods for You</h3>
+        </div>
+        <div className="ios-grouped">
           {nigerianFoods.map((food, i) => (
-            <div key={i} className="flex items-center justify-between">
-              <span className="text-sm text-foreground">{food.name}</span>
-              <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+            <div key={i} className="ios-grouped-item flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <IonIcon name={food.icon} size={18} style={{ color: "hsl(var(--forest))" }} />
+                <span className="ios-body text-foreground">{food.name}</span>
+              </div>
+              <span
+                className="ios-caption font-semibold px-2 py-[3px] rounded-full"
+                style={{
+                  background: "hsla(153, 42%, 30%, 0.08)",
+                  color: "hsl(var(--forest))",
+                }}
+              >
                 {food.benefit}
               </span>
             </div>
@@ -95,47 +111,57 @@ const RecordsScreen = () => {
       </div>
 
       {/* Warning signs */}
-      <div className="bg-accent/5 rounded-xl p-4">
+      <div>
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle size={16} className="text-accent" />
-          <h3 className="text-sm font-semibold text-foreground">
-            Warning Signs
-          </h3>
+          <IonIcon name="alert-circle" size={18} style={{ color: "hsl(var(--coral))" }} />
+          <h3 className="ios-title text-foreground">Warning Signs</h3>
         </div>
-        <ul className="space-y-2">
+        <div className="ios-grouped">
           {warningFlags.map((sign, i) => (
-            <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-              <span className="text-accent mt-0.5">•</span>
-              {sign}
-            </li>
+            <div key={i} className="ios-grouped-item flex items-center gap-3">
+              <span className="w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: "hsl(var(--coral))" }} />
+              <span className="ios-body text-foreground">{sign}</span>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
+      {/* Quote */}
       <QuoteBlock quote="Every day you're one step closer to meeting your little one. You're doing amazing! 💚" />
 
-      {/* Premium GPT Chat banner */}
+      {/* Premium AI Banner */}
       <motion.div
         whileTap={{ scale: 0.98 }}
-        className="bg-primary rounded-xl p-4 flex items-center gap-3 cursor-pointer"
+        className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, hsl(153, 42%, 30%), hsl(153, 42%, 22%))",
+        }}
       >
-        <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center flex-shrink-0">
-          <Sparkles size={18} className="text-primary-foreground" />
+        <div
+          className="w-[44px] h-[44px] rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "hsla(0, 0%, 100%, 0.15)" }}
+        >
+          <IonIcon name="sparkles" size={22} style={{ color: "white" }} />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold text-primary-foreground">
-              AI Health Assistant
-            </h4>
-            <span className="text-[9px] font-semibold bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full">
-              PREMIUM
+            <h4 className="ios-body font-semibold" style={{ color: "white" }}>AI Health Assistant</h4>
+            <span
+              className="ios-caption font-bold px-1.5 py-[1px] rounded-full"
+              style={{
+                background: "hsl(var(--coral))",
+                color: "white",
+                fontSize: "9px",
+              }}
+            >
+              PRO
             </span>
           </div>
-          <p className="text-xs text-primary-foreground/70 mt-0.5">
+          <p className="ios-caption mt-0.5" style={{ color: "hsla(0,0%,100%,0.7)" }}>
             Ask anything about your pregnancy
           </p>
         </div>
-        <Heart size={16} className="text-primary-foreground/50" />
+        <IonIcon name="chevron-forward" size={18} style={{ color: "hsla(0,0%,100%,0.5)" }} />
       </motion.div>
     </div>
   );

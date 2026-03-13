@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import IonIcon from "@/components/IonIcon";
 
 interface PremiumUpsellProps {
   title: string;
@@ -16,19 +16,37 @@ const PremiumUpsell = ({
 }: PremiumUpsellProps) => {
   return (
     <motion.div
-      whileTap={{ y: -2 }}
-      className="bg-card rounded-xl card-shadow p-5 relative overflow-hidden"
+      whileTap={{ scale: 0.98 }}
+      className="ios-card-elevated p-5 relative overflow-hidden"
     >
-      <span className="absolute top-3 right-3 text-[10px] font-semibold bg-accent text-accent-foreground px-2 py-0.5 rounded-full flex items-center gap-1">
-        <Sparkles size={10} />
-        PREMIUM
-      </span>
-      <h4 className="text-base font-semibold text-foreground pr-20">{title}</h4>
-      <p className="text-sm text-muted-foreground mt-1">{description}</p>
+      {/* Decorative gradient blob */}
+      <div
+        className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-10"
+        style={{ background: "hsl(var(--coral))" }}
+      />
+
+      <div className="flex items-start gap-1 mb-1">
+        <h4 className="ios-title text-foreground flex-1">{title}</h4>
+        <span
+          className="ios-caption font-bold px-2 py-[2px] rounded-full flex items-center gap-1"
+          style={{
+            background: "hsla(11, 74%, 63%, 0.1)",
+            color: "hsl(var(--coral))",
+          }}
+        >
+          <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
+          PRO
+        </span>
+      </div>
+      <p className="ios-footnote text-muted-foreground mt-1">{description}</p>
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.96 }}
         onClick={onAction}
-        className="mt-3 bg-accent text-accent-foreground text-sm font-medium px-5 py-2.5 rounded-lg"
+        className="mt-4 px-6 py-[11px] rounded-xl ios-body font-semibold"
+        style={{
+          background: "hsl(var(--coral))",
+          color: "white",
+        }}
       >
         {ctaText}
       </motion.button>

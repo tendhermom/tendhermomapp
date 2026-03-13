@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import HomeScreen from "@/screens/HomeScreen";
 import CommunityScreen from "@/screens/CommunityScreen";
@@ -28,8 +29,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-lg mx-auto px-5 pt-12 pb-28">
-        {renderScreen()}
+      <div className="max-w-lg mx-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            className="px-4 pt-14 pb-28"
+          >
+            {renderScreen()}
+          </motion.div>
+        </AnimatePresence>
       </div>
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
