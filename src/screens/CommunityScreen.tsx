@@ -1,6 +1,6 @@
 import CommunityCard from "@/components/cards/CommunityCard";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import IonIcon from "@/components/IonIcon";
 
 const posts = [
   {
@@ -44,13 +44,23 @@ const posts = [
 const CommunityScreen = () => {
   return (
     <div className="space-y-4 pb-4 relative">
+      {/* iOS Large title header */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">
+        <h1 className="ios-large-title text-foreground" style={{ fontSize: "28px" }}>
           Community
-        </h2>
-        <p className="text-sm text-muted-foreground">
+        </h1>
+        <p className="ios-footnote text-muted-foreground mt-1">
           Connect with other moms
         </p>
+      </div>
+
+      {/* Search bar */}
+      <div
+        className="flex items-center gap-2 px-3 py-[10px] rounded-xl"
+        style={{ background: "hsl(var(--ios-grouped-bg))" }}
+      >
+        <IonIcon name="search" size={18} style={{ color: "hsl(var(--text-tertiary))" }} />
+        <span className="ios-body text-muted-foreground">Search discussions...</span>
       </div>
 
       <div className="space-y-3">
@@ -59,11 +69,16 @@ const CommunityScreen = () => {
         ))}
       </div>
 
+      {/* FAB */}
       <motion.button
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg z-40"
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-24 right-5 w-[56px] h-[56px] rounded-full flex items-center justify-center z-40"
+        style={{
+          background: "hsl(var(--coral))",
+          boxShadow: "0 6px 20px hsla(11, 74%, 63%, 0.4)",
+        }}
       >
-        <Plus size={24} />
+        <IonIcon name="add" size={28} style={{ color: "white" }} />
       </motion.button>
     </div>
   );

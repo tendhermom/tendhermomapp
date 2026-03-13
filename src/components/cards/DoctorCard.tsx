@@ -1,5 +1,5 @@
-import { Star } from "lucide-react";
 import { motion } from "framer-motion";
+import IonIcon from "@/components/IonIcon";
 
 interface DoctorCardProps {
   name: string;
@@ -24,46 +24,55 @@ const DoctorCard = ({
 }: DoctorCardProps) => {
   return (
     <motion.div
-      whileTap={{ y: -2 }}
-      className="bg-card rounded-xl card-shadow p-4"
+      whileTap={{ scale: 0.98 }}
+      className="ios-card p-4"
     >
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <span className="text-sm font-semibold text-primary">{initials}</span>
+        <div
+          className="w-[48px] h-[48px] rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            background: "linear-gradient(135deg, hsla(153, 42%, 30%, 0.12), hsla(140, 24%, 55%, 0.12))",
+          }}
+        >
+          <span className="text-[14px] font-bold" style={{ color: "hsl(var(--forest))" }}>
+            {initials}
+          </span>
         </div>
-        <div className="flex-1 space-y-1">
-          <h4 className="text-sm font-semibold text-foreground">{name}</h4>
-          <p className="text-xs text-muted-foreground">{specialty}</p>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5">
-              <Star size={12} className="text-amber-400 fill-amber-400" />
-              <span className="text-xs font-medium text-foreground">
-                {rating}
-              </span>
+        <div className="flex-1 min-w-0">
+          <h4 className="ios-body font-semibold text-foreground truncate">{name}</h4>
+          <p className="ios-footnote text-muted-foreground mt-0.5">{specialty}</p>
+          <div className="flex items-center gap-3 mt-1.5">
+            <div className="flex items-center gap-1">
+              <IonIcon name="star" size={13} style={{ color: "#F5A623" }} />
+              <span className="ios-caption font-semibold text-foreground">{rating}</span>
             </div>
-            <span className="text-xs text-muted-foreground">·</span>
-            <span className="text-xs text-muted-foreground">{experience}</span>
+            <span className="ios-caption text-muted-foreground">{experience}</span>
           </div>
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-2">
-              {available && (
-                <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  Available Today
-                </span>
-              )}
-              <span className="text-xs font-semibold text-foreground">
-                {fee}
-              </span>
-            </div>
-          </div>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="ios-body font-bold text-foreground">{fee}</p>
+          {available && (
+            <span
+              className="ios-caption font-medium mt-1 inline-flex items-center gap-1"
+              style={{ color: "hsl(var(--forest))" }}
+            >
+              <span className="w-[6px] h-[6px] rounded-full inline-block" style={{ background: "hsl(var(--forest))" }} />
+              Available
+            </span>
+          )}
         </div>
       </div>
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.96 }}
         onClick={onBook}
-        className="w-full mt-3 bg-primary text-primary-foreground text-sm font-medium py-2.5 rounded-lg"
+        className="w-full mt-4 py-[13px] rounded-xl ios-title text-[15px]"
+        style={{
+          background: "hsl(var(--forest))",
+          color: "white",
+          fontWeight: 600,
+        }}
       >
-        Book Now
+        Book Consultation
       </motion.button>
     </motion.div>
   );

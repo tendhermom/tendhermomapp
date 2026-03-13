@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Video } from "lucide-react";
+import IonIcon from "@/components/IonIcon";
 import DoctorCard from "@/components/cards/DoctorCard";
 import PremiumUpsell from "@/components/cards/PremiumUpsell";
 
@@ -46,47 +46,64 @@ const ConsultScreen = () => {
 
   return (
     <div className="space-y-5 pb-4">
+      {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Consult</h2>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="ios-large-title text-foreground" style={{ fontSize: "28px" }}>
+          Consult
+        </h1>
+        <p className="ios-footnote text-muted-foreground mt-1">
           Book appointments with specialists
         </p>
       </div>
 
       {/* Next appointment banner */}
-      <div className="bg-primary rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] font-medium text-primary-foreground/70 uppercase tracking-wide">
+      <motion.div
+        whileTap={{ scale: 0.98 }}
+        className="rounded-2xl p-4 flex items-center justify-between relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, hsl(153, 42%, 30%), hsl(153, 42%, 24%))",
+        }}
+      >
+        <div className="relative z-10">
+          <p className="ios-caption font-semibold uppercase tracking-wider" style={{ color: "hsla(0,0%,100%,0.6)" }}>
             Next Appointment
           </p>
-          <h4 className="text-sm font-semibold text-primary-foreground mt-1">
+          <h4 className="ios-title mt-1.5" style={{ color: "white" }}>
             Dr. Adaeze Nwosu
           </h4>
-          <p className="text-xs text-primary-foreground/70 mt-0.5">
+          <p className="ios-footnote mt-0.5" style={{ color: "hsla(0,0%,100%,0.7)" }}>
             Today, 2:30 PM
           </p>
         </div>
         <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="bg-primary-foreground/20 text-primary-foreground text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5"
+          whileTap={{ scale: 0.9 }}
+          className="flex items-center gap-1.5 px-4 py-[10px] rounded-xl relative z-10"
+          style={{
+            background: "hsla(0, 0%, 100%, 0.2)",
+            backdropFilter: "blur(10px)",
+          }}
         >
-          <Video size={14} />
-          Join
+          <IonIcon name="videocam" size={18} style={{ color: "white" }} />
+          <span className="ios-footnote font-semibold" style={{ color: "white" }}>Join</span>
         </motion.button>
-      </div>
+      </motion.div>
 
-      {/* Specialty filters */}
-      <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-5 px-5">
+      {/* Specialty filters - iOS segmented style */}
+      <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4">
         {specialties.map((spec) => (
           <motion.button
             key={spec}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveFilter(spec)}
-            className={`text-xs font-medium px-4 py-2 rounded-full flex-shrink-0 transition-colors ${
-              activeFilter === spec
-                ? "bg-primary text-primary-foreground"
-                : "bg-card card-shadow text-foreground"
-            }`}
+            className="ios-footnote font-semibold px-4 py-[8px] rounded-full flex-shrink-0 transition-all duration-200"
+            style={{
+              background: activeFilter === spec
+                ? "hsl(var(--forest))"
+                : "hsl(var(--ios-grouped-bg))",
+              color: activeFilter === spec
+                ? "white"
+                : "hsl(var(--text-secondary))",
+            }}
           >
             {spec}
           </motion.button>

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import IonIcon from "@/components/IonIcon";
 
 interface HealthTipChipProps {
   tip: string;
@@ -10,16 +10,19 @@ const HealthTipChip = ({ tip, onViewRecord }: HealthTipChipProps) => {
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className="bg-secondary/20 rounded-[20px] px-4 py-3 flex items-center justify-between gap-3"
+      className="rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3"
+      style={{ background: "hsla(140, 24%, 55%, 0.12)" }}
     >
-      <p className="text-sm text-foreground font-medium flex-1">{tip}</p>
+      <p className="ios-footnote text-foreground font-medium flex-1">{tip}</p>
       {onViewRecord && (
         <button
           onClick={onViewRecord}
-          className="text-xs text-primary font-medium flex items-center gap-1 flex-shrink-0"
+          className="flex items-center gap-1 flex-shrink-0 ios-press"
         >
-          Full record
-          <ArrowRight size={12} />
+          <span className="ios-caption font-semibold" style={{ color: "hsl(var(--forest))" }}>
+            View
+          </span>
+          <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--forest))" }} />
         </button>
       )}
     </motion.div>
