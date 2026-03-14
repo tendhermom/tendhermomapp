@@ -1,45 +1,15 @@
-import { useState } from "react";
 import PregnancyCard from "@/components/cards/PregnancyCard";
 import ReminderCard from "@/components/cards/ReminderCard";
 import BabyShowerCard from "@/components/cards/BabyShowerCard";
 import HealthTipChip from "@/components/chips/HealthTipChip";
 import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
+import { useRemindersStore } from "@/stores/remindersStore";
 import { motion } from "framer-motion";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
 }
-
-const initialReminders = [
-  {
-    id: "1",
-    icon: "medkit-outline",
-    title: "Prenatal Vitamins",
-    subtitle: "Take with breakfast",
-    time: "8:00 AM",
-    type: "medication" as const,
-    done: false,
-  },
-  {
-    id: "2",
-    icon: "calendar-outline",
-    title: "Dr. Adaeze – Checkup",
-    subtitle: "Lagos Women's Clinic",
-    time: "10:30 AM",
-    type: "appointment" as const,
-    done: false,
-  },
-  {
-    id: "3",
-    icon: "water-outline",
-    title: "Drink Water",
-    subtitle: "Glass 4 of 8 today",
-    time: "12:00 PM",
-    type: "hydration" as const,
-    done: false,
-  },
-];
 
 const babyShowerData = [
   { name: "Chidi", parentName: "Ngozi & Emeka", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop", gender: "boy" as const },
@@ -61,13 +31,8 @@ const fadeUp = {
 };
 
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
-  const [reminders, setReminders] = useState(initialReminders);
-
-  const toggleReminder = (id: string) => {
-    setReminders((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r))
-    );
-  };
+  const { reminders, toggleReminder } = useRemindersStore();
+  const pendingReminders = reminders.filter((r) => !r.done).slice(0, 3);
 
   return (
     <motion.div
@@ -116,7 +81,15 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
           </button>
         </div>
         <div className="space-y-2.5">
-          {reminders.map((reminder, i) => (
+          {pendingReminders.length === 0 && (
+            <div className="tend-card p-5 flex flex-col items-center gap-2">
+              <span className="text-[28px]">🎉</span>
+              <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                All reminders completed!
+              </p>
+            </div>
+          )}
+          {pendingReminders.map((reminder, i) => (
             <motion.div
               key={reminder.id}
               initial={{ opacity: 0, y: 12 }}
@@ -136,28 +109,34 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
       <motion.div variants={fadeUp}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-serif text-dark text-[20px]">Babies of the Month</h2>
-          <div
-            className="px-2 py-0.5 rounded-full"
-            style={{ background: "hsl(var(--light-coral))" }}
+          <button
+            onClick={() => onNavigate("baby-shower")}
+            className="flex items-center gap-0.5 ios-press"
           >
-            <span className="text-[11px] font-bold font-sans" style={{ color: "hsl(var(--coral))" }}>
-              🎉 March
+            <span className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>
+              See All
             </span>
-          </div>
+          </button>
         </div>
         <div className="-mx-5">
-          <div className="flex gap-3 overflow-x-auto px-5 pb-2 snap-x snap-mandatory" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+          <div
+            className="flex gap-4 overflow-x-auto px-5 pb-3 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+          >
             {babyShowerData.map((baby, i) => (
               <motion.div
                 key={i}
                 className="snap-start"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
+                onClick={() => onNavigate("baby-shower")}
               >
                 <BabyShowerCard {...baby} />
               </motion.div>
             ))}
+            {/* Trailing spacer for last card padding */}
+            <div className="flex-shrink-0 w-1" />
           </div>
         </div>
       </motion.div>
