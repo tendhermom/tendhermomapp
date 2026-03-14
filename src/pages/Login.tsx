@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import IonIcon from "@/components/IonIcon";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
 
 const Login = () => {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) navigate("/", { replace: true });
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
