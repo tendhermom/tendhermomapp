@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import HomeScreen from "@/screens/HomeScreen";
@@ -11,6 +11,8 @@ import NotificationsScreen from "@/screens/NotificationsScreen";
 import RemindersScreen from "@/screens/RemindersScreen";
 import BabyShowerScreen from "@/screens/BabyShowerScreen";
 import EmergencyContactsScreen from "@/screens/EmergencyContactsScreen";
+import AIChatScreen from "@/screens/AIChatScreen";
+import RecordsScreen from "@/screens/RecordsScreen";
 import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
@@ -27,8 +29,8 @@ const Index = () => {
     }
 
     // Quick access routing
-    if (screen === "records" || screen === "antenatal") {
-      setActiveTab("profile");
+    if (screen === "antenatal") {
+      setActiveTab("records");
       return;
     }
 
@@ -57,6 +59,10 @@ const Index = () => {
         return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
       case "notifications":
         return <NotificationsScreen onBack={() => setActiveTab("home")} />;
+      case "ai-chat":
+        return <AIChatScreen onBack={() => setActiveTab("home")} />;
+      case "records":
+        return <RecordsScreen onBack={() => setActiveTab("home")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
