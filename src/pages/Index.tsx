@@ -59,6 +59,10 @@ const Index = () => {
         return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
       case "notifications":
         return <NotificationsScreen onBack={() => setActiveTab("home")} />;
+      case "ai-chat":
+        return <AIChatScreen onBack={() => setActiveTab("home")} />;
+      case "records":
+        return <RecordsScreen onBack={() => setActiveTab("home")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
