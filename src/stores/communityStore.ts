@@ -93,14 +93,25 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       likedPostIds = new Set((likes || []).map((l: any) => l.post_id));
     }
 
-    const posts: CommunityPost[] = postsData.map((p: any) => ({
+    const newPosts: CommunityPost[] = postsData.map((p: any) => ({
       ...p,
       author_name: profileMap.get(p.user_id)?.full_name || "Anonymous",
       author_avatar: profileMap.get(p.user_id)?.avatar_url || undefined,
       liked_by_me: likedPostIds.has(p.id),
     }));
 
-    set({ posts, loading: false });
+    set({
+      posts: cursor ? [...get().posts, ...newPosts] : newPosts,
+      hasMore: postsData.length === PAGE_SIZE,
+      loading: false,
+    });
+  },
+
+  loadMore: async () => {
+    const { posts, activeChannel, loading, hasMore } = get();
+    if (loading || !hasMore || posts.length === 0) return;
+    const lastPost = posts[posts.length - 1];
+    await get().fetchPosts(activeChannel, lastPost.created_at);
   },
 
   createPost: async (content, channel, imageUrl) => {
