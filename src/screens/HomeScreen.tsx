@@ -228,17 +228,47 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
 
       {/* Health tips */}
       <motion.div variants={fadeUp} className="space-y-2.5">
-        <h2 className="font-serif text-dark text-[20px]">Today's Tips</h2>
-        <HealthTipChip
-          icon="water-outline"
-          tip="Drink 8 cups of water today"
-          onViewRecord={() => onNavigate("records")}
-        />
-        <HealthTipChip
-          icon="nutrition-outline"
-          tip="Include folate-rich foods in your meals"
-          onViewRecord={() => onNavigate("records")}
-        />
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-dark text-[20px]">Health Tips</h2>
+          <span className="text-[12px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
+            Week {currentWeek}
+          </span>
+        </div>
+        {healthTips.length > 0 ? (
+          healthTips.map((tip) => (
+            <motion.div key={tip.id} layout>
+              <HealthTipChip
+                icon={tip.icon || "information-circle-outline"}
+                tip={tip.title}
+                onViewRecord={() => setExpandedTip(expandedTip === tip.id ? null : tip.id)}
+              />
+              {expandedTip === tip.id && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="rounded-b-[16px] px-4 py-3 -mt-1"
+                  style={{ background: "hsl(var(--surface))" }}
+                >
+                  <p className="text-[13px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                    {tip.body}
+                  </p>
+                  {tip.week_number && (
+                    <span className="text-[11px] font-sans mt-2 inline-block" style={{ color: "hsl(var(--text-muted))" }}>
+                      Week {tip.week_number} tip
+                    </span>
+                  )}
+                </motion.div>
+              )}
+            </motion.div>
+          ))
+        ) : (
+          <div className="tend-card p-4 text-center">
+            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+              No tips available for your current stage
+            </p>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );
