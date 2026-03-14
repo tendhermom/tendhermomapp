@@ -6,6 +6,7 @@ import CommunityScreen from "@/screens/CommunityScreen";
 import SOSScreen from "@/screens/SOSScreen";
 import ConsultScreen from "@/screens/ConsultScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
+import PremiumScreen from "@/screens/PremiumScreen";
 import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
@@ -15,20 +16,14 @@ const Index = () => {
 
   const handleNavigate = (screen: string) => {
     // Premium-gated screens redirect free users to upgrade
-    const premiumScreens = ["ai-chat", "baby-shower", "consult"];
+    const premiumScreens = ["ai-chat", "baby-shower"];
     if (premiumScreens.includes(screen) && isFree) {
-      // TODO: show premium upgrade modal
-      setActiveTab("premium-upsell");
+      setActiveTab("premium");
       return;
     }
 
     // Quick access routing
-    if (screen === "records") {
-      setActiveTab("profile");
-      // Records is accessed via Profile sub-screen
-      return;
-    }
-    if (screen === "antenatal") {
+    if (screen === "records" || screen === "antenatal") {
       setActiveTab("profile");
       return;
     }
@@ -52,6 +47,8 @@ const Index = () => {
         return <ConsultScreen onNavigate={handleNavigate} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
+      case "premium":
+        return <PremiumScreen onBack={() => setActiveTab("home")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }

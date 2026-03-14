@@ -7,18 +7,34 @@ interface QuickAccessGridProps {
 }
 
 const quickActions = [
-  { id: "records", icon: "document-text-outline", label: "Records", premium: false },
+  { id: "records", icon: "folder-open-outline", label: "Records", premium: false },
   { id: "appointments", icon: "calendar-outline", label: "Appointments", premium: false },
   { id: "antenatal", icon: "gift-outline", label: "Antenatal", premium: false },
   { id: "baby-shower", icon: "heart-circle-outline", label: "Baby Shower", premium: true },
 ];
+
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 14, scale: 0.92 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 400, damping: 28 },
+  },
+};
 
 const QuickAccessGrid = ({ onNavigate }: QuickAccessGridProps) => {
   const user = useAuthStore((s) => s.user);
   const isFree = user?.plan_type === "free";
 
   const handlePress = (action: typeof quickActions[0]) => {
-    // Premium-gated features redirect free users to upgrade
     if (action.premium && isFree) {
       onNavigate("premium");
       return;
@@ -27,11 +43,17 @@ const QuickAccessGrid = ({ onNavigate }: QuickAccessGridProps) => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <motion.div
+      className="grid grid-cols-4 gap-3"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
       {quickActions.map((action) => (
         <motion.button
           key={action.id}
-          whileTap={{ scale: 0.92 }}
+          variants={itemVariants}
+          whileTap={{ scale: 0.88 }}
           onClick={() => handlePress(action)}
           className="flex flex-col items-center gap-2 ios-press"
         >
@@ -66,7 +88,7 @@ const QuickAccessGrid = ({ onNavigate }: QuickAccessGridProps) => {
           </span>
         </motion.button>
       ))}
-    </div>
+    </motion.div>
   );
 };
 
