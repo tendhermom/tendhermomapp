@@ -7,20 +7,21 @@ interface BabyShowerCardProps {
   date: string;
   imageUrl: string;
   gender: "boy" | "girl";
+  onCongrats?: () => void;
 }
 
-const BabyShowerCard = ({ name, parentName, date, imageUrl, gender }: BabyShowerCardProps) => {
+const BabyShowerCard = ({ name, imageUrl, gender, onCongrats }: BabyShowerCardProps) => {
   const accentColor = gender === "boy" ? "hsl(214 60% 55%)" : "hsl(var(--coral))";
   const accentBg = gender === "boy" ? "hsl(214 80% 94%)" : "hsl(var(--light-coral))";
 
   return (
     <motion.div
       whileTap={{ scale: 0.96 }}
-      className="overflow-hidden flex-shrink-0 cursor-pointer rounded-2xl"
-      style={{ width: 220, background: "hsl(var(--surface))", boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)" }}
+      className="overflow-hidden flex-shrink-0 rounded-2xl"
+      style={{ width: 180, background: "hsl(var(--surface))", boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)" }}
     >
       <div
-        className="w-full h-[140px] flex items-center justify-center relative"
+        className="w-full h-[150px] relative"
         style={{ background: accentBg }}
       >
         <img
@@ -38,19 +39,19 @@ const BabyShowerCard = ({ name, parentName, date, imageUrl, gender }: BabyShower
           </span>
         </div>
       </div>
-      <div className="p-3.5 space-y-1">
+      <div className="p-3 space-y-2">
         <h4 className="text-[14px] font-semibold font-sans leading-tight" style={{ color: "hsl(var(--dark))" }}>
           Baby {name}
         </h4>
-        <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-          {parentName}
-        </p>
-        <div className="flex items-center gap-1 pt-0.5">
-          <IonIcon name="calendar-outline" size={12} style={{ color: "hsl(var(--text-muted))" }} />
-          <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            {date}
-          </span>
-        </div>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={(e) => { e.stopPropagation(); onCongrats?.(); }}
+          className="w-full py-2 rounded-xl text-[12px] font-semibold font-sans flex items-center justify-center gap-1.5 ios-press"
+          style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+        >
+          <IonIcon name="heart-outline" size={14} style={{ color: "hsl(var(--green))" }} />
+          Say Congrats
+        </motion.button>
       </div>
     </motion.div>
   );

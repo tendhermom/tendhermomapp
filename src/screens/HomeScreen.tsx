@@ -5,6 +5,7 @@ import HealthTipChip from "@/components/chips/HealthTipChip";
 import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
 import { useRemindersStore } from "@/stores/remindersStore";
+import { useAuthStore } from "@/stores/authStore";
 import { motion } from "framer-motion";
 
 interface HomeScreenProps {
@@ -33,6 +34,16 @@ const fadeUp = {
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const { reminders, toggleReminder } = useRemindersStore();
   const pendingReminders = reminders.filter((r) => !r.done).slice(0, 3);
+  const user = useAuthStore((s) => s.user);
+  const isPremium = user?.plan_type === "premium";
+
+  const handleCongrats = () => {
+    if (isPremium) {
+      onNavigate("baby-shower");
+    } else {
+      onNavigate("premium");
+    }
+  };
 
   return (
     <motion.div
@@ -118,26 +129,22 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             </span>
           </button>
         </div>
-        <div className="-mx-5">
-          <div
-            className="flex gap-4 overflow-x-auto px-5 pb-3 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-          >
-            {babyShowerData.map((baby, i) => (
-              <motion.div
-                key={i}
-                className="snap-start"
-                initial={{ opacity: 0, x: 24 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
-                onClick={() => onNavigate("baby-shower")}
-              >
-                <BabyShowerCard {...baby} />
-              </motion.div>
-            ))}
-            {/* Trailing spacer for last card padding */}
-            <div className="flex-shrink-0 w-1" />
-          </div>
+        <div
+          className="flex gap-3.5 overflow-x-auto pb-3 snap-x snap-mandatory"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+        >
+          {babyShowerData.map((baby, i) => (
+            <motion.div
+              key={i}
+              className="snap-start"
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
+            >
+              <BabyShowerCard {...baby} onCongrats={handleCongrats} />
+            </motion.div>
+          ))}
+          <div className="flex-shrink-0 w-1" />
         </div>
       </motion.div>
 
