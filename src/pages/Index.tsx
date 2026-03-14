@@ -7,6 +7,7 @@ import SOSScreen from "@/screens/SOSScreen";
 import ConsultScreen from "@/screens/ConsultScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
+import NotificationsScreen from "@/screens/NotificationsScreen";
 import RemindersScreen from "@/screens/RemindersScreen";
 import BabyShowerScreen from "@/screens/BabyShowerScreen";
 import EmergencyContactsScreen from "@/screens/EmergencyContactsScreen";
