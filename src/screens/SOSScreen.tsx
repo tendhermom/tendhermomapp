@@ -19,48 +19,48 @@ const warningSignsList = [
 
 const SOSScreen = () => {
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-6 pb-4">
       {/* Header */}
-      <div className="text-center">
+      <div className="text-center pt-4">
         <motion.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-4"
+          animate={{ scale: [1, 1.08, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-[80px] h-[80px] rounded-full flex items-center justify-center mx-auto mb-4"
           style={{
-            background: "hsla(11, 74%, 63%, 0.1)",
+            background: "hsl(var(--light-coral))",
           }}
         >
-          <IonIcon name="warning" size={36} style={{ color: "hsl(var(--coral))" }} />
+          <IonIcon name="pulse" size={40} style={{ color: "hsl(var(--coral))" }} />
         </motion.div>
-        <h1 className="ios-large-title text-foreground" style={{ fontSize: "28px" }}>
+        <h1 className="font-serif text-dark" style={{ fontSize: "28px" }}>
           Emergency Help
         </h1>
-        <p className="ios-footnote text-muted-foreground mt-1">
+        <p className="text-text-muted text-[14px] font-sans mt-1">
           Tap to call for help immediately
         </p>
       </div>
 
-      {/* Emergency contacts - iOS grouped list style */}
-      <div className="ios-grouped">
+      {/* Emergency contacts */}
+      <div className="space-y-3">
         {emergencyContacts.map((contact, i) => (
           <motion.a
             key={i}
             href={`tel:${contact.number.replace(/\s/g, "")}`}
-            whileTap={{ scale: 0.98 }}
-            className="ios-grouped-item flex items-center gap-3 cursor-pointer"
+            whileTap={{ scale: 0.97 }}
+            className="tend-card p-[18px] flex items-center gap-3.5 cursor-pointer block"
           >
             <div
-              className="w-[42px] h-[42px] rounded-xl flex items-center justify-center flex-shrink-0"
+              className="w-[46px] h-[46px] rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ background: "hsl(var(--coral))" }}
             >
-              <IonIcon name={contact.icon} size={20} style={{ color: "white" }} />
+              <IonIcon name={contact.icon} size={22} style={{ color: "white" }} />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="ios-body font-semibold text-foreground">{contact.name}</h4>
-              <p className="ios-caption text-muted-foreground">{contact.description}</p>
+              <h4 className="text-dark text-[15px] font-semibold font-sans">{contact.name}</h4>
+              <p className="text-text-muted text-[12px] font-sans mt-0.5">{contact.description}</p>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <span className="ios-footnote font-semibold" style={{ color: "hsl(var(--coral))" }}>Call</span>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span className="text-[13px] font-bold font-sans" style={{ color: "hsl(var(--coral))" }}>Call</span>
               <IonIcon name="call" size={16} style={{ color: "hsl(var(--coral))" }} />
             </div>
           </motion.a>
@@ -70,17 +70,21 @@ const SOSScreen = () => {
       {/* Warning signs */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <IonIcon name="alert-circle" size={18} style={{ color: "hsl(var(--coral))" }} />
-          <h3 className="ios-title text-foreground">Warning Signs</h3>
+          <IonIcon name="alert-circle" size={20} style={{ color: "hsl(var(--coral))" }} />
+          <h2 className="font-serif text-dark text-[20px]">Warning Signs</h2>
         </div>
-        <div className="ios-grouped">
+        <div className="tend-card overflow-hidden">
           {warningSignsList.map((sign, i) => (
-            <div key={i} className="ios-grouped-item flex items-center gap-3">
+            <div
+              key={i}
+              className="flex items-center gap-3 px-[18px] py-[14px]"
+              style={{ borderBottom: i < warningSignsList.length - 1 ? "0.5px solid hsl(var(--border))" : "none" }}
+            >
               <span
                 className="w-[6px] h-[6px] rounded-full flex-shrink-0"
                 style={{ background: "hsl(var(--coral))" }}
               />
-              <span className="ios-body text-foreground">{sign}</span>
+              <span className="text-dark text-[14px] font-sans">{sign}</span>
             </div>
           ))}
         </div>

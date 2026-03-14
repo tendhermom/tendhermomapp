@@ -17,39 +17,41 @@ const PremiumUpsell = ({
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className="ios-card-elevated p-5 relative overflow-hidden"
+      className="tend-card p-[20px] relative overflow-hidden"
     >
-      {/* Decorative gradient blob */}
+      {/* Decorative */}
       <div
-        className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-10"
-        style={{ background: "hsl(var(--coral))" }}
+        className="absolute -top-8 -right-8 w-[80px] h-[80px] rounded-full"
+        style={{ background: "hsl(var(--light-coral))" }}
       />
 
-      <div className="flex items-start gap-1 mb-1">
-        <h4 className="ios-title text-foreground flex-1">{title}</h4>
-        <span
-          className="ios-caption font-bold px-2 py-[2px] rounded-full flex items-center gap-1"
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-1">
+          <h4 className="text-dark text-[16px] font-semibold font-sans flex-1">{title}</h4>
+          <span
+            className="label-caps px-2 py-[3px] rounded-full flex items-center gap-1"
+            style={{
+              background: "hsl(var(--light-coral))",
+              color: "hsl(var(--coral))",
+            }}
+          >
+            <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
+            Premium
+          </span>
+        </div>
+        <p className="text-text-muted text-[13px] font-sans mt-1">{description}</p>
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          onClick={onAction}
+          className="mt-4 px-6 py-[12px] rounded-2xl text-[15px] font-bold font-sans"
           style={{
-            background: "hsla(11, 74%, 63%, 0.1)",
-            color: "hsl(var(--coral))",
+            background: "hsl(var(--coral))",
+            color: "white",
           }}
         >
-          <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
-          PRO
-        </span>
+          {ctaText}
+        </motion.button>
       </div>
-      <p className="ios-footnote text-muted-foreground mt-1">{description}</p>
-      <motion.button
-        whileTap={{ scale: 0.96 }}
-        onClick={onAction}
-        className="mt-4 px-6 py-[11px] rounded-xl ios-body font-semibold"
-        style={{
-          background: "hsl(var(--coral))",
-          color: "white",
-        }}
-      >
-        {ctaText}
-      </motion.button>
     </motion.div>
   );
 };

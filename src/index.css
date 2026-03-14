@@ -1,12 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 30 25% 96%;
+    --background: 30 14% 96%;
     --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
@@ -21,20 +19,20 @@
     --secondary: 140 24% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 30 10% 94%;
-    --muted-foreground: 220 9% 46%;
-
     --accent: 11 74% 63%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 10% 91%;
-    --input: 30 10% 91%;
+    --muted: 0 0% 54%;
+    --muted-foreground: 0 0% 54%;
+
+    --border: 0 0% 92%;
+    --input: 0 0% 92%;
     --ring: 153 42% 30%;
 
-    --radius: 0.875rem;
+    --radius: 22px;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -45,17 +43,17 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 153 42% 30%;
 
-    /* iOS-specific tokens */
-    --surface: 0 0% 100%;
-    --surface-secondary: 240 6% 97%;
-    --text-primary: 0 0% 10%;
-    --text-secondary: 220 9% 46%;
-    --text-tertiary: 220 6% 65%;
-    --sage-light: 140 24% 55%;
+    /* App-specific tokens */
+    --green: 153 42% 30%;
+    --sage: 140 24% 55%;
     --coral: 11 74% 63%;
-    --forest: 153 42% 30%;
-    --ios-separator: 240 6% 90%;
-    --ios-grouped-bg: 240 6% 95%;
+    --bg: 30 14% 96%;
+    --surface: 0 0% 100%;
+    --dark: 0 0% 10%;
+    --text-muted: 0 0% 54%;
+    --border-subtle: 0 0% 92%;
+    --light-green: 144 28% 93%;
+    --light-coral: 14 82% 96%;
   }
 }
 
@@ -73,105 +71,113 @@
     overscroll-behavior: none;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  h1, h2, h3 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: 400;
+  }
+
+  h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
     font-weight: 600;
   }
 }
 
-/* iOS-style safe areas */
+/* App shell */
+.app-shell {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  background: hsl(var(--bg));
+  overflow: hidden;
+}
+
+.screen-scroll {
+  height: calc(100dvh - 80px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Safe areas */
 .safe-area-top {
   padding-top: max(env(safe-area-inset-top, 0px), 0px);
 }
-
 .safe-area-bottom {
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
 }
 
-/* iOS card style */
-.ios-card {
-  background: hsl(var(--card));
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.ios-card-elevated {
-  background: hsl(var(--card));
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-/* iOS grouped list style */
-.ios-grouped {
-  background: hsl(var(--card));
-  border-radius: 12px;
+/* Signature dark hero card */
+.hero-card {
+  background: linear-gradient(135deg, hsl(153, 42%, 30%) 0%, hsl(153, 42%, 22%) 100%);
+  border-radius: 22px;
+  position: relative;
   overflow: hidden;
+  color: white;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.ios-grouped-item {
-  padding: 12px 16px;
-  border-bottom: 0.5px solid hsl(var(--ios-separator));
+/* Premium card style - shadow only, no border */
+.tend-card {
+  background: hsl(var(--surface));
+  border-radius: 22px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+  border: none;
 }
 
-.ios-grouped-item:last-child {
-  border-bottom: none;
-}
-
-/* Backdrop blur for tab bar / nav */
-.ios-blur {
+/* Nav bar glass */
+.nav-glass {
+  background: hsla(30, 14%, 96%, 0.95);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* iOS separator line */
-.ios-separator {
-  height: 0.5px;
-  background: hsl(var(--ios-separator));
+/* Labels */
+.label-caps {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-/* iOS spring animation feel */
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Drawer overlay */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 90;
+}
+
+/* iOS press */
 .ios-press {
   transition: transform 0.1s ease;
 }
 .ios-press:active {
   transform: scale(0.97);
-}
-
-/* Hide scrollbar for horizontal scroll */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* iOS large title */
-.ios-large-title {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  line-height: 1.1;
-}
-
-.ios-title {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-}
-
-.ios-body {
-  font-size: 15px;
-  line-height: 1.47;
-}
-
-.ios-caption {
-  font-size: 12px;
-  letter-spacing: 0;
-  line-height: 1.33;
-}
-
-.ios-footnote {
-  font-size: 13px;
-  line-height: 1.38;
 }

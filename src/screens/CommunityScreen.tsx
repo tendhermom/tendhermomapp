@@ -2,6 +2,10 @@ import CommunityCard from "@/components/cards/CommunityCard";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 
+interface CommunityScreenProps {
+  onOpenDrawer: () => void;
+}
+
 const posts = [
   {
     title: "Morning sickness remedies that actually work",
@@ -18,7 +22,7 @@ const posts = [
   {
     title: "Hospital bag checklist",
     pill: "Preparation",
-    preview: "Starting to pack early! Here's my list so far—what am I missing?",
+    preview: "Starting to pack early! Here's my list so far — what am I missing?",
     members: 432,
   },
   {
@@ -29,38 +33,57 @@ const posts = [
   },
   {
     title: "Best antenatal clinics in Lagos",
-    pill: "Recommendations",
+    pill: "Location",
     preview: "Looking for recommendations for good antenatal care in Lagos Island area.",
     members: 245,
   },
   {
-    title: "Pregnancy cravings: What's yours?",
+    title: "Pregnancy cravings — share yours!",
     pill: "Fun",
-    preview: "I can't stop eating suya 😂 Tell me I'm not alone!",
+    preview: "I can't stop eating suya! Tell me I'm not alone in these wild cravings.",
     members: 1203,
   },
 ];
 
-const CommunityScreen = () => {
+const CommunityScreen = ({ onOpenDrawer }: CommunityScreenProps) => {
   return (
-    <div className="space-y-4 pb-4 relative">
-      {/* iOS Large title header */}
-      <div>
-        <h1 className="ios-large-title text-foreground" style={{ fontSize: "28px" }}>
-          Community
-        </h1>
-        <p className="ios-footnote text-muted-foreground mt-1">
-          Connect with other moms
-        </p>
+    <div className="space-y-5 pb-4 relative">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={onOpenDrawer} className="ios-press p-1">
+          <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
+        </button>
+        <div>
+          <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Community</h1>
+          <p className="text-text-muted text-[13px] font-sans">Connect with other moms</p>
+        </div>
       </div>
 
-      {/* Search bar */}
+      {/* Hero card */}
+      <div className="hero-card p-5">
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <IonIcon name="sparkles" size={18} style={{ color: "hsl(var(--coral))" }} />
+            <span className="label-caps" style={{ color: "hsl(var(--coral))" }}>Featured</span>
+          </div>
+          <h3 className="text-white text-[18px] font-serif">Share your story</h3>
+          <p className="text-white/60 text-[13px] font-sans mt-1">
+            Join thousands of Nigerian moms sharing their pregnancy journey
+          </p>
+          <div className="flex items-center gap-2 mt-3">
+            <IonIcon name="people" size={14} style={{ color: "rgba(255,255,255,0.5)" }} />
+            <span className="text-white/50 text-[12px] font-sans">12,400+ active members</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
       <div
-        className="flex items-center gap-2 px-3 py-[10px] rounded-xl"
-        style={{ background: "hsl(var(--ios-grouped-bg))" }}
+        className="flex items-center gap-2.5 px-4 py-[12px] rounded-2xl"
+        style={{ background: "hsl(var(--surface))", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}
       >
-        <IonIcon name="search" size={18} style={{ color: "hsl(var(--text-tertiary))" }} />
-        <span className="ios-body text-muted-foreground">Search discussions...</span>
+        <IonIcon name="search" size={18} style={{ color: "hsl(var(--text-muted))" }} />
+        <span className="text-text-muted text-[14px] font-sans">Search discussions...</span>
       </div>
 
       <div className="space-y-3">
@@ -72,10 +95,10 @@ const CommunityScreen = () => {
       {/* FAB */}
       <motion.button
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-24 right-5 w-[56px] h-[56px] rounded-full flex items-center justify-center z-40"
+        className="fixed bottom-24 right-6 w-[56px] h-[56px] rounded-full flex items-center justify-center z-40"
         style={{
           background: "hsl(var(--coral))",
-          boxShadow: "0 6px 20px hsla(11, 74%, 63%, 0.4)",
+          boxShadow: "0 6px 24px rgba(232,115,90,0.45)",
         }}
       >
         <IonIcon name="add" size={28} style={{ color: "white" }} />

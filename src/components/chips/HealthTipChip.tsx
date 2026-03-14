@@ -2,27 +2,31 @@ import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 
 interface HealthTipChipProps {
+  icon: string;
   tip: string;
   onViewRecord?: () => void;
 }
 
-const HealthTipChip = ({ tip, onViewRecord }: HealthTipChipProps) => {
+const HealthTipChip = ({ icon, tip, onViewRecord }: HealthTipChipProps) => {
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className="rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3"
-      style={{ background: "hsla(140, 24%, 55%, 0.12)" }}
+      className="rounded-[20px] px-4 py-[14px] flex items-center justify-between gap-3"
+      style={{ background: "hsl(var(--light-green))" }}
     >
-      <p className="ios-footnote text-foreground font-medium flex-1">{tip}</p>
+      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+        <IonIcon name={icon} size={18} style={{ color: "hsl(var(--green))" }} />
+        <p className="text-dark text-[14px] font-medium font-sans truncate">{tip}</p>
+      </div>
       {onViewRecord && (
         <button
           onClick={onViewRecord}
-          className="flex items-center gap-1 flex-shrink-0 ios-press"
+          className="flex items-center gap-0.5 flex-shrink-0 ios-press"
         >
-          <span className="ios-caption font-semibold" style={{ color: "hsl(var(--forest))" }}>
+          <span className="text-[12px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>
             View
           </span>
-          <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--forest))" }} />
+          <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--green))" }} />
         </button>
       )}
     </motion.div>
