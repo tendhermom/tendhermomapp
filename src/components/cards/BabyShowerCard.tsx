@@ -16,8 +16,8 @@ const BabyShowerCard = ({ name, parentName, date, imageUrl, gender }: BabyShower
   return (
     <motion.div
       whileTap={{ scale: 0.96 }}
-      className="tend-card overflow-hidden flex-shrink-0 cursor-pointer"
-      style={{ width: 200 }}
+      className="overflow-hidden flex-shrink-0 cursor-pointer rounded-2xl"
+      style={{ width: 220, background: "hsl(var(--surface))", boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)" }}
     >
       <div
         className="w-full h-[140px] flex items-center justify-center relative"
