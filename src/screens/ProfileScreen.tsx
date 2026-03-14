@@ -66,7 +66,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const progressToNext = next ? Math.round(((points - level.min) / (next.min - level.min)) * 100) : 100;
 
   if (subScreen === "records") {
-    return <RecordsScreen onNavigate={onNavigate} onBack={() => setSubScreen(null)} />;
+    return <RecordsScreen onBack={() => setSubScreen(null)} />;
   }
   if (subScreen === "referral") {
     return <ReferralScreen onBack={() => setSubScreen(null)} />;
