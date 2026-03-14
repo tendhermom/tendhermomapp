@@ -14,6 +14,7 @@ interface UserProfile {
   phone: string | null;
   can_post: boolean;
   avatar_url: string | null;
+  user_type: "mother" | "expert";
 }
 
 interface AuthState {
