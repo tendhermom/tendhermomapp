@@ -81,23 +81,23 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
             className="w-[64px] h-[64px] rounded-full flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(255,255,255,0.15)" }}
           >
-            <span className="text-white text-[22px] font-bold font-sans">AO</span>
+            <span className="text-white text-[22px] font-bold font-sans">{initials}</span>
           </div>
           <div className="flex-1">
-            <h3 className="text-white text-[20px] font-serif">Amara Okafor</h3>
-            <p className="text-white/60 text-[13px] font-sans mt-0.5">amara@email.com</p>
+            <h3 className="text-white text-[20px] font-serif">{user?.full_name || "User"}</h3>
+            <p className="text-white/60 text-[13px] font-sans mt-0.5">{user?.email || ""}</p>
             <div className="flex items-center gap-2 mt-2">
               <span
                 className="label-caps px-2.5 py-[3px] rounded-full"
                 style={{ background: "hsl(var(--coral))", color: "white" }}
               >
-                Week 24
+                Week {week}
               </span>
               <span
                 className="label-caps px-2.5 py-[3px] rounded-full"
                 style={{ background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
               >
-                Free Plan
+                {planLabel}
               </span>
             </div>
           </div>
