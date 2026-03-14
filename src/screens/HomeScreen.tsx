@@ -3,6 +3,7 @@ import CommunityCard from "@/components/cards/CommunityCard";
 import HealthTipChip from "@/components/chips/HealthTipChip";
 import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
+import { motion } from "framer-motion";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
@@ -34,33 +35,54 @@ const communityPosts = [
   },
 ];
 
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+  },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
+};
+
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   return (
-    <div className="space-y-6 pb-4">
-      <TopBar
-        onProfilePress={() => onNavigate("profile")}
-        onAIChatPress={() => onNavigate("ai-chat")}
-      />
+    <motion.div
+      className="space-y-6 pb-4"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={fadeUp}>
+        <TopBar
+          onProfilePress={() => onNavigate("profile")}
+          onAIChatPress={() => onNavigate("ai-chat")}
+        />
+      </motion.div>
 
       {/* Greeting */}
-      <div>
+      <motion.div variants={fadeUp}>
         <p className="label-caps text-text-muted mb-0.5">Good morning</p>
         <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>
           Hello, Amara
         </h1>
-      </div>
+      </motion.div>
 
       {/* Pregnancy tracker */}
-      <PregnancyCard />
+      <motion.div variants={fadeUp}>
+        <PregnancyCard />
+      </motion.div>
 
       {/* Quick Access */}
-      <div>
+      <motion.div variants={fadeUp}>
         <h2 className="font-serif text-dark text-[20px] mb-3">Quick Access</h2>
         <QuickAccessGrid onNavigate={onNavigate} />
-      </div>
+      </motion.div>
 
       {/* Community section */}
-      <div>
+      <motion.div variants={fadeUp}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-serif text-dark text-[20px]">Community</h2>
           <button
@@ -72,17 +94,23 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         </div>
         <div className="space-y-3">
           {communityPosts.map((post, i) => (
-            <CommunityCard
+            <motion.div
               key={i}
-              {...post}
-              onClick={() => onNavigate("community")}
-            />
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
+            >
+              <CommunityCard
+                {...post}
+                onClick={() => onNavigate("community")}
+              />
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Health tips */}
-      <div className="space-y-2.5">
+      <motion.div variants={fadeUp} className="space-y-2.5">
         <h2 className="font-serif text-dark text-[20px]">Today's Tips</h2>
         <HealthTipChip
           icon="water-outline"
@@ -94,8 +122,8 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
           tip="Include folate-rich foods in your meals"
           onViewRecord={() => onNavigate("records")}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
