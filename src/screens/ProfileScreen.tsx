@@ -89,8 +89,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   return (
     <div className="space-y-6 pb-4">
       <TopBar
-        onProfilePress={() => {}}
+        onProfilePress={() => setSubScreen("edit-profile")}
         onAIChatPress={() => onNavigate("ai-chat")}
+        onNotificationsPress={() => setSubScreen("notifications")}
       />
 
       {/* Profile hero card */}
