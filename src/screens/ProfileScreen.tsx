@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import TopBar from "@/components/navigation/TopBar";
 import RecordsScreen from "@/screens/RecordsScreen";
 import ReferralScreen from "@/screens/ReferralScreen";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
