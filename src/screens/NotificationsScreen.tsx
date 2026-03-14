@@ -35,15 +35,31 @@ const NotificationsScreen = ({ onBack }: NotificationsScreenProps) => {
     fetchNotifications();
   }, [user?.id]);
 
-  const fetchNotifications = async () => {
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 20;
+
+  const fetchNotifications = async (cursor?: string) => {
     if (!user) return;
-    const { data } = await supabase
+    let query = supabase
       .from("notifications")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(50);
-    setNotifications((data as Notification[]) || []);
+      .limit(PAGE_SIZE);
+
+    if (cursor) {
+      query = query.lt("created_at", cursor);
+    }
+
+    const { data } = await query;
+    const newNotifs = (data as Notification[]) || [];
+
+    if (cursor) {
+      setNotifications((prev) => [...prev, ...newNotifs]);
+    } else {
+      setNotifications(newNotifs);
+    }
+    setHasMore(newNotifs.length === PAGE_SIZE);
     setLoading(false);
   };
 
