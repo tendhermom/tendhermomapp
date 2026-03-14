@@ -21,7 +21,7 @@ const CHANNELS: { id: ChannelId; label: string; icon: string }[] = [
 ];
 
 const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
-  const { activeChannel, posts, loading, setActiveChannel, fetchPosts, toggleLike, createPost, fetchComments, addComment } = useCommunityStore();
+  const { activeChannel, posts, loading, hasMore, setActiveChannel, fetchPosts, loadMore, toggleLike, createPost, fetchComments, addComment } = useCommunityStore();
   const user = useAuthStore((s) => s.user);
 
   // Auto-set to user's trimester on mount
@@ -122,6 +122,16 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
               onComment={() => openComments(post.id)}
             />
           ))}
+          {hasMore && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={loadMore}
+              className="w-full py-3 rounded-xl text-[13px] font-sans font-semibold"
+              style={{ color: "hsl(var(--green))", background: "hsl(var(--surface))" }}
+            >
+              Load more
+            </motion.button>
+          )}
         </div>
       )}
 

@@ -32,8 +32,10 @@ interface CommunityState {
   activeChannel: ChannelId;
   posts: CommunityPost[];
   loading: boolean;
+  hasMore: boolean;
   setActiveChannel: (channel: ChannelId) => void;
-  fetchPosts: (channel: ChannelId) => Promise<void>;
+  fetchPosts: (channel: ChannelId, cursor?: string) => Promise<void>;
+  loadMore: () => Promise<void>;
   createPost: (content: string, channel: ChannelId, imageUrl?: string) => Promise<boolean>;
   toggleLike: (postId: string, userId: string) => Promise<void>;
   fetchComments: (postId: string) => Promise<PostComment[]>;
@@ -46,22 +48,30 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
   activeChannel: "first_trimester",
   posts: [],
   loading: false,
+  hasMore: true,
 
   setActiveChannel: (activeChannel) => {
-    set({ activeChannel });
+    set({ activeChannel, posts: [], hasMore: true });
     get().fetchPosts(activeChannel);
   },
 
-  fetchPosts: async (channel) => {
+  fetchPosts: async (channel, cursor) => {
     set({ loading: true });
+    const PAGE_SIZE = 20;
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: postsData } = await supabase
+    let query = supabase
       .from("community_posts")
       .select("*")
       .eq("channel", channel)
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(PAGE_SIZE);
+
+    if (cursor) {
+      query = query.lt("created_at", cursor);
+    }
+
+    const { data: postsData } = await query;
 
     if (!postsData) { set({ posts: [], loading: false }); return; }
 
@@ -83,14 +93,25 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       likedPostIds = new Set((likes || []).map((l: any) => l.post_id));
     }
 
-    const posts: CommunityPost[] = postsData.map((p: any) => ({
+    const newPosts: CommunityPost[] = postsData.map((p: any) => ({
       ...p,
       author_name: profileMap.get(p.user_id)?.full_name || "Anonymous",
       author_avatar: profileMap.get(p.user_id)?.avatar_url || undefined,
       liked_by_me: likedPostIds.has(p.id),
     }));
 
-    set({ posts, loading: false });
+    set({
+      posts: cursor ? [...get().posts, ...newPosts] : newPosts,
+      hasMore: postsData.length === PAGE_SIZE,
+      loading: false,
+    });
+  },
+
+  loadMore: async () => {
+    const { posts, activeChannel, loading, hasMore } = get();
+    if (loading || !hasMore || posts.length === 0) return;
+    const lastPost = posts[posts.length - 1];
+    await get().fetchPosts(activeChannel, lastPost.created_at);
   },
 
   createPost: async (content, channel, imageUrl) => {
