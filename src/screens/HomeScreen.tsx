@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PregnancyCard from "@/components/cards/PregnancyCard";
 import ReminderCard from "@/components/cards/ReminderCard";
 import BabyShowerCard from "@/components/cards/BabyShowerCard";
@@ -7,18 +7,23 @@ import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
 import { useRemindersStore } from "@/stores/remindersStore";
 import { useAuthStore } from "@/stores/authStore";
+import IonIcon from "@/components/IonIcon";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
 }
 
-const babyShowerData = [
-  { name: "Chidi", parentName: "Ngozi & Emeka", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop", gender: "boy" as const },
-  { name: "Adaeze", parentName: "Funke & Tunde", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1544126592-807ade215a0b?w=400&h=300&fit=crop", gender: "girl" as const },
-  { name: "Obioma", parentName: "Chioma & Uche", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=300&fit=crop", gender: "boy" as const },
-  { name: "Nneka", parentName: "Amaka & Ife", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=300&fit=crop", gender: "girl" as const },
-];
+interface BabyShowerPost {
+  id: string;
+  baby_name: string;
+  parent_names: string;
+  month_label: string;
+  gender: string;
+  image_url: string | null;
+  reactions_count: number;
+}
 
 const staggerContainer = {
   hidden: {},
@@ -38,9 +43,24 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
 
+  const [babyPosts, setBabyPosts] = useState<BabyShowerPost[]>([]);
+
   useEffect(() => {
     fetchReminders();
+    fetchBabyPosts();
   }, []);
+
+  const fetchBabyPosts = async () => {
+    const now = new Date();
+    const currentMonth = now.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    const { data } = await supabase
+      .from("baby_shower_posts")
+      .select("id, baby_name, parent_names, month_label, gender, image_url, reactions_count")
+      .eq("month_label", currentMonth)
+      .order("created_at", { ascending: false })
+      .limit(6);
+    if (data) setBabyPosts(data);
+  };
 
   const handleCongrats = () => {
     if (isPremium) {
@@ -101,7 +121,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         <div className="space-y-2.5">
           {pendingReminders.length === 0 && (
             <div className="tend-card p-5 flex flex-col items-center gap-2">
-              <span className="text-[28px]">🎉</span>
+              <IonIcon name="checkmark-circle" size={28} style={{ color: "hsl(var(--green))" }} />
               <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
                 All reminders completed!
               </p>
@@ -136,23 +156,40 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             </span>
           </button>
         </div>
-        <div
-          className="flex gap-3.5 overflow-x-auto pb-3 snap-x snap-mandatory"
-          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-        >
-          {babyShowerData.map((baby, i) => (
-            <motion.div
-              key={i}
-              className="snap-start"
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
-            >
-              <BabyShowerCard {...baby} onCongrats={handleCongrats} />
-            </motion.div>
-          ))}
-          <div className="flex-shrink-0 w-1" />
-        </div>
+        {babyPosts.length > 0 ? (
+          <div
+            className="flex gap-3.5 overflow-x-auto pb-3 snap-x snap-mandatory hide-scrollbar"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            {babyPosts.map((post, i) => (
+              <motion.div
+                key={post.id}
+                className="snap-start flex-shrink-0"
+                style={{ width: 180 }}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
+              >
+                <BabyShowerCard
+                  name={post.baby_name}
+                  parentName={post.parent_names}
+                  date={post.month_label}
+                  imageUrl={post.image_url || "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop"}
+                  gender={post.gender as "boy" | "girl"}
+                  reactionsCount={post.reactions_count}
+                  onCongrats={handleCongrats}
+                />
+              </motion.div>
+            ))}
+            <div className="flex-shrink-0 w-1" />
+          </div>
+        ) : (
+          <div className="tend-card p-5 text-center">
+            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+              No babies this month yet
+            </p>
+          </div>
+        )}
       </motion.div>
 
       {/* Health tips */}
