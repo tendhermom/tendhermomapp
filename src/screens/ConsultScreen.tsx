@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import DoctorCard from "@/components/cards/DoctorCard";
 import PremiumUpsell from "@/components/cards/PremiumUpsell";
+import TopBar from "@/components/navigation/TopBar";
 
 interface ConsultScreenProps {
-  onOpenDrawer: () => void;
+  onNavigate: (tab: string) => void;
 }
 
 const specialties = ["All", "OB-GYN", "Midwife", "Nutritionist", "Therapist"];
@@ -13,34 +14,31 @@ const specialties = ["All", "OB-GYN", "Midwife", "Nutritionist", "Therapist"];
 const doctors = [
   {
     name: "Dr. Adaeze Nwosu",
-    initials: "AN",
     specialty: "OB-GYN",
-    rating: 4.8,
-    experience: "10 years",
+    rating: 4.9,
+    reviews: 124,
     available: true,
-    fee: "₦15,000",
+    price: "₦15,000",
   },
   {
     name: "Dr. Funke Adeyemi",
-    initials: "FA",
     specialty: "Midwife",
-    rating: 4.9,
-    experience: "8 years",
+    rating: 4.8,
+    reviews: 89,
     available: true,
-    fee: "₦10,000",
+    price: "₦8,000",
   },
   {
-    name: "Dr. Ngozi Eze",
-    initials: "NE",
+    name: "Dr. Bola Ogundimu",
     specialty: "Nutritionist",
     rating: 4.7,
-    experience: "6 years",
+    reviews: 56,
     available: false,
-    fee: "₦8,000",
+    price: "₦10,000",
   },
 ];
 
-const ConsultScreen = ({ onOpenDrawer }: ConsultScreenProps) => {
+const ConsultScreen = ({ onNavigate }: ConsultScreenProps) => {
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filtered =
@@ -50,15 +48,15 @@ const ConsultScreen = ({ onOpenDrawer }: ConsultScreenProps) => {
 
   return (
     <div className="space-y-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={onOpenDrawer} className="ios-press p-1">
-          <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <div>
-          <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Consultations</h1>
-          <p className="text-text-muted text-[13px] font-sans">Book with specialists</p>
-        </div>
+      <TopBar
+        onProfilePress={() => onNavigate("profile")}
+        onAIChatPress={() => onNavigate("ai-chat")}
+      />
+
+      {/* Title */}
+      <div>
+        <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Consultations</h1>
+        <p className="text-text-muted text-[13px] font-sans">Book with specialists</p>
       </div>
 
       {/* Next appointment hero */}

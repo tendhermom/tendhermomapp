@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-import DrawerMenu from "@/components/navigation/DrawerMenu";
 import HomeScreen from "@/screens/HomeScreen";
 import CommunityScreen from "@/screens/CommunityScreen";
 import SOSScreen from "@/screens/SOSScreen";
 import ConsultScreen from "@/screens/ConsultScreen";
-import RecordsScreen from "@/screens/RecordsScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
+import RecordsScreen from "@/screens/RecordsScreen";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleNavigate = (screen: string) => {
     setActiveTab(screen);
@@ -20,19 +18,19 @@ const Index = () => {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onNavigate={handleNavigate} onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <HomeScreen onNavigate={handleNavigate} />;
       case "community":
-        return <CommunityScreen onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <CommunityScreen onNavigate={handleNavigate} />;
       case "sos":
         return <SOSScreen />;
       case "consult":
-        return <ConsultScreen onOpenDrawer={() => setDrawerOpen(true)} />;
-      case "records":
-        return <RecordsScreen onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <ConsultScreen onNavigate={handleNavigate} />;
       case "profile":
-        return <ProfileScreen onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <ProfileScreen onNavigate={handleNavigate} />;
+      case "records":
+        return <RecordsScreen onNavigate={handleNavigate} />;
       default:
-        return <HomeScreen onNavigate={handleNavigate} onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <HomeScreen onNavigate={handleNavigate} />;
     }
   };
 
@@ -54,11 +52,6 @@ const Index = () => {
           </motion.div>
         </AnimatePresence>
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-        <DrawerMenu
-          isOpen={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          onNavigate={handleNavigate}
-        />
       </div>
     </div>
   );
