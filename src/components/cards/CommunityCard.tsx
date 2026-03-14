@@ -1,67 +1,112 @@
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import type { CommunityPost } from "@/stores/communityStore";
 
 interface CommunityCardProps {
-  title: string;
-  pill: string;
-  preview: string;
-  members?: number;
-  authorName?: string;
-  isPremium?: boolean;
-  isExpert?: boolean;
-  onClick?: () => void;
+  post: CommunityPost;
+  onLike: () => void;
+  onComment: () => void;
 }
 
-const CommunityCard = ({ title, pill, preview, members, authorName, isPremium, isExpert, onClick }: CommunityCardProps) => {
+const channelLabel: Record<string, string> = {
+  general: "General",
+  first_trimester: "1st Trimester",
+  second_trimester: "2nd Trimester",
+  third_trimester: "3rd Trimester",
+  postpartum: "Postpartum",
+};
+
+const timeAgo = (dateStr: string) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+};
+
+const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
+  const initials = (post.author_name || "A")
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <motion.div
-      whileTap={{ scale: 0.97 }}
-      onClick={onClick}
-      className="tend-card cursor-pointer flex overflow-hidden min-w-[240px]"
+    <div
+      className="rounded-2xl p-4 space-y-3"
+      style={{ background: "hsl(var(--surface))", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}
     >
-      <div className="w-[4px] flex-shrink-0 rounded-l-lg" style={{ background: "hsl(var(--green))" }} />
-      <div className="p-[18px] space-y-2 flex-1">
-        <span
-          className="label-caps px-2.5 py-[4px] rounded-full inline-block"
-          style={{
-            background: "hsl(var(--light-green))",
-            color: "hsl(var(--green))",
-          }}
+      {/* Author row */}
+      <div className="flex items-center gap-3">
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold font-sans shrink-0"
+          style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
         >
-          {pill}
-        </span>
-        <h4 className="text-[15px] font-semibold text-dark leading-tight font-sans">{title}</h4>
-        {authorName && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-[12px] font-semibold text-dark font-sans">{authorName}</span>
-            {isPremium && (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="12" r="10" fill="hsl(var(--coral))" stroke="none"/>
-                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-            {isExpert && (
-              <div
-                className="w-[16px] h-[16px] rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: "hsl(var(--light-green))" }}
-              >
-                <IonIcon name="medkit" size={9} style={{ color: "hsl(var(--green))" }} />
-              </div>
-            )}
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-semibold font-sans truncate" style={{ color: "hsl(var(--dark))" }}>
+            {post.author_name}
+          </p>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-[10px] font-semibold font-sans uppercase tracking-wider px-2 py-0.5 rounded-full"
+              style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+            >
+              {channelLabel[post.channel] || post.channel}
+            </span>
+            <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+              {timeAgo(post.created_at)}
+            </span>
           </div>
-        )}
-        <p className="text-[13px] text-text-muted line-clamp-2 font-sans">{preview}</p>
-        {members && (
-          <div className="flex items-center gap-1.5">
-            <IonIcon name="people" size={13} style={{ color: "hsl(var(--text-muted))" }} />
-            <p className="text-[11px] text-text-muted font-sans">
-              {members.toLocaleString()} members
-            </p>
-          </div>
-        )}
+        </div>
       </div>
-    </motion.div>
+
+      {/* Content */}
+      <p className="text-[14px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+        {post.content}
+      </p>
+
+      {post.image_url && (
+        <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-[200px]" />
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-5 pt-1">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onLike}
+          className="flex items-center gap-1.5"
+        >
+          <IonIcon
+            name={post.liked_by_me ? "heart" : "heart-outline"}
+            size={18}
+            style={{ color: post.liked_by_me ? "hsl(var(--coral))" : "hsl(var(--text-muted))" }}
+          />
+          <span
+            className="text-[12px] font-sans font-medium"
+            style={{ color: post.liked_by_me ? "hsl(var(--coral))" : "hsl(var(--text-muted))" }}
+          >
+            {post.likes_count || ""}
+          </span>
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onComment}
+          className="flex items-center gap-1.5"
+        >
+          <IonIcon name="chatbubble-outline" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+          <span className="text-[12px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
+            {post.comments_count || ""}
+          </span>
+        </motion.button>
+      </div>
+    </div>
   );
 };
 
