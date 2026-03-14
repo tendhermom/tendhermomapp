@@ -60,7 +60,8 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   useEffect(() => {
     fetchReminders();
     fetchBabyPosts();
-  }, []);
+    fetchHealthTips();
+  }, [currentStage, currentWeek]);
 
   const fetchBabyPosts = async () => {
     const now = new Date();
