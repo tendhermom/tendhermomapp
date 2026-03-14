@@ -21,7 +21,7 @@ const CHANNELS: { id: ChannelId; label: string; icon: string }[] = [
 ];
 
 const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
-  const { activeChannel, posts, loading, setActiveChannel, fetchPosts, toggleLike, createPost, fetchComments, addComment } = useCommunityStore();
+  const { activeChannel, posts, loading, hasMore, setActiveChannel, fetchPosts, loadMore, toggleLike, createPost, fetchComments, addComment } = useCommunityStore();
   const user = useAuthStore((s) => s.user);
 
   // Auto-set to user's trimester on mount
