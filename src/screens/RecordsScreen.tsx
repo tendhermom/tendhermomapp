@@ -3,7 +3,8 @@ import IonIcon from "@/components/IonIcon";
 import QuoteBlock from "@/components/cards/QuoteBlock";
 
 interface RecordsScreenProps {
-  onOpenDrawer: () => void;
+  onNavigate: (tab: string) => void;
+  onBack: () => void;
 }
 
 const weeklyUpdate = {
@@ -39,14 +40,19 @@ const warningFlags = [
   "Reduced fetal movement",
 ];
 
-const RecordsScreen = ({ onOpenDrawer }: RecordsScreenProps) => {
+const RecordsScreen = ({ onNavigate, onBack }: RecordsScreenProps) => {
   return (
     <div className="space-y-6 pb-4">
-      {/* Header */}
+      {/* Header with back button */}
       <div className="flex items-center gap-3">
-        <button onClick={onOpenDrawer} className="ios-press p-1">
-          <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
-        </button>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onBack}
+          className="w-[36px] h-[36px] rounded-full flex items-center justify-center ios-press"
+          style={{ background: "hsl(var(--light-green))" }}
+        >
+          <IonIcon name="chevron-back" size={20} style={{ color: "hsl(var(--green))" }} />
+        </motion.button>
         <div>
           <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Health Records</h1>
           <p className="text-text-muted text-[13px] font-sans">Your pregnancy journey</p>

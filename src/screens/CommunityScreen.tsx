@@ -1,9 +1,10 @@
 import CommunityCard from "@/components/cards/CommunityCard";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import TopBar from "@/components/navigation/TopBar";
 
 interface CommunityScreenProps {
-  onOpenDrawer: () => void;
+  onNavigate: (tab: string) => void;
 }
 
 const posts = [
@@ -14,28 +15,22 @@ const posts = [
     members: 156,
   },
   {
-    title: "Exercises safe for second trimester",
-    pill: "Fitness",
-    preview: "My doctor recommended swimming and prenatal yoga. Anyone else doing these?",
-    members: 89,
-  },
-  {
-    title: "Hospital bag checklist",
-    pill: "Preparation",
-    preview: "Starting to pack early! Here's my list so far — what am I missing?",
+    title: "Best hospitals in Lagos for delivery",
+    pill: "Recommendations",
+    preview: "Looking for hospital recommendations. Where are you ladies delivering?",
     members: 432,
   },
   {
-    title: "Dealing with pregnancy insomnia",
-    pill: "Wellness",
-    preview: "Week 28 and I can't sleep anymore. Tips from experienced moms?",
-    members: 67,
+    title: "Second trimester energy boost",
+    pill: "Health",
+    preview: "Finally feeling more energetic! Here's what helped me get through the first trimester fatigue.",
+    members: 289,
   },
   {
-    title: "Best antenatal clinics in Lagos",
-    pill: "Location",
-    preview: "Looking for recommendations for good antenatal care in Lagos Island area.",
-    members: 245,
+    title: "Baby names — Nigerian & modern",
+    pill: "Names",
+    preview: "Share your favorite baby names! Looking for meaningful Igbo and Yoruba names.",
+    members: 1876,
   },
   {
     title: "Pregnancy cravings — share yours!",
@@ -45,18 +40,18 @@ const posts = [
   },
 ];
 
-const CommunityScreen = ({ onOpenDrawer }: CommunityScreenProps) => {
+const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   return (
     <div className="space-y-5 pb-4 relative">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={onOpenDrawer} className="ios-press p-1">
-          <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <div>
-          <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Community</h1>
-          <p className="text-text-muted text-[13px] font-sans">Connect with other moms</p>
-        </div>
+      <TopBar
+        onProfilePress={() => onNavigate("profile")}
+        onAIChatPress={() => onNavigate("ai-chat")}
+      />
+
+      {/* Title */}
+      <div>
+        <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Community</h1>
+        <p className="text-text-muted text-[13px] font-sans">Connect with other moms</p>
       </div>
 
       {/* Hero card */}

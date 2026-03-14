@@ -1,43 +1,57 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import TopBar from "@/components/navigation/TopBar";
+import RecordsScreen from "@/screens/RecordsScreen";
 
 interface ProfileScreenProps {
-  onOpenDrawer: () => void;
+  onNavigate: (tab: string) => void;
 }
 
 const menuSections = [
   {
     items: [
-      { icon: "calendar-outline", label: "My Appointments", value: "2 upcoming" },
-      { icon: "document-text-outline", label: "Health Records", value: "" },
-      { icon: "heart-outline", label: "Saved Articles", value: "12" },
+      { icon: "calendar-outline", label: "My Appointments", value: "2 upcoming", route: "appointments" },
+      { icon: "document-text-outline", label: "Health Records", value: "", route: "records" },
+      { icon: "heart-outline", label: "Saved Articles", value: "12", route: "" },
     ],
   },
   {
     items: [
-      { icon: "diamond-outline", label: "Get Premium", value: "", accent: true },
-      { icon: "notifications-outline", label: "Notifications", value: "" },
-      { icon: "globe-outline", label: "Language", value: "English" },
+      { icon: "diamond-outline", label: "Get Premium", value: "", accent: true, route: "premium" },
+      { icon: "notifications-outline", label: "Notifications", value: "", route: "notifications" },
+      { icon: "globe-outline", label: "Language", value: "English", route: "" },
     ],
   },
   {
     items: [
-      { icon: "shield-checkmark-outline", label: "Privacy & Security", value: "" },
-      { icon: "help-circle-outline", label: "Help & Support", value: "" },
+      { icon: "shield-checkmark-outline", label: "Privacy & Security", value: "", route: "privacy" },
+      { icon: "help-circle-outline", label: "Help & Support", value: "", route: "help" },
     ],
   },
 ];
 
-const ProfileScreen = ({ onOpenDrawer }: ProfileScreenProps) => {
+const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
+  const [showRecords, setShowRecords] = useState(false);
+
+  if (showRecords) {
+    return <RecordsScreen onNavigate={onNavigate} onBack={() => setShowRecords(false)} />;
+  }
+
+  const handleMenuPress = (route: string) => {
+    if (route === "records") {
+      setShowRecords(true);
+    } else if (route) {
+      onNavigate(route);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={onOpenDrawer} className="ios-press p-1">
-          <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Profile</h1>
-      </div>
+      <TopBar
+        onProfilePress={() => {}}
+        onAIChatPress={() => onNavigate("ai-chat")}
+      />
 
       {/* Profile hero card */}
       <div className="hero-card p-5">
@@ -76,6 +90,7 @@ const ProfileScreen = ({ onOpenDrawer }: ProfileScreenProps) => {
             <motion.button
               key={item.label}
               whileTap={{ scale: 0.98 }}
+              onClick={() => handleMenuPress(item.route)}
               className="flex items-center gap-3.5 w-full px-[18px] py-[15px] text-left ios-press"
               style={{
                 borderBottom: i < section.items.length - 1

@@ -2,11 +2,10 @@ import PregnancyCard from "@/components/cards/PregnancyCard";
 import CommunityCard from "@/components/cards/CommunityCard";
 import QuoteBlock from "@/components/cards/QuoteBlock";
 import HealthTipChip from "@/components/chips/HealthTipChip";
-import IonIcon from "@/components/IonIcon";
+import TopBar from "@/components/navigation/TopBar";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
-  onOpenDrawer: () => void;
 }
 
 const communityPosts = [
@@ -30,28 +29,20 @@ const communityPosts = [
   },
 ];
 
-const HomeScreen = ({ onNavigate, onOpenDrawer }: HomeScreenProps) => {
+const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   return (
     <div className="space-y-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={onOpenDrawer} className="ios-press p-1">
-            <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
-          </button>
-          <div>
-            <p className="label-caps text-text-muted mb-0.5">Good morning</p>
-            <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>
-              Hello, Amara
-            </h1>
-          </div>
-        </div>
-        <button
-          className="w-[42px] h-[42px] rounded-full flex items-center justify-center ios-press"
-          style={{ background: "hsl(var(--light-green))" }}
-        >
-          <IonIcon name="notifications-outline" size={22} style={{ color: "hsl(var(--green))" }} />
-        </button>
+      <TopBar
+        onProfilePress={() => onNavigate("profile")}
+        onAIChatPress={() => onNavigate("ai-chat")}
+      />
+
+      {/* Greeting */}
+      <div>
+        <p className="label-caps text-text-muted mb-0.5">Good morning</p>
+        <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>
+          Hello, Amara
+        </h1>
       </div>
 
       {/* Pregnancy tracker */}
@@ -66,7 +57,6 @@ const HomeScreen = ({ onNavigate, onOpenDrawer }: HomeScreenProps) => {
             className="flex items-center gap-0.5 ios-press"
           >
             <span className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>See All</span>
-            <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--green))" }} />
           </button>
         </div>
         <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5">
@@ -89,12 +79,12 @@ const HomeScreen = ({ onNavigate, onOpenDrawer }: HomeScreenProps) => {
         <HealthTipChip
           icon="water-outline"
           tip="Drink 8 cups of water today"
-          onViewRecord={() => onNavigate("records")}
+          onViewRecord={() => onNavigate("profile")}
         />
         <HealthTipChip
           icon="nutrition-outline"
           tip="Include folate-rich foods in your meals"
-          onViewRecord={() => onNavigate("records")}
+          onViewRecord={() => onNavigate("profile")}
         />
       </div>
     </div>
