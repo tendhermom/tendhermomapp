@@ -98,7 +98,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
               key={i}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + i * 0.08, type: "spring", stiffness: 300, damping: 30 }}
+              transition={{ delay: 0.4 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
             >
               <CommunityCard
                 {...post}

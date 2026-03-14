@@ -146,7 +146,7 @@ const ConsultScreen = ({ onNavigate }: ConsultScreenProps) => {
             key={doc.name}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + i * 0.08, type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ delay: 0.2 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
           >
             <DoctorCard {...doc} onBook={() => setBookingDoctor(doc)} />
           </motion.div>
