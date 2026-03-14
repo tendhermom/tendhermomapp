@@ -52,7 +52,7 @@ const TopBar = ({ onProfilePress, onAIChatPress, onNotificationsPress, initials 
           className="w-[40px] h-[40px] rounded-full flex items-center justify-center ios-press"
           style={{ background: "hsl(var(--light-green))" }}
         >
-          <IonIcon name="sparkles-outline" size={20} style={{ color: "hsl(var(--green))" }} />
+          <IonIcon name="chatbox-ellipses-outline" size={20} style={{ color: "hsl(var(--green))" }} />
         </motion.button>
       </div>
     </div>
