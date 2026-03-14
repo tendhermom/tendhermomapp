@@ -75,6 +75,27 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
     if (data) setBabyPosts(data);
   };
 
+  const fetchHealthTips = async () => {
+    // Fetch tips matching current week first, then trimester, limit 4
+    let query = supabase
+      .from("health_content")
+      .select("id, title, body, icon, category, week_number")
+      .eq("published", true)
+      .eq("trimester", currentStage)
+      .order("week_number", { ascending: true })
+      .limit(4);
+
+    const { data } = await query;
+    if (data && data.length > 0) {
+      // Prioritize tips matching current week, then fill with others
+      const weekMatch = data.filter((t) => t.week_number === currentWeek);
+      const others = data.filter((t) => t.week_number !== currentWeek);
+      setHealthTips([...weekMatch, ...others].slice(0, 4));
+    } else {
+      setHealthTips([]);
+    }
+  };
+
   const handleCongrats = () => {
     if (isPremium) {
       onNavigate("baby-shower");
