@@ -97,12 +97,18 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       {/* Profile hero card */}
       <div className="hero-card p-5">
         <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="w-[64px] h-[64px] rounded-full flex items-center justify-center flex-shrink-0"
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setSubScreen("edit-profile")}
+            className="w-[64px] h-[64px] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{ background: "rgba(255,255,255,0.15)" }}
           >
-            <span className="text-white text-[22px] font-bold font-sans">{initials}</span>
-          </div>
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white text-[22px] font-bold font-sans">{initials}</span>
+            )}
+          </motion.button>
           <div className="flex-1">
             <h3 className="text-white text-[20px] font-serif">{user?.full_name || "User"}</h3>
             <p className="text-white/60 text-[13px] font-sans mt-0.5">{user?.email || ""}</p>
@@ -121,6 +127,13 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               </span>
             </div>
           </div>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setSubScreen("edit-profile")}
+            className="p-2"
+          >
+            <IonIcon name="create-outline" size={20} style={{ color: "rgba(255,255,255,0.7)" }} />
+          </motion.button>
         </div>
       </div>
 
