@@ -13,30 +13,38 @@ const posts = [
     pill: "Tips",
     preview: "Ginger tea and small frequent meals have been a lifesaver for me. What works for you?",
     members: 156,
+    authorName: "Ada Nwosu",
+    isPremium: true,
   },
   {
     title: "Best hospitals in Lagos for delivery",
     pill: "Recommendations",
     preview: "Looking for hospital recommendations. Where are you ladies delivering?",
     members: 432,
+    authorName: "Dr. Bola O.",
+    isExpert: true,
   },
   {
     title: "Second trimester energy boost",
     pill: "Health",
     preview: "Finally feeling more energetic! Here's what helped me get through the first trimester fatigue.",
     members: 289,
+    authorName: "Kemi Lawal",
   },
   {
     title: "Baby names — Nigerian & modern",
     pill: "Names",
     preview: "Share your favorite baby names! Looking for meaningful Igbo and Yoruba names.",
     members: 1876,
+    authorName: "Ifeoma C.",
+    isPremium: true,
   },
   {
     title: "Pregnancy cravings — share yours!",
     pill: "Fun",
     preview: "I can't stop eating suya! Tell me I'm not alone in these wild cravings.",
     members: 1203,
+    authorName: "Ngozi Ibe",
   },
 ];
 

@@ -6,12 +6,37 @@ import CommunityScreen from "@/screens/CommunityScreen";
 import SOSScreen from "@/screens/SOSScreen";
 import ConsultScreen from "@/screens/ConsultScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
-import RecordsScreen from "@/screens/RecordsScreen";
+import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
+  const user = useAuthStore((s) => s.user);
+  const isFree = user?.plan_type === "free";
 
   const handleNavigate = (screen: string) => {
+    // Premium-gated screens redirect free users to upgrade
+    const premiumScreens = ["ai-chat", "baby-shower", "consult"];
+    if (premiumScreens.includes(screen) && isFree) {
+      // TODO: show premium upgrade modal
+      setActiveTab("premium-upsell");
+      return;
+    }
+
+    // Quick access routing
+    if (screen === "records") {
+      setActiveTab("profile");
+      // Records is accessed via Profile sub-screen
+      return;
+    }
+    if (screen === "antenatal") {
+      setActiveTab("profile");
+      return;
+    }
+    if (screen === "appointments") {
+      setActiveTab("consult");
+      return;
+    }
+
     setActiveTab(screen);
   };
 
@@ -27,8 +52,6 @@ const Index = () => {
         return <ConsultScreen onNavigate={handleNavigate} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
-      case "records":
-        return <RecordsScreen onNavigate={handleNavigate} onBack={() => setActiveTab("profile")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }

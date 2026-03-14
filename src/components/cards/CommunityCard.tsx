@@ -6,10 +6,13 @@ interface CommunityCardProps {
   pill: string;
   preview: string;
   members?: number;
+  authorName?: string;
+  isPremium?: boolean;
+  isExpert?: boolean;
   onClick?: () => void;
 }
 
-const CommunityCard = ({ title, pill, preview, members, onClick }: CommunityCardProps) => {
+const CommunityCard = ({ title, pill, preview, members, authorName, isPremium, isExpert, onClick }: CommunityCardProps) => {
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
@@ -28,6 +31,26 @@ const CommunityCard = ({ title, pill, preview, members, onClick }: CommunityCard
           {pill}
         </span>
         <h4 className="text-[15px] font-semibold text-dark leading-tight font-sans">{title}</h4>
+        {authorName && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[12px] font-semibold text-dark font-sans">{authorName}</span>
+            {isPremium && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="10" fill="hsl(var(--coral))" stroke="none"/>
+                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+            {isExpert && (
+              <div
+                className="w-[16px] h-[16px] rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(var(--light-green))" }}
+              >
+                <IonIcon name="medkit" size={9} style={{ color: "hsl(var(--green))" }} />
+              </div>
+            )}
+          </div>
+        )}
         <p className="text-[13px] text-text-muted line-clamp-2 font-sans">{preview}</p>
         {members && (
           <div className="flex items-center gap-1.5">

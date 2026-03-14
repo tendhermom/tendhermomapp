@@ -99,6 +99,11 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.screen-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 /* Safe areas */
