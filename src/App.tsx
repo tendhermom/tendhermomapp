@@ -33,9 +33,13 @@ const AuthListener = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         if (session?.user) {
           fetchProfile(session.user.id);
+          // Link OneSignal push subscription to user
+          import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
+            setOneSignalExternalUserId(session.user.id);
+          });
         } else {
           setUser(null);
           setLoading(false);
@@ -46,6 +50,9 @@ const AuthListener = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchProfile(session.user.id);
+        import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
+          setOneSignalExternalUserId(session.user.id);
+        });
       } else {
         setLoading(false);
       }

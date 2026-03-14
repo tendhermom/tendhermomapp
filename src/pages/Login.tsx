@@ -13,8 +13,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) navigate("/", { replace: true });
   }, [isAuthenticated, navigate]);
@@ -23,12 +24,35 @@ const Login = () => {
     e.preventDefault();
     if (!email.trim() || !password) return;
     setLoading(true);
+    setShowResend(false);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
     if (error) {
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        setShowResend(true);
+      }
       toast.error(error.message);
     } else {
       navigate("/");
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email first");
+      return;
+    }
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+    });
+    setResending(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Verification email sent! Check your inbox.");
+      setShowResend(false);
     }
   };
 
@@ -104,6 +128,33 @@ const Login = () => {
                 Forgot password?
               </Link>
             </div>
+
+            {/* Email verification resend */}
+            {showResend && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="rounded-xl p-3 flex items-center gap-3"
+                style={{ background: "hsl(var(--light-coral))" }}
+              >
+                <IonIcon name="mail-unread-outline" size={20} style={{ color: "hsl(var(--coral))" }} />
+                <div className="flex-1">
+                  <p className="text-[12px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>
+                    Email not verified yet
+                  </p>
+                </div>
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                  className="px-3 py-1.5 rounded-lg text-[12px] font-sans font-semibold"
+                  style={{ background: "hsl(var(--coral))", color: "white", opacity: resending ? 0.6 : 1 }}
+                >
+                  {resending ? "Sending…" : "Resend"}
+                </motion.button>
+              </motion.div>
+            )}
 
             <motion.button
               whileTap={{ scale: 0.97 }}

@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify user auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -35,7 +34,6 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Decode JWT to get user
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
@@ -49,8 +47,23 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     if (action === "initialize") {
-      const { plan } = body; // "monthly" | "yearly"
-      const amount = plan === "yearly" ? 2000000 : 250000; // kobo
+      // Rate limit: max 5 payment attempts per 30 minutes
+      const { data: allowed } = await supabase.rpc("check_rate_limit", {
+        _user_id: user.id,
+        _action: "payment_init",
+        _max_requests: 5,
+        _window_minutes: 30,
+      });
+
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: "Too many payment attempts. Please try again later." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { plan } = body;
+      const amount = plan === "yearly" ? 2000000 : 250000;
       const planLabel = plan === "yearly" ? "TendherMom Premium Yearly" : "TendherMom Premium Monthly";
 
       const response = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -64,11 +77,7 @@ Deno.serve(async (req) => {
           amount,
           currency: "NGN",
           callback_url: body.callback_url || "",
-          metadata: {
-            user_id: user.id,
-            plan,
-            plan_label: planLabel,
-          },
+          metadata: { user_id: user.id, plan, plan_label: planLabel },
         }),
       });
 
@@ -104,12 +113,7 @@ Deno.serve(async (req) => {
 
       if (result.data?.status === "success") {
         const userId = result.data.metadata?.user_id || user.id;
-
-        // Upgrade user to premium
-        await supabase
-          .from("profiles")
-          .update({ plan_type: "premium" })
-          .eq("id", userId);
+        await supabase.from("profiles").update({ plan_type: "premium" }).eq("id", userId);
 
         return new Response(
           JSON.stringify({ success: true, message: "Payment verified. You are now Premium!" }),
