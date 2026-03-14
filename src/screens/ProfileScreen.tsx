@@ -16,8 +16,8 @@ const menuSections = [
     items: [
       { icon: "calendar-outline", label: "My Appointments", value: "2 upcoming", route: "appointments" },
       { icon: "document-text-outline", label: "Health Records", value: "", route: "records" },
+      { icon: "alert-circle-outline", label: "Emergency Contacts", value: "", route: "emergency-contacts" },
       { icon: "gift-outline", label: "Referral Programme", value: "3/10", route: "referral" },
-      { icon: "heart-outline", label: "Saved Articles", value: "12", route: "" },
     ],
   },
   {

@@ -41,7 +41,9 @@ const Index = () => {
       case "community":
         return <CommunityScreen onNavigate={handleNavigate} />;
       case "sos":
-        return <SOSScreen />;
+        return <SOSScreen onNavigate={handleNavigate} />;
+      case "emergency-contacts":
+        return <EmergencyContactsScreen onBack={() => setActiveTab("sos")} />;
       case "consult":
         return <ConsultScreen onNavigate={handleNavigate} />;
       case "profile":
