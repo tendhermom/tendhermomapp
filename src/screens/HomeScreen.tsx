@@ -118,6 +118,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         <TopBar
           onProfilePress={() => onNavigate("profile")}
           onAIChatPress={() => onNavigate("ai-chat")}
+          onNotificationsPress={() => onNavigate("notifications")}
         />
       </motion.div>
 
