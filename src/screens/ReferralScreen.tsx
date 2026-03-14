@@ -40,6 +40,9 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
     setLoading(false);
   };
 
+  // Client-side rate limit: max 5 invites per session
+  const [inviteCount, setInviteCount] = useState(0);
+
   const handleInvite = async () => {
     if (!user || !email.trim()) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
@@ -48,6 +51,10 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
     }
     if (referrals.some((r) => r.referred_email === email.trim())) {
       toast.error("You've already invited this person");
+      return;
+    }
+    if (inviteCount >= 5) {
+      toast.error("Too many invites. Please try again later.");
       return;
     }
 
@@ -62,6 +69,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
     } else {
       toast.success("Invite sent!");
       setEmail("");
+      setInviteCount((c) => c + 1);
       fetchReferrals();
     }
     setSending(false);
