@@ -24,6 +24,7 @@ interface HealthTip {
   week_number: number | null;
 }
 
+interface BabyShowerPost {
   id: string;
   baby_name: string;
   parent_names: string;
