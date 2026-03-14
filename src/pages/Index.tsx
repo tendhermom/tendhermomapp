@@ -28,7 +28,7 @@ const Index = () => {
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "records":
-        return <RecordsScreen onNavigate={handleNavigate} />;
+        return <RecordsScreen onNavigate={handleNavigate} onBack={() => setActiveTab("profile")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }

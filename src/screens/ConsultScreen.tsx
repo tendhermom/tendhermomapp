@@ -14,27 +14,30 @@ const specialties = ["All", "OB-GYN", "Midwife", "Nutritionist", "Therapist"];
 const doctors = [
   {
     name: "Dr. Adaeze Nwosu",
+    initials: "AN",
     specialty: "OB-GYN",
     rating: 4.9,
-    reviews: 124,
+    experience: "12 years",
     available: true,
-    price: "₦15,000",
+    fee: "₦15,000",
   },
   {
     name: "Dr. Funke Adeyemi",
+    initials: "FA",
     specialty: "Midwife",
     rating: 4.8,
-    reviews: 89,
+    experience: "8 years",
     available: true,
-    price: "₦8,000",
+    fee: "₦8,000",
   },
   {
     name: "Dr. Bola Ogundimu",
+    initials: "BO",
     specialty: "Nutritionist",
     rating: 4.7,
-    reviews: 56,
+    experience: "6 years",
     available: false,
-    price: "₦10,000",
+    fee: "₦10,000",
   },
 ];
 
