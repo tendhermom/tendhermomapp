@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import OnboardingScreen from "./screens/OnboardingScreen";
+import TermsScreen from "./screens/TermsScreen";
 
 const queryClient = new QueryClient();
 
