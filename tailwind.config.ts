@@ -14,7 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Poppins', 'sans-serif'],
+        serif: ["'DM Serif Display'", "Georgia", "serif"],
+        sans: ["'Poppins'", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -50,10 +51,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        surface: "hsl(var(--surface))",
-        forest: "hsl(var(--forest))",
-        sage: "hsl(var(--sage-light))",
+        green: "hsl(var(--green))",
+        sage: "hsl(var(--sage))",
         coral: "hsl(var(--coral))",
+        dark: "hsl(var(--dark))",
+        surface: "hsl(var(--surface))",
+        "light-green": "hsl(var(--light-green))",
+        "light-coral": "hsl(var(--light-coral))",
+        "text-muted": "hsl(var(--text-muted))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

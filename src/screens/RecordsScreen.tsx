@@ -2,10 +2,14 @@ import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import QuoteBlock from "@/components/cards/QuoteBlock";
 
+interface RecordsScreenProps {
+  onOpenDrawer: () => void;
+}
+
 const weeklyUpdate = {
   week: 24,
   development: [
-    "Baby can now hear sounds from outside the womb 👂",
+    "Baby can now hear sounds from outside the womb",
     "Lungs are developing branches and surfactant",
     "Baby is about 30cm long and weighs ~600g",
     "Taste buds are fully formed",
@@ -35,47 +39,47 @@ const warningFlags = [
   "Reduced fetal movement",
 ];
 
-const RecordsScreen = () => {
+const RecordsScreen = ({ onOpenDrawer }: RecordsScreenProps) => {
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-6 pb-4">
       {/* Header */}
-      <div>
-        <h1 className="ios-large-title text-foreground" style={{ fontSize: "28px" }}>
-          Records
-        </h1>
-        <p className="ios-footnote text-muted-foreground mt-1">
-          Your pregnancy journey, week by week
-        </p>
+      <div className="flex items-center gap-3">
+        <button onClick={onOpenDrawer} className="ios-press p-1">
+          <IonIcon name="menu-outline" size={26} style={{ color: "hsl(var(--dark))" }} />
+        </button>
+        <div>
+          <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>Health Records</h1>
+          <p className="text-text-muted text-[13px] font-sans">Your pregnancy journey</p>
+        </div>
       </div>
 
-      {/* Weekly development - iOS grouped */}
-      <div className="ios-card-elevated p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🍼</span>
-          <h3 className="ios-title text-foreground">Week {weeklyUpdate.week} Development</h3>
-        </div>
-        <div className="space-y-2.5">
-          {weeklyUpdate.development.map((item, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <IonIcon name="checkmark-circle" size={16} style={{ color: "hsl(var(--forest))", marginTop: "2px" }} />
-              <span className="ios-body text-foreground">{item}</span>
-            </div>
-          ))}
+      {/* Hero week card */}
+      <div className="hero-card p-5">
+        <div className="relative z-10">
+          <span className="label-caps" style={{ color: "rgba(255,255,255,0.5)" }}>
+            Baby Development
+          </span>
+          <h3 className="text-white text-[22px] font-serif mt-2">Week {weeklyUpdate.week}</h3>
+          <div className="space-y-2.5 mt-4">
+            {weeklyUpdate.development.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <IonIcon name="checkmark-circle" size={16} style={{ color: "hsl(var(--coral))", marginTop: "2px" }} />
+                <span className="text-white/80 text-[14px] font-sans">{item}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Symptoms */}
-      <div className="ios-card p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🤰</span>
-          <h3 className="ios-title text-foreground">What You May Feel</h3>
-        </div>
+      <div>
+        <h2 className="font-serif text-dark text-[20px] mb-3">What You May Feel</h2>
         <div className="flex flex-wrap gap-2">
           {symptoms.map((s, i) => (
             <span
               key={i}
-              className="ios-footnote font-medium px-3 py-[7px] rounded-full"
-              style={{ background: "hsl(var(--ios-grouped-bg))", color: "hsl(var(--text-secondary))" }}
+              className="text-[13px] font-medium font-sans px-3.5 py-[8px] rounded-full"
+              style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
             >
               {s}
             </span>
@@ -83,24 +87,25 @@ const RecordsScreen = () => {
         </div>
       </div>
 
-      {/* Nigerian foods - iOS grouped list */}
+      {/* Nigerian foods */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🍲</span>
-          <h3 className="ios-title text-foreground">Nigerian Foods for You</h3>
-        </div>
-        <div className="ios-grouped">
+        <h2 className="font-serif text-dark text-[20px] mb-3">Nigerian Foods for You</h2>
+        <div className="tend-card overflow-hidden">
           {nigerianFoods.map((food, i) => (
-            <div key={i} className="ios-grouped-item flex items-center justify-between">
+            <div
+              key={i}
+              className="flex items-center justify-between px-[18px] py-[14px]"
+              style={{ borderBottom: i < nigerianFoods.length - 1 ? "0.5px solid hsl(var(--border))" : "none" }}
+            >
               <div className="flex items-center gap-3">
-                <IonIcon name={food.icon} size={18} style={{ color: "hsl(var(--forest))" }} />
-                <span className="ios-body text-foreground">{food.name}</span>
+                <IonIcon name={food.icon} size={18} style={{ color: "hsl(var(--green))" }} />
+                <span className="text-dark text-[14px] font-sans">{food.name}</span>
               </div>
               <span
-                className="ios-caption font-semibold px-2 py-[3px] rounded-full"
+                className="label-caps px-2 py-[3px] rounded-full"
                 style={{
-                  background: "hsla(153, 42%, 30%, 0.08)",
-                  color: "hsl(var(--forest))",
+                  background: "hsl(var(--light-green))",
+                  color: "hsl(var(--green))",
                 }}
               >
                 {food.benefit}
@@ -113,55 +118,52 @@ const RecordsScreen = () => {
       {/* Warning signs */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <IonIcon name="alert-circle" size={18} style={{ color: "hsl(var(--coral))" }} />
-          <h3 className="ios-title text-foreground">Warning Signs</h3>
+          <IonIcon name="alert-circle" size={20} style={{ color: "hsl(var(--coral))" }} />
+          <h2 className="font-serif text-dark text-[20px]">Warning Signs</h2>
         </div>
-        <div className="ios-grouped">
+        <div className="tend-card overflow-hidden">
           {warningFlags.map((sign, i) => (
-            <div key={i} className="ios-grouped-item flex items-center gap-3">
+            <div
+              key={i}
+              className="flex items-center gap-3 px-[18px] py-[14px]"
+              style={{ borderBottom: i < warningFlags.length - 1 ? "0.5px solid hsl(var(--border))" : "none" }}
+            >
               <span className="w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: "hsl(var(--coral))" }} />
-              <span className="ios-body text-foreground">{sign}</span>
+              <span className="text-dark text-[14px] font-sans">{sign}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Quote */}
-      <QuoteBlock quote="Every day you're one step closer to meeting your little one. You're doing amazing! 💚" />
+      <QuoteBlock quote="Every day you're one step closer to meeting your little one. You're doing amazing." />
 
       {/* Premium AI Banner */}
       <motion.div
         whileTap={{ scale: 0.98 }}
-        className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, hsl(153, 42%, 30%), hsl(153, 42%, 22%))",
-        }}
+        className="hero-card p-5 cursor-pointer"
       >
-        <div
-          className="w-[44px] h-[44px] rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "hsla(0, 0%, 100%, 0.15)" }}
-        >
-          <IonIcon name="sparkles" size={22} style={{ color: "white" }} />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h4 className="ios-body font-semibold" style={{ color: "white" }}>AI Health Assistant</h4>
-            <span
-              className="ios-caption font-bold px-1.5 py-[1px] rounded-full"
-              style={{
-                background: "hsl(var(--coral))",
-                color: "white",
-                fontSize: "9px",
-              }}
-            >
-              PRO
-            </span>
+        <div className="relative z-10 flex items-center gap-3.5">
+          <div
+            className="w-[46px] h-[46px] rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.12)" }}
+          >
+            <IonIcon name="sparkles" size={22} style={{ color: "hsl(var(--coral))" }} />
           </div>
-          <p className="ios-caption mt-0.5" style={{ color: "hsla(0,0%,100%,0.7)" }}>
-            Ask anything about your pregnancy
-          </p>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h4 className="text-white text-[15px] font-semibold font-sans">AI Health Assistant</h4>
+              <span
+                className="label-caps px-1.5 py-[2px] rounded-full"
+                style={{ background: "hsl(var(--coral))", color: "white", fontSize: "8px" }}
+              >
+                Premium
+              </span>
+            </div>
+            <p className="text-white/50 text-[12px] font-sans mt-0.5">Ask anything about your pregnancy</p>
+          </div>
+          <IonIcon name="chevron-forward" size={18} style={{ color: "rgba(255,255,255,0.3)" }} />
         </div>
-        <IonIcon name="chevron-forward" size={18} style={{ color: "hsla(0,0%,100%,0.5)" }} />
       </motion.div>
     </div>
   );
