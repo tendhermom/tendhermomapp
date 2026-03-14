@@ -97,6 +97,39 @@ export type Database = {
           },
         ]
       }
+      community_points: {
+        Row: {
+          comments_count: number
+          created_at: string
+          id: string
+          likes_count: number
+          points: number
+          posts_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number
+          created_at?: string
+          id?: string
+          likes_count?: number
+          points?: number
+          posts_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comments_count?: number
+          created_at?: string
+          id?: string
+          likes_count?: number
+          points?: number
+          posts_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           channel: string
