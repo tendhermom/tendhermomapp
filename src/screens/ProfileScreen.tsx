@@ -142,6 +142,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       {/* Log out */}
       <motion.button
         whileTap={{ scale: 0.97 }}
+        onClick={handleLogout}
         className="w-full tend-card py-[15px] flex items-center justify-center gap-2 ios-press"
       >
         <IonIcon name="log-out-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
