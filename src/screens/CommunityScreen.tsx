@@ -122,6 +122,16 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
               onComment={() => openComments(post.id)}
             />
           ))}
+          {hasMore && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={loadMore}
+              className="w-full py-3 rounded-xl text-[13px] font-sans font-semibold"
+              style={{ color: "hsl(var(--green))", background: "hsl(var(--surface))" }}
+            >
+              Load more
+            </motion.button>
+          )}
         </div>
       )}
 

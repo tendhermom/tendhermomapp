@@ -1,19 +1,27 @@
 import { useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-import HomeScreen from "@/screens/HomeScreen";
-import CommunityScreen from "@/screens/CommunityScreen";
-import SOSScreen from "@/screens/SOSScreen";
-import ConsultScreen from "@/screens/ConsultScreen";
-import ProfileScreen from "@/screens/ProfileScreen";
-import PremiumScreen from "@/screens/PremiumScreen";
-import NotificationsScreen from "@/screens/NotificationsScreen";
-import RemindersScreen from "@/screens/RemindersScreen";
-import BabyShowerScreen from "@/screens/BabyShowerScreen";
-import EmergencyContactsScreen from "@/screens/EmergencyContactsScreen";
-import AIChatScreen from "@/screens/AIChatScreen";
-import RecordsScreen from "@/screens/RecordsScreen";
 import { useAuthStore } from "@/stores/authStore";
+
+// Lazy-load all screens for code splitting
+const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
+const CommunityScreen = lazy(() => import("@/screens/CommunityScreen"));
+const SOSScreen = lazy(() => import("@/screens/SOSScreen"));
+const ConsultScreen = lazy(() => import("@/screens/ConsultScreen"));
+const ProfileScreen = lazy(() => import("@/screens/ProfileScreen"));
+const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
+const NotificationsScreen = lazy(() => import("@/screens/NotificationsScreen"));
+const RemindersScreen = lazy(() => import("@/screens/RemindersScreen"));
+const BabyShowerScreen = lazy(() => import("@/screens/BabyShowerScreen"));
+const EmergencyContactsScreen = lazy(() => import("@/screens/EmergencyContactsScreen"));
+const AIChatScreen = lazy(() => import("@/screens/AIChatScreen"));
+const RecordsScreen = lazy(() => import("@/screens/RecordsScreen"));
+
+const ScreenFallback = () => (
+  <div className="flex items-center justify-center py-24">
+    <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
+  </div>
+);
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
@@ -21,19 +29,15 @@ const Index = () => {
   const isFree = user?.plan_type === "free";
 
   const handleNavigate = (screen: string) => {
-    // Premium-gated screens redirect free users to upgrade
     const premiumScreens = ["ai-chat", "baby-shower", "consult"];
     if (premiumScreens.includes(screen) && isFree) {
       setActiveTab("premium");
       return;
     }
-
-    // Quick access routing
     if (screen === "antenatal") {
       setActiveTab("records");
       return;
     }
-
     setActiveTab(screen);
   };
 
@@ -81,7 +85,9 @@ const Index = () => {
             className="screen-scroll"
           >
             <div className="px-5 pt-14 pb-8">
-              {renderScreen()}
+              <Suspense fallback={<ScreenFallback />}>
+                {renderScreen()}
+              </Suspense>
             </div>
           </motion.div>
         </AnimatePresence>

@@ -208,6 +208,19 @@ const NotificationsScreen = ({ onBack }: NotificationsScreenProps) => {
               </motion.div>
             );
           })}
+          {hasMore && notifications.length > 0 && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                const last = notifications[notifications.length - 1];
+                fetchNotifications(last.created_at);
+              }}
+              className="w-full py-3 rounded-xl text-[13px] font-sans font-semibold"
+              style={{ color: "hsl(var(--green))", background: "hsl(var(--surface))" }}
+            >
+              Load more
+            </motion.button>
+          )}
         </div>
       )}
     </div>
