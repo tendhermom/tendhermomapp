@@ -32,8 +32,10 @@ interface CommunityState {
   activeChannel: ChannelId;
   posts: CommunityPost[];
   loading: boolean;
+  hasMore: boolean;
   setActiveChannel: (channel: ChannelId) => void;
-  fetchPosts: (channel: ChannelId) => Promise<void>;
+  fetchPosts: (channel: ChannelId, cursor?: string) => Promise<void>;
+  loadMore: () => Promise<void>;
   createPost: (content: string, channel: ChannelId, imageUrl?: string) => Promise<boolean>;
   toggleLike: (postId: string, userId: string) => Promise<void>;
   fetchComments: (postId: string) => Promise<PostComment[]>;
