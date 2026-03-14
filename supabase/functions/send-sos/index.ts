@@ -31,7 +31,6 @@ serve(async (req) => {
   }
 
   try {
-    // Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -40,11 +39,13 @@ serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const serviceClient = createClient(supabaseUrl, serviceKey);
+
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
@@ -53,6 +54,23 @@ serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // Rate limit: max 3 SOS alerts per 10 minutes
+    const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
+      _user_id: userId,
+      _action: "sos_alert",
+      _max_requests: 3,
+      _window_minutes: 10,
+    });
+
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const body: SOSRequest = await req.json();
@@ -65,17 +83,9 @@ serve(async (req) => {
       });
     }
 
-    // Build location info
     const now = new Date();
-    const dateStr = now.toLocaleDateString("en-NG", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-    const timeStr = now.toLocaleTimeString("en-NG", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const dateStr = now.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
+    const timeStr = now.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" });
 
     let locationText: string;
     let mapsLink: string;
@@ -88,51 +98,29 @@ serve(async (req) => {
     }
 
     const testPrefix = is_test ? "[TEST ALERT] " : "";
-
     const smsMessage = `${testPrefix}EMERGENCY ALERT — TendherMom\n\n${user_name} needs urgent help. She triggered her emergency alert at ${timeStr} on ${dateStr}.\n\n${locationText}\n\nPlease contact her immediately or call emergency services: 112 (Nigeria).\n\nSent via TendherMom`;
 
-    // Process each contact — log results
     const channelResults: Record<string, any> = {};
-
     for (const contact of contacts) {
       const contactResult: Record<string, string> = {};
-
       for (const channel of contact.channels) {
-        // In production, this would call Twilio/SendGrid via connector gateway
-        // For now, we log the intent and mark as "queued"
-        console.log(
-          `[SOS] ${channel.toUpperCase()} → ${contact.name} (${
-            channel === "email" ? contact.email : contact.phone
-          }): ${is_test ? "TEST " : ""}alert`
-        );
+        console.log(`[SOS] ${channel.toUpperCase()} → ${contact.name} (${channel === "email" ? contact.email : contact.phone}): ${is_test ? "TEST " : ""}alert`);
         contactResult[channel] = "queued";
       }
-
       channelResults[contact.name] = contactResult;
     }
 
     console.log(`[SOS] Alert dispatched for ${user_name} to ${contacts.length} contacts`);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        contacts_notified: contacts.length,
-        channel_results: channelResults,
-        is_test,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ success: true, contacts_notified: contacts.length, channel_results: channelResults, is_test }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("[SOS] Error:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
