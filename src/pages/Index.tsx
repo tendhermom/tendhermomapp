@@ -29,8 +29,8 @@ const Index = () => {
     }
 
     // Quick access routing
-    if (screen === "records" || screen === "antenatal") {
-      setActiveTab("profile");
+    if (screen === "antenatal") {
+      setActiveTab("records");
       return;
     }
 
