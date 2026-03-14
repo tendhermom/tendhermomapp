@@ -34,13 +34,6 @@ const Signup = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      // Update profile with due_date if provided
-      if (dueDate) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from("profiles").update({ due_date: dueDate }).eq("id", user.id);
-        }
-      }
       toast.success("Account created! Check your email to verify.");
       navigate("/login");
     }
