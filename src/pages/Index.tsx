@@ -9,6 +9,7 @@ import ProfileScreen from "@/screens/ProfileScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
 import RemindersScreen from "@/screens/RemindersScreen";
 import BabyShowerScreen from "@/screens/BabyShowerScreen";
+import EmergencyContactsScreen from "@/screens/EmergencyContactsScreen";
 import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
@@ -40,7 +41,9 @@ const Index = () => {
       case "community":
         return <CommunityScreen onNavigate={handleNavigate} />;
       case "sos":
-        return <SOSScreen />;
+        return <SOSScreen onNavigate={handleNavigate} />;
+      case "emergency-contacts":
+        return <EmergencyContactsScreen onBack={() => setActiveTab("sos")} />;
       case "consult":
         return <ConsultScreen onNavigate={handleNavigate} />;
       case "profile":
