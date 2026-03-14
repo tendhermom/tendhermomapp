@@ -1,5 +1,7 @@
+import { useState } from "react";
 import PregnancyCard from "@/components/cards/PregnancyCard";
-import CommunityCard from "@/components/cards/CommunityCard";
+import ReminderCard from "@/components/cards/ReminderCard";
+import BabyShowerCard from "@/components/cards/BabyShowerCard";
 import HealthTipChip from "@/components/chips/HealthTipChip";
 import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
@@ -9,30 +11,41 @@ interface HomeScreenProps {
   onNavigate: (tab: string) => void;
 }
 
-const communityPosts = [
+const initialReminders = [
   {
-    title: "First-time moms support group",
-    pill: "New Moms",
-    preview: "Share your journey with other first-time moms. Tips, stories, and encouragement.",
-    members: 2340,
-    authorName: "Chioma Eze",
-    isPremium: true,
+    id: "1",
+    icon: "medkit-outline",
+    title: "Prenatal Vitamins",
+    subtitle: "Take with breakfast",
+    time: "8:00 AM",
+    type: "medication" as const,
+    done: false,
   },
   {
-    title: "Due in June 2026",
-    pill: "Due Date",
-    preview: "Connect with moms expecting around the same time as you!",
-    members: 876,
-    authorName: "Ngozi Ibe",
+    id: "2",
+    icon: "calendar-outline",
+    title: "Dr. Adaeze – Checkup",
+    subtitle: "Lagos Women's Clinic",
+    time: "10:30 AM",
+    type: "appointment" as const,
+    done: false,
   },
   {
-    title: "Nigerian pregnancy recipes",
-    pill: "Nutrition",
-    preview: "Healthy Nigerian meals perfect for each trimester of pregnancy.",
-    members: 1520,
-    authorName: "Dr. Funke A.",
-    isExpert: true,
+    id: "3",
+    icon: "water-outline",
+    title: "Drink Water",
+    subtitle: "Glass 4 of 8 today",
+    time: "12:00 PM",
+    type: "hydration" as const,
+    done: false,
   },
+];
+
+const babyShowerData = [
+  { name: "Chidi", parentName: "Ngozi & Emeka", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop", gender: "boy" as const },
+  { name: "Adaeze", parentName: "Funke & Tunde", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1544126592-807ade215a0b?w=400&h=300&fit=crop", gender: "girl" as const },
+  { name: "Obioma", parentName: "Chioma & Uche", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=300&fit=crop", gender: "boy" as const },
+  { name: "Nneka", parentName: "Amaka & Ife", date: "March 2026", imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=300&fit=crop", gender: "girl" as const },
 ];
 
 const staggerContainer = {
@@ -48,6 +61,14 @@ const fadeUp = {
 };
 
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
+  const [reminders, setReminders] = useState(initialReminders);
+
+  const toggleReminder = (id: string) => {
+    setReminders((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r))
+    );
+  };
+
   return (
     <motion.div
       className="space-y-6 pb-4"
@@ -81,31 +102,63 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         <QuickAccessGrid onNavigate={onNavigate} />
       </motion.div>
 
-      {/* Community section */}
+      {/* Reminders */}
       <motion.div variants={fadeUp}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-serif text-dark text-[20px]">Community</h2>
+          <h2 className="font-serif text-dark text-[20px]">Reminders</h2>
           <button
-            onClick={() => onNavigate("community")}
+            onClick={() => onNavigate("reminders")}
             className="flex items-center gap-0.5 ios-press"
           >
-            <span className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>See All</span>
+            <span className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>
+              See All
+            </span>
           </button>
         </div>
-        <div className="space-y-3">
-          {communityPosts.map((post, i) => (
+        <div className="space-y-2.5">
+          {reminders.map((reminder, i) => (
             <motion.div
-              key={i}
+              key={reminder.id}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
+              transition={{ delay: 0.35 + i * 0.07, type: "spring" as const, stiffness: 300, damping: 30 }}
             >
-              <CommunityCard
-                {...post}
-                onClick={() => onNavigate("community")}
+              <ReminderCard
+                {...reminder}
+                onToggle={() => toggleReminder(reminder.id)}
               />
             </motion.div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* Baby Shower – Babies of the Month */}
+      <motion.div variants={fadeUp}>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-serif text-dark text-[20px]">Babies of the Month</h2>
+          <div
+            className="px-2 py-0.5 rounded-full"
+            style={{ background: "hsl(var(--light-coral))" }}
+          >
+            <span className="text-[11px] font-bold font-sans" style={{ color: "hsl(var(--coral))" }}>
+              🎉 March
+            </span>
+          </div>
+        </div>
+        <div className="-mx-5">
+          <div className="flex gap-3 overflow-x-auto px-5 pb-2 snap-x snap-mandatory" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+            {babyShowerData.map((baby, i) => (
+              <motion.div
+                key={i}
+                className="snap-start"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.08, type: "spring" as const, stiffness: 300, damping: 30 }}
+              >
+                <BabyShowerCard {...baby} />
+              </motion.div>
+            ))}
+          </div>
         </div>
       </motion.div>
 
