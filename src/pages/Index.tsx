@@ -7,6 +7,8 @@ import SOSScreen from "@/screens/SOSScreen";
 import ConsultScreen from "@/screens/ConsultScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
+import RemindersScreen from "@/screens/RemindersScreen";
+import BabyShowerScreen from "@/screens/BabyShowerScreen";
 import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
@@ -16,7 +18,7 @@ const Index = () => {
 
   const handleNavigate = (screen: string) => {
     // Premium-gated screens redirect free users to upgrade
-    const premiumScreens = ["ai-chat", "baby-shower"];
+    const premiumScreens = ["ai-chat", "baby-shower", "consult"];
     if (premiumScreens.includes(screen) && isFree) {
       setActiveTab("premium");
       return;
@@ -25,10 +27,6 @@ const Index = () => {
     // Quick access routing
     if (screen === "records" || screen === "antenatal") {
       setActiveTab("profile");
-      return;
-    }
-    if (screen === "appointments" || screen === "reminders") {
-      setActiveTab("home");
       return;
     }
 
@@ -49,6 +47,10 @@ const Index = () => {
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "premium":
         return <PremiumScreen onBack={() => setActiveTab("home")} />;
+      case "reminders":
+        return <RemindersScreen onBack={() => setActiveTab("home")} />;
+      case "baby-shower":
+        return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
