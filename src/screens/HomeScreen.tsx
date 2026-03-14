@@ -34,6 +34,16 @@ const fadeUp = {
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const { reminders, toggleReminder } = useRemindersStore();
   const pendingReminders = reminders.filter((r) => !r.done).slice(0, 3);
+  const user = useAuthStore((s) => s.user);
+  const isPremium = user?.plan_type === "premium";
+
+  const handleCongrats = () => {
+    if (isPremium) {
+      onNavigate("baby-shower");
+    } else {
+      onNavigate("premium");
+    }
+  };
 
   return (
     <motion.div
