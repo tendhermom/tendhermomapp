@@ -172,33 +172,84 @@ export type Database = {
         }
         Relationships: []
       }
+      emergency_alerts: {
+        Row: {
+          channel_success: Json | null
+          contacts_notified: number
+          created_at: string
+          id: string
+          is_test: boolean
+          latitude: number | null
+          longitude: number | null
+          triggered_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_success?: Json | null
+          contacts_notified?: number
+          created_at?: string
+          id?: string
+          is_test?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          triggered_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_success?: Json | null
+          contacts_notified?: number
+          created_at?: string
+          id?: string
+          is_test?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          triggered_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       emergency_contacts: {
         Row: {
           created_at: string
+          email: string | null
+          email_enabled: boolean
           id: string
           is_primary: boolean
           name: string
           phone: string
           relationship: string | null
+          sms_enabled: boolean
           user_id: string
+          whatsapp_enabled: boolean
+          whatsapp_number: string | null
         }
         Insert: {
           created_at?: string
+          email?: string | null
+          email_enabled?: boolean
           id?: string
           is_primary?: boolean
           name: string
           phone: string
           relationship?: string | null
+          sms_enabled?: boolean
           user_id: string
+          whatsapp_enabled?: boolean
+          whatsapp_number?: string | null
         }
         Update: {
           created_at?: string
+          email?: string | null
+          email_enabled?: boolean
           id?: string
           is_primary?: boolean
           name?: string
           phone?: string
           relationship?: string | null
+          sms_enabled?: boolean
           user_id?: string
+          whatsapp_enabled?: boolean
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
