@@ -15,7 +15,15 @@ interface HomeScreenProps {
   onNavigate: (tab: string) => void;
 }
 
-interface BabyShowerPost {
+interface HealthTip {
+  id: string;
+  title: string;
+  body: string;
+  icon: string | null;
+  category: string;
+  week_number: number | null;
+}
+
   id: string;
   baby_name: string;
   parent_names: string;
