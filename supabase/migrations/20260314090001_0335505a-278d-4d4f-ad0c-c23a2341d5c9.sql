@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_community_posts_channel ON public.community_posts(channel);
