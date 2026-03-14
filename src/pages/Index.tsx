@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import HomeScreen from "@/screens/HomeScreen";
@@ -11,6 +11,8 @@ import NotificationsScreen from "@/screens/NotificationsScreen";
 import RemindersScreen from "@/screens/RemindersScreen";
 import BabyShowerScreen from "@/screens/BabyShowerScreen";
 import EmergencyContactsScreen from "@/screens/EmergencyContactsScreen";
+import AIChatScreen from "@/screens/AIChatScreen";
+import RecordsScreen from "@/screens/RecordsScreen";
 import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
