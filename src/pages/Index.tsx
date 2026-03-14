@@ -9,6 +9,7 @@ import ProfileScreen from "@/screens/ProfileScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
 import RemindersScreen from "@/screens/RemindersScreen";
 import BabyShowerScreen from "@/screens/BabyShowerScreen";
+import EmergencyContactsScreen from "@/screens/EmergencyContactsScreen";
 import { useAuthStore } from "@/stores/authStore";
 
 const Index = () => {
