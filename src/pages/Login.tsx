@@ -32,15 +32,6 @@ const Login = () => {
     }
   };
 
-  const handleGoogle = async () => {
-    setLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    setLoading(false);
-    if (error) toast.error(String(error));
-  };
-
   return (
     <div className="min-h-screen flex justify-center" style={{ background: "hsl(var(--bg))" }}>
       <div className="w-full max-w-[430px] px-6 pt-16 pb-8 flex flex-col">
