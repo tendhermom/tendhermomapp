@@ -61,6 +61,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           phone: data.phone,
           can_post: data.can_post,
           avatar_url: data.avatar_url,
+          user_type: (data as any).user_type || "mother",
         },
         isAuthenticated: true,
         isLoading: false,
