@@ -6,26 +6,33 @@ import HomeScreen from "@/screens/HomeScreen";
 import CommunityScreen from "@/screens/CommunityScreen";
 import SOSScreen from "@/screens/SOSScreen";
 import ConsultScreen from "@/screens/ConsultScreen";
+import RecordsScreen from "@/screens/RecordsScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const handleNavigate = (screen: string) => {
+    setActiveTab(screen);
+  };
+
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onNavigate={setActiveTab} onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <HomeScreen onNavigate={handleNavigate} onOpenDrawer={() => setDrawerOpen(true)} />;
       case "community":
         return <CommunityScreen onOpenDrawer={() => setDrawerOpen(true)} />;
       case "sos":
         return <SOSScreen />;
       case "consult":
         return <ConsultScreen onOpenDrawer={() => setDrawerOpen(true)} />;
+      case "records":
+        return <RecordsScreen onOpenDrawer={() => setDrawerOpen(true)} />;
       case "profile":
         return <ProfileScreen onOpenDrawer={() => setDrawerOpen(true)} />;
       default:
-        return <HomeScreen onNavigate={setActiveTab} onOpenDrawer={() => setDrawerOpen(true)} />;
+        return <HomeScreen onNavigate={handleNavigate} onOpenDrawer={() => setDrawerOpen(true)} />;
     }
   };
 
@@ -50,6 +57,7 @@ const Index = () => {
         <DrawerMenu
           isOpen={drawerOpen}
           onClose={() => setDrawerOpen(false)}
+          onNavigate={handleNavigate}
         />
       </div>
     </div>

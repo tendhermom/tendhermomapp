@@ -8,11 +8,10 @@ interface DrawerMenuProps {
 }
 
 const menuItems = [
-  { label: "PregoClasses", icon: "school-outline", route: "classes" },
-  { label: "Marketplace", icon: "storefront-outline", route: "marketplace" },
   { label: "AI Health Chat", icon: "sparkles-outline", route: "ai-chat" },
   { label: "My Appointments", icon: "calendar-outline", route: "appointments" },
-  { label: "Health Records", icon: "document-text-outline", route: "health-records" },
+  { label: "Health Records", icon: "document-text-outline", route: "records" },
+  { label: "Profile", icon: "person-circle-outline", route: "profile" },
 ];
 
 const secondaryItems = [
