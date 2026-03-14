@@ -5,8 +5,10 @@ import IonIcon from "@/components/IonIcon";
 import TopBar from "@/components/navigation/TopBar";
 import RecordsScreen from "@/screens/RecordsScreen";
 import ReferralScreen from "@/screens/ReferralScreen";
+import EditProfileScreen from "@/screens/EditProfileScreen";
+import NotificationsScreen from "@/screens/NotificationsScreen";
 import { useAuthStore } from "@/stores/authStore";
-import { usePointsStore, getLevel, getNextLevel, LEVELS } from "@/stores/pointsStore";
+import { usePointsStore, getLevel, getNextLevel } from "@/stores/pointsStore";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
