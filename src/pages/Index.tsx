@@ -55,6 +55,8 @@ const Index = () => {
         return <RemindersScreen onBack={() => setActiveTab("home")} />;
       case "baby-shower":
         return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
+      case "notifications":
+        return <NotificationsScreen onBack={() => setActiveTab("home")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
