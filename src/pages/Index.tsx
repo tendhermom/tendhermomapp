@@ -27,8 +27,8 @@ const Index = () => {
       setActiveTab("profile");
       return;
     }
-    if (screen === "appointments") {
-      setActiveTab("consult");
+    if (screen === "appointments" || screen === "reminders") {
+      setActiveTab("home");
       return;
     }
 
