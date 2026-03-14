@@ -7,6 +7,7 @@ import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
 import { useRemindersStore } from "@/stores/remindersStore";
 import { useAuthStore } from "@/stores/authStore";
+import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
