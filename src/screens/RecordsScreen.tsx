@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
-import QuoteBlock from "@/components/cards/QuoteBlock";
 
 interface RecordsScreenProps {
   onNavigate: (tab: string) => void;
@@ -140,9 +139,6 @@ const RecordsScreen = ({ onNavigate, onBack }: RecordsScreenProps) => {
           ))}
         </div>
       </div>
-
-      {/* Quote */}
-      <QuoteBlock quote="Every day you're one step closer to meeting your little one. You're doing amazing." />
 
       {/* Premium AI Banner */}
       <motion.div

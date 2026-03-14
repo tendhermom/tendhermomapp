@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import TopBar from "@/components/navigation/TopBar";
 import RecordsScreen from "@/screens/RecordsScreen";
+import ReferralScreen from "@/screens/ReferralScreen";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
@@ -13,6 +14,7 @@ const menuSections = [
     items: [
       { icon: "calendar-outline", label: "My Appointments", value: "2 upcoming", route: "appointments" },
       { icon: "document-text-outline", label: "Health Records", value: "", route: "records" },
+      { icon: "gift-outline", label: "Referral Programme", value: "3/10", route: "referral" },
       { icon: "heart-outline", label: "Saved Articles", value: "12", route: "" },
     ],
   },
@@ -32,15 +34,18 @@ const menuSections = [
 ];
 
 const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
-  const [showRecords, setShowRecords] = useState(false);
+  const [subScreen, setSubScreen] = useState<string | null>(null);
 
-  if (showRecords) {
-    return <RecordsScreen onNavigate={onNavigate} onBack={() => setShowRecords(false)} />;
+  if (subScreen === "records") {
+    return <RecordsScreen onNavigate={onNavigate} onBack={() => setSubScreen(null)} />;
+  }
+  if (subScreen === "referral") {
+    return <ReferralScreen onBack={() => setSubScreen(null)} />;
   }
 
   const handleMenuPress = (route: string) => {
-    if (route === "records") {
-      setShowRecords(true);
+    if (route === "records" || route === "referral") {
+      setSubScreen(route);
     } else if (route) {
       onNavigate(route);
     }
