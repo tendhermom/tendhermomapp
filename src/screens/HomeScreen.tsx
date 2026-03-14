@@ -52,6 +52,10 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const isPremium = user?.plan_type === "premium";
 
   const [babyPosts, setBabyPosts] = useState<BabyShowerPost[]>([]);
+  const [healthTips, setHealthTips] = useState<HealthTip[]>([]);
+  const [expandedTip, setExpandedTip] = useState<string | null>(null);
+  const currentWeek = useAuthStore((s) => s.getCurrentWeek());
+  const currentStage = user?.current_stage || "first_trimester";
 
   useEffect(() => {
     fetchReminders();
