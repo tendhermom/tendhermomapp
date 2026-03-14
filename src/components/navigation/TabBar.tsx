@@ -56,19 +56,27 @@ const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {
                 key={tab.id}
                 whileTap={{ scale: 0.85 }}
                 onClick={() => onTabChange(tab.id)}
-                className="flex flex-col items-center gap-[3px] min-w-[60px] py-1"
+                className="flex flex-col items-center gap-[3px] min-w-[60px] py-1 relative"
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute -top-[8px] w-5 h-[3px] rounded-full"
+                    style={{ background: "hsl(var(--green))" }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
                 <IonIcon
                   name={isActive ? tab.activeIcon : tab.icon}
                   size={24}
                   style={{
-                    color: isActive ? "hsl(var(--green))" : "hsl(var(--border))",
+                    color: isActive ? "hsl(var(--green))" : "hsl(var(--text-muted))",
                   }}
                 />
                 <span
                   className="text-[10px] font-medium"
                   style={{
-                    color: isActive ? "hsl(var(--green))" : "hsl(var(--border))",
+                    color: isActive ? "hsl(var(--green))" : "hsl(var(--text-muted))",
                     fontFamily: "'Poppins', sans-serif",
                   }}
                 >
