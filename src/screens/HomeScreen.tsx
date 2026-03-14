@@ -15,6 +15,15 @@ interface HomeScreenProps {
   onNavigate: (tab: string) => void;
 }
 
+interface HealthTip {
+  id: string;
+  title: string;
+  body: string;
+  icon: string | null;
+  category: string;
+  week_number: number | null;
+}
+
 interface BabyShowerPost {
   id: string;
   baby_name: string;
@@ -44,11 +53,16 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const isPremium = user?.plan_type === "premium";
 
   const [babyPosts, setBabyPosts] = useState<BabyShowerPost[]>([]);
+  const [healthTips, setHealthTips] = useState<HealthTip[]>([]);
+  const [expandedTip, setExpandedTip] = useState<string | null>(null);
+  const currentWeek = useAuthStore((s) => s.getCurrentWeek());
+  const currentStage = user?.current_stage || "first_trimester";
 
   useEffect(() => {
     fetchReminders();
     fetchBabyPosts();
-  }, []);
+    fetchHealthTips();
+  }, [currentStage, currentWeek]);
 
   const fetchBabyPosts = async () => {
     const now = new Date();
@@ -60,6 +74,27 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
       .order("created_at", { ascending: false })
       .limit(6);
     if (data) setBabyPosts(data);
+  };
+
+  const fetchHealthTips = async () => {
+    // Fetch tips matching current week first, then trimester, limit 4
+    let query = supabase
+      .from("health_content")
+      .select("id, title, body, icon, category, week_number")
+      .eq("published", true)
+      .eq("trimester", currentStage)
+      .order("week_number", { ascending: true })
+      .limit(4);
+
+    const { data } = await query;
+    if (data && data.length > 0) {
+      // Prioritize tips matching current week, then fill with others
+      const weekMatch = data.filter((t) => t.week_number === currentWeek);
+      const others = data.filter((t) => t.week_number !== currentWeek);
+      setHealthTips([...weekMatch, ...others].slice(0, 4));
+    } else {
+      setHealthTips([]);
+    }
   };
 
   const handleCongrats = () => {
@@ -194,17 +229,47 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
 
       {/* Health tips */}
       <motion.div variants={fadeUp} className="space-y-2.5">
-        <h2 className="font-serif text-dark text-[20px]">Today's Tips</h2>
-        <HealthTipChip
-          icon="water-outline"
-          tip="Drink 8 cups of water today"
-          onViewRecord={() => onNavigate("records")}
-        />
-        <HealthTipChip
-          icon="nutrition-outline"
-          tip="Include folate-rich foods in your meals"
-          onViewRecord={() => onNavigate("records")}
-        />
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-dark text-[20px]">Health Tips</h2>
+          <span className="text-[12px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
+            Week {currentWeek}
+          </span>
+        </div>
+        {healthTips.length > 0 ? (
+          healthTips.map((tip) => (
+            <motion.div key={tip.id} layout>
+              <HealthTipChip
+                icon={tip.icon || "information-circle-outline"}
+                tip={tip.title}
+                onViewRecord={() => setExpandedTip(expandedTip === tip.id ? null : tip.id)}
+              />
+              {expandedTip === tip.id && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="rounded-b-[16px] px-4 py-3 -mt-1"
+                  style={{ background: "hsl(var(--surface))" }}
+                >
+                  <p className="text-[13px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                    {tip.body}
+                  </p>
+                  {tip.week_number && (
+                    <span className="text-[11px] font-sans mt-2 inline-block" style={{ color: "hsl(var(--text-muted))" }}>
+                      Week {tip.week_number} tip
+                    </span>
+                  )}
+                </motion.div>
+              )}
+            </motion.div>
+          ))
+        ) : (
+          <div className="tend-card p-4 text-center">
+            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+              No tips available for your current stage
+            </p>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

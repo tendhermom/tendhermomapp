@@ -24,7 +24,7 @@ const HealthTipChip = ({ icon, tip, onViewRecord }: HealthTipChipProps) => {
           className="flex items-center gap-0.5 flex-shrink-0 ios-press"
         >
           <span className="text-[12px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>
-            View
+            Read
           </span>
           <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--green))" }} />
         </button>
