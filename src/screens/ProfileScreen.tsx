@@ -37,6 +37,20 @@ const menuSections = [
 
 const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const { logout, getCurrentWeek } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+  const week = getCurrentWeek();
+  const planLabel = user?.plan_type === "premium" ? "Premium" : "Free Plan";
 
   if (subScreen === "records") {
     return <RecordsScreen onNavigate={onNavigate} onBack={() => setSubScreen(null)} />;
