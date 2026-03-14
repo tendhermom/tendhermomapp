@@ -12,12 +12,18 @@ const STAGES = [
   { value: "postpartum", label: "Postpartum", desc: "Baby is here!", icon: "happy-outline" },
 ] as const;
 
+const ROLES = [
+  { value: "mother", label: "I'm a Mother", desc: "Track your pregnancy journey", icon: "heart-circle-outline" },
+  { value: "expert", label: "Health Expert", desc: "Provide consultations & guidance", icon: "medkit-outline" },
+] as const;
+
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
 const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const [step, setStep] = useState(0);
+  const [role, setRole] = useState<"mother" | "expert">("mother");
   const [babyName, setBabyName] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [lmpDate, setLmpDate] = useState("");
@@ -26,18 +32,29 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
 
-  const steps = [
+  // Mother flow: role → baby name → due date → lmp → stage (5 steps: 0-4)
+  // Expert flow: role → done (just step 0, then finish)
+  const motherSteps = [
+    { title: "Welcome to\nTendherMom 💕", subtitle: "Tell us about yourself" },
     { title: "What should we call\nyour little one?", subtitle: "A nickname is fine too ✨" },
     { title: "When is your\ndue date?", subtitle: "We'll personalise your timeline" },
     { title: "When was your last\nmenstrual period?", subtitle: "Helps us calculate your week" },
     { title: "What stage are\nyou in?", subtitle: "We'll tailor content for you" },
   ];
 
+  const expertSteps = [
+    { title: "Welcome to\nTendherMom 💕", subtitle: "Tell us about yourself" },
+  ];
+
+  const steps = role === "expert" && step > 0 ? expertSteps : (role === "expert" ? expertSteps : motherSteps);
+  const currentStep = steps[Math.min(step, steps.length - 1)];
+  const totalSteps = role === "mother" ? 5 : 1;
+
   const canNext = () => {
-    if (step === 0) return true; // baby name is optional
-    if (step === 1) return true; // due date optional
-    if (step === 2) return true; // lmp optional
-    if (step === 3) return !!stage;
+    if (step === 0) return !!role;
+    if (role === "mother") {
+      if (step === 4) return !!stage;
+    }
     return true;
   };
 
@@ -45,8 +62,27 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
     if (!user) return;
     setSaving(true);
 
+    if (role === "expert") {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ user_type: "expert" as any })
+        .eq("id", user.id);
+
+      if (error) {
+        toast.error("Failed to save. Please try again.");
+        setSaving(false);
+        return;
+      }
+      await fetchProfile(user.id);
+      setSaving(false);
+      onComplete();
+      return;
+    }
+
+    // Mother flow
     const updates: Record<string, unknown> = {
       current_stage: stage,
+      user_type: "mother",
     };
     if (babyName.trim()) updates.baby_name = babyName.trim();
     if (dueDate) updates.due_date = dueDate;
@@ -69,14 +105,18 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   };
 
   const handleNext = () => {
-    if (step < 3) {
+    if (step === 0 && role === "expert") {
+      handleFinish();
+      return;
+    }
+    if (role === "mother" && step < 4) {
       setStep(step + 1);
     } else {
       handleFinish();
     }
   };
 
-  const progress = ((step + 1) / 4) * 100;
+  const progress = ((step + 1) / totalSteps) * 100;
 
   return (
     <div className="min-h-screen flex justify-center" style={{ background: "hsl(var(--bg))" }}>
@@ -97,13 +137,15 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
               transition={{ duration: 0.4, ease: "easeOut" }}
             />
           </div>
-          <button
-            onClick={handleNext}
-            className="text-[13px] font-sans font-medium"
-            style={{ color: "hsl(var(--text-muted))" }}
-          >
-            Skip
-          </button>
+          {role === "mother" && step > 0 && step < 4 && (
+            <button
+              onClick={handleNext}
+              className="text-[13px] font-sans font-medium"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              Skip
+            </button>
+          )}
         </div>
 
         <div className="flex-1 flex flex-col justify-center">
@@ -119,14 +161,61 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 className="font-serif text-[28px] leading-tight whitespace-pre-line mb-2"
                 style={{ color: "hsl(var(--dark))" }}
               >
-                {steps[step].title}
+                {currentStep.title}
               </h1>
               <p className="text-[14px] font-sans mb-8" style={{ color: "hsl(var(--text-muted))" }}>
-                {steps[step].subtitle}
+                {currentStep.subtitle}
               </p>
 
-              {/* Step 0: Baby name */}
+              {/* Step 0: Role selection */}
               {step === 0 && (
+                <div className="space-y-3">
+                  {ROLES.map((r) => (
+                    <motion.button
+                      key={r.value}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setRole(r.value as "mother" | "expert")}
+                      className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-left transition-colors"
+                      style={{
+                        background: role === r.value ? "hsl(var(--light-green))" : "hsl(var(--surface))",
+                        border: `1.5px solid ${role === r.value ? "hsl(var(--green))" : "hsl(var(--border-subtle))"}`,
+                      }}
+                    >
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                        style={{
+                          background: role === r.value ? "hsl(var(--green))" : "hsl(var(--light-green))",
+                        }}
+                      >
+                        <IonIcon
+                          name={r.icon}
+                          size={24}
+                          style={{ color: role === r.value ? "white" : "hsl(var(--green))" }}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                          {r.label}
+                        </p>
+                        <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                          {r.desc}
+                        </p>
+                      </div>
+                      {role === r.value && (
+                        <IonIcon name="checkmark-circle" size={22} style={{ color: "hsl(var(--green))", marginLeft: "auto" }} />
+                      )}
+                    </motion.button>
+                  ))}
+                  {role === "expert" && (
+                    <p className="text-[12px] font-sans text-center mt-3" style={{ color: "hsl(var(--text-muted))" }}>
+                      Expert accounts require admin approval before activation.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Mother Step 1: Baby name */}
+              {step === 1 && role === "mother" && (
                 <input
                   type="text"
                   value={babyName}
@@ -143,8 +232,8 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 />
               )}
 
-              {/* Step 1: Due date */}
-              {step === 1 && (
+              {/* Mother Step 2: Due date */}
+              {step === 2 && role === "mother" && (
                 <input
                   type="date"
                   value={dueDate}
@@ -159,8 +248,8 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 />
               )}
 
-              {/* Step 2: LMP date */}
-              {step === 2 && (
+              {/* Mother Step 3: LMP date */}
+              {step === 3 && role === "mother" && (
                 <input
                   type="date"
                   value={lmpDate}
@@ -175,8 +264,8 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 />
               )}
 
-              {/* Step 3: Pregnancy stage */}
-              {step === 3 && (
+              {/* Mother Step 4: Stage */}
+              {step === 4 && role === "mother" && (
                 <div className="space-y-3">
                   {STAGES.map((s) => (
                     <motion.button
@@ -198,16 +287,11 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                         <IonIcon
                           name={s.icon}
                           size={20}
-                          style={{
-                            color: stage === s.value ? "white" : "hsl(var(--green))",
-                          }}
+                          style={{ color: stage === s.value ? "white" : "hsl(var(--green))" }}
                         />
                       </div>
                       <div>
-                        <p
-                          className="text-[15px] font-sans font-semibold"
-                          style={{ color: "hsl(var(--dark))" }}
-                        >
+                        <p className="text-[15px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
                           {s.label}
                         </p>
                         <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
@@ -215,11 +299,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                         </p>
                       </div>
                       {stage === s.value && (
-                        <IonIcon
-                          name="checkmark-circle"
-                          size={22}
-                          style={{ color: "hsl(var(--green))", marginLeft: "auto" }}
-                        />
+                        <IonIcon name="checkmark-circle" size={22} style={{ color: "hsl(var(--green))", marginLeft: "auto" }} />
                       )}
                     </motion.button>
                   ))}
@@ -240,7 +320,13 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
             opacity: !canNext() || saving ? 0.6 : 1,
           }}
         >
-          {saving ? "Saving…" : step < 3 ? "Continue" : "Let's go! 🎉"}
+          {saving
+            ? "Saving…"
+            : step === 0 && role === "expert"
+            ? "Continue as Expert"
+            : role === "mother" && step < 4
+            ? "Continue"
+            : "Let's go! 🎉"}
         </motion.button>
       </div>
     </div>

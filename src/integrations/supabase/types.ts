@@ -319,6 +319,33 @@ export type Database = {
         }
         Relationships: []
       }
+      expert_availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          expert_id: string
+          id: string
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          expert_id: string
+          id?: string
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          expert_id?: string
+          id?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
       health_content: {
         Row: {
           body: string
@@ -404,6 +431,7 @@ export type Database = {
           phone: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
           updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
         }
         Insert: {
           avatar_url?: string | null
@@ -420,6 +448,7 @@ export type Database = {
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Update: {
           avatar_url?: string | null
@@ -436,6 +465,7 @@ export type Database = {
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
       }
@@ -678,6 +708,7 @@ export type Database = {
         | "postpartum"
       reaction_type: "congrats" | "love" | "like" | "celebrate"
       reminder_type: "medication" | "appointment" | "hydration"
+      user_type: "mother" | "expert"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -815,6 +846,7 @@ export const Constants = {
       ],
       reaction_type: ["congrats", "love", "like", "celebrate"],
       reminder_type: ["medication", "appointment", "hydration"],
+      user_type: ["mother", "expert"],
     },
   },
 } as const
