@@ -71,9 +71,15 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "referral") {
     return <ReferralScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "edit-profile") {
+    return <EditProfileScreen onBack={() => setSubScreen(null)} />;
+  }
+  if (subScreen === "notifications") {
+    return <NotificationsScreen onBack={() => setSubScreen(null)} />;
+  }
 
   const handleMenuPress = (route: string) => {
-    if (route === "records" || route === "referral") {
+    if (["records", "referral", "edit-profile", "notifications"].includes(route)) {
       setSubScreen(route);
     } else if (route) {
       onNavigate(route);
