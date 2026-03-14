@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import PregnancyCard from "@/components/cards/PregnancyCard";
 import ReminderCard from "@/components/cards/ReminderCard";
 import BabyShowerCard from "@/components/cards/BabyShowerCard";
@@ -32,10 +33,14 @@ const fadeUp = {
 };
 
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
-  const { reminders, toggleReminder } = useRemindersStore();
+  const { reminders, toggleReminder, fetchReminders } = useRemindersStore();
   const pendingReminders = reminders.filter((r) => !r.done).slice(0, 3);
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
+
+  useEffect(() => {
+    fetchReminders();
+  }, []);
 
   const handleCongrats = () => {
     if (isPremium) {
@@ -44,6 +49,8 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
       onNavigate("premium");
     }
   };
+
+  const displayName = user?.full_name?.split(" ")[0] || "there";
 
   return (
     <motion.div
@@ -63,7 +70,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
       <motion.div variants={fadeUp}>
         <p className="label-caps text-text-muted mb-0.5">Good morning</p>
         <h1 className="font-serif text-dark" style={{ fontSize: "26px" }}>
-          Hello, Amara
+          Hello, {displayName}
         </h1>
       </motion.div>
 
