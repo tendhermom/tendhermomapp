@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import OnboardingScreen from "./screens/OnboardingScreen";
+import TermsScreen from "./screens/TermsScreen";
 
 const queryClient = new QueryClient();
 
@@ -51,12 +52,28 @@ const AppContent = () => {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [onboardingDone, setOnboardingDone] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Show onboarding if authenticated but profile has no due_date and no lmp_date (fresh signup)
   const needsOnboarding = isAuthenticated && user && !user.due_date && !user.lmp_date && !onboardingDone;
 
+  // Show terms after onboarding completes (for fresh signups) 
+  const needsTerms = isAuthenticated && user && onboardingDone && !termsAccepted;
+
   if (needsOnboarding) {
     return <OnboardingScreen onComplete={() => setOnboardingDone(true)} />;
+  }
+
+  if (needsTerms) {
+    return (
+      <TermsScreen
+        onAccept={() => setTermsAccepted(true)}
+        onDecline={() => {
+          // Sign out if they decline
+          useAuthStore.getState().logout();
+        }}
+      />
+    );
   }
 
   return (
