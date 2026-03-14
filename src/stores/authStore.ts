@@ -1,9 +1,10 @@
 import { create } from "zustand";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfile {
   id: string;
   full_name: string;
-  email: string;
+  email: string | null;
   due_date: string | null;
   lmp_date: string | null;
   birth_date: string | null;
@@ -12,6 +13,7 @@ interface UserProfile {
   current_stage: "first_trimester" | "second_trimester" | "third_trimester" | "postpartum";
   phone: string | null;
   can_post: boolean;
+  avatar_url: string | null;
 }
 
 interface AuthState {
@@ -20,32 +22,57 @@ interface AuthState {
   isLoading: boolean;
   setUser: (user: UserProfile | null) => void;
   setLoading: (loading: boolean) => void;
-  logout: () => void;
+  fetchProfile: (userId: string) => Promise<void>;
+  logout: () => Promise<void>;
   getCurrentWeek: () => number;
   getDaysRemaining: () => number;
   getProgressPercent: () => number;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: {
-    id: "demo-user",
-    full_name: "Amara Okafor",
-    email: "amara@email.com",
-    due_date: "2026-06-15",
-    lmp_date: "2025-09-08",
-    birth_date: null,
-    baby_name: null,
-    plan_type: "free",
-    current_stage: "third_trimester",
-    phone: "+2348012345678",
-    can_post: true,
-  },
-  isAuthenticated: true,
-  isLoading: false,
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
   setLoading: (isLoading) => set({ isLoading }),
-  logout: () => set({ user: null, isAuthenticated: false }),
+
+  fetchProfile: async (userId: string) => {
+    set({ isLoading: true });
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (data && !error) {
+      set({
+        user: {
+          id: data.id,
+          full_name: data.full_name,
+          email: data.email,
+          due_date: data.due_date,
+          lmp_date: data.lmp_date,
+          birth_date: data.birth_date,
+          baby_name: data.baby_name,
+          plan_type: data.plan_type as "free" | "premium",
+          current_stage: data.current_stage as UserProfile["current_stage"],
+          phone: data.phone,
+          can_post: data.can_post,
+          avatar_url: data.avatar_url,
+        },
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } else {
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  logout: async () => {
+    await supabase.auth.signOut();
+    set({ user: null, isAuthenticated: false });
+  },
 
   getCurrentWeek: () => {
     const { user } = get();

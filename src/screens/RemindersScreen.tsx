@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import ReminderCard from "@/components/cards/ReminderCard";
@@ -20,12 +20,16 @@ const fadeUp = {
 };
 
 const RemindersScreen = ({ onBack }: RemindersScreenProps) => {
-  const { reminders, addReminder, toggleReminder, removeReminder } = useRemindersStore();
+  const { reminders, addReminder, toggleReminder, removeReminder, fetchReminders } = useRemindersStore();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [time, setTime] = useState("");
   const [type, setType] = useState<Reminder["type"]>("medication");
+
+  useEffect(() => {
+    fetchReminders();
+  }, []);
 
   const pending = reminders.filter((r) => !r.done);
   const completed = reminders.filter((r) => r.done);

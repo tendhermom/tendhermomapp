@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import TopBar from "@/components/navigation/TopBar";
 import RecordsScreen from "@/screens/RecordsScreen";
 import ReferralScreen from "@/screens/ReferralScreen";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
@@ -35,6 +37,20 @@ const menuSections = [
 
 const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const { logout, getCurrentWeek } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+  const week = getCurrentWeek();
+  const planLabel = user?.plan_type === "premium" ? "Premium" : "Free Plan";
 
   if (subScreen === "records") {
     return <RecordsScreen onNavigate={onNavigate} onBack={() => setSubScreen(null)} />;
@@ -65,23 +81,23 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
             className="w-[64px] h-[64px] rounded-full flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(255,255,255,0.15)" }}
           >
-            <span className="text-white text-[22px] font-bold font-sans">AO</span>
+            <span className="text-white text-[22px] font-bold font-sans">{initials}</span>
           </div>
           <div className="flex-1">
-            <h3 className="text-white text-[20px] font-serif">Amara Okafor</h3>
-            <p className="text-white/60 text-[13px] font-sans mt-0.5">amara@email.com</p>
+            <h3 className="text-white text-[20px] font-serif">{user?.full_name || "User"}</h3>
+            <p className="text-white/60 text-[13px] font-sans mt-0.5">{user?.email || ""}</p>
             <div className="flex items-center gap-2 mt-2">
               <span
                 className="label-caps px-2.5 py-[3px] rounded-full"
                 style={{ background: "hsl(var(--coral))", color: "white" }}
               >
-                Week 24
+                Week {week}
               </span>
               <span
                 className="label-caps px-2.5 py-[3px] rounded-full"
                 style={{ background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
               >
-                Free Plan
+                {planLabel}
               </span>
             </div>
           </div>
@@ -126,6 +142,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       {/* Log out */}
       <motion.button
         whileTap={{ scale: 0.97 }}
+        onClick={handleLogout}
         className="w-full tend-card py-[15px] flex items-center justify-center gap-2 ios-press"
       >
         <IonIcon name="log-out-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
