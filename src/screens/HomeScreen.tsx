@@ -5,6 +5,7 @@ import HealthTipChip from "@/components/chips/HealthTipChip";
 import QuickAccessGrid from "@/components/QuickAccessGrid";
 import TopBar from "@/components/navigation/TopBar";
 import { useRemindersStore } from "@/stores/remindersStore";
+import { useAuthStore } from "@/stores/authStore";
 import { motion } from "framer-motion";
 
 interface HomeScreenProps {
