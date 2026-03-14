@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
+import { usePointsStore } from "./pointsStore";
 
-export type ChannelId = "general" | "first_trimester" | "second_trimester" | "third_trimester" | "postpartum";
+export type ChannelId = "first_trimester" | "second_trimester" | "third_trimester" | "postpartum";
 
 export interface CommunityPost {
   id: string;
@@ -39,11 +40,10 @@ interface CommunityState {
   addComment: (postId: string, content: string) => Promise<boolean>;
 }
 
-// Helper to query new tables not yet in generated types
 const db = supabase as any;
 
 export const useCommunityStore = create<CommunityState>((set, get) => ({
-  activeChannel: "general",
+  activeChannel: "first_trimester",
   posts: [],
   loading: false,
 
@@ -56,20 +56,15 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     set({ loading: true });
     const { data: { user } } = await supabase.auth.getUser();
 
-    let query = supabase
+    const { data: postsData } = await supabase
       .from("community_posts")
       .select("*")
+      .eq("channel", channel)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (channel !== "general") {
-      query = query.eq("channel", channel);
-    }
-
-    const { data: postsData } = await query;
     if (!postsData) { set({ posts: [], loading: false }); return; }
 
-    // Fetch author profiles
     const userIds = [...new Set(postsData.map((p: any) => p.user_id))];
     const { data: profiles } = await supabase
       .from("profiles")
@@ -78,7 +73,6 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
     const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
 
-    // Fetch user's likes
     let likedPostIds = new Set<string>();
     if (user) {
       const { data: likes } = await db
@@ -111,6 +105,8 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     });
 
     if (!error) {
+      // Award points for posting
+      await usePointsStore.getState().awardPost(user.id);
       await get().fetchPosts(get().activeChannel);
       return true;
     }
@@ -127,9 +123,10 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     } else {
       await db.from("post_likes").insert({ post_id: postId, user_id: userId });
       await supabase.from("community_posts").update({ likes_count: post.likes_count + 1 }).eq("id", postId);
+      // Award points for liking
+      await usePointsStore.getState().awardLike(userId);
     }
 
-    // Optimistic update
     set({
       posts: get().posts.map(p =>
         p.id === postId
@@ -174,6 +171,8 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     });
 
     if (!error) {
+      // Award points for commenting
+      await usePointsStore.getState().awardComment(user.id);
       const post = get().posts.find(p => p.id === postId);
       if (post) {
         await supabase.from("community_posts").update({ comments_count: post.comments_count + 1 }).eq("id", postId);
