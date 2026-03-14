@@ -8,7 +8,7 @@ interface QuickAccessGridProps {
 
 const quickActions = [
   { id: "records", icon: "folder-open-outline", label: "Records", premium: false },
-  { id: "appointments", icon: "calendar-outline", label: "Appointments", premium: false },
+  { id: "reminders", icon: "alarm-outline", label: "Reminders", premium: false },
   { id: "antenatal", icon: "gift-outline", label: "Antenatal", premium: false },
   { id: "baby-shower", icon: "heart-circle-outline", label: "Baby Shower", premium: true },
 ];
