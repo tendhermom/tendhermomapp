@@ -68,7 +68,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         await supabase.from("triage_sessions").insert([{
           user_id: user.id,
           pathway: selectedPathway.id,
-          answers: newAnswers as unknown as Record<string, unknown>[],
+          answers: JSON.parse(JSON.stringify(newAnswers)),
           outcome: optionOutcome.title,
           severity: optionOutcome.severity,
           recommendation: optionOutcome.action,
