@@ -463,7 +463,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                 <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
                   Sent to {sentInfo.count} contact{sentInfo.count !== 1 ? "s" : ""} at {sentInfo.time} via SMS
                   {contacts.some((c) => c.whatsapp_enabled) ? ", WhatsApp" : ""}
-                  {contacts.some((c) => c.email_enabled && c.email) ? " and Email" : ""}.
+                  {contacts.some((c) => c.email_enabled) ? " and Voice Call" : ""}.
                 </p>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
