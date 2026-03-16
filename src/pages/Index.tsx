@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
+import { useAuthStore } from "@/stores/authStore";
 
 // Lazy-load all screens
 const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
@@ -12,6 +13,7 @@ const BabyShowerScreen = lazy(() => import("@/screens/BabyShowerScreen"));
 const ProfileScreen = lazy(() => import("@/screens/ProfileScreen"));
 const NotificationsScreen = lazy(() => import("@/screens/NotificationsScreen"));
 const EmergencyContactsScreen = lazy(() => import("@/screens/EmergencyContactsScreen"));
+const OnboardingScreen = lazy(() => import("@/screens/OnboardingScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
@@ -20,7 +22,16 @@ const ScreenFallback = () => (
 );
 
 const Index = () => {
+  const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Show onboarding for new users (no LMP set and hasn't completed onboarding)
+  useEffect(() => {
+    if (user && !user.lmp_date && !user.due_date && !localStorage.getItem("onboarding_completed")) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
 
   // Theme status bar based on active screen
   useEffect(() => {
