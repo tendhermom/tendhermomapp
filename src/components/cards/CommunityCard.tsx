@@ -43,10 +43,14 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
       {/* Author row */}
       <div className="flex items-center gap-3">
         <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold font-sans shrink-0"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold font-sans shrink-0 overflow-hidden"
           style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
         >
-          {initials}
+          {post.author_avatar ? (
+            <img src={post.author_avatar} alt="" className="w-full h-full object-cover" />
+          ) : (
+            initials
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[14px] font-semibold font-sans truncate" style={{ color: "hsl(var(--dark))" }}>
@@ -67,12 +71,18 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
       </div>
 
       {/* Content */}
-      <p className="text-[14px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+      <p className="text-[14px] font-sans leading-relaxed whitespace-pre-wrap" style={{ color: "hsl(var(--dark))" }}>
         {post.content}
       </p>
 
+      {/* Post image */}
       {post.image_url && (
-        <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-[200px]" />
+        <img
+          src={post.image_url}
+          alt=""
+          className="w-full rounded-xl object-cover max-h-[260px]"
+          loading="lazy"
+        />
       )}
 
       {/* Actions */}
@@ -104,6 +114,13 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
           <span className="text-[12px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
             {post.comments_count || ""}
           </span>
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          className="flex items-center gap-1.5 ml-auto"
+        >
+          <IonIcon name="share-outline" size={16} style={{ color: "hsl(var(--text-muted))" }} />
         </motion.button>
       </div>
     </div>
