@@ -54,6 +54,15 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   }
 
   const handleMenuPress = (route: string) => {
+    hapticLight();
+    if (route === "share-app") {
+      nativeShare({
+        title: "TendherMom",
+        text: "Join TendherMom — maternal health support for Nigerian mothers 🤰",
+        url: "https://tendhermomapp.lovable.app",
+      });
+      return;
+    }
     if (["edit-profile", "notifications"].includes(route)) {
       setSubScreen(route);
     } else if (route) {

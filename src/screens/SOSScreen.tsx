@@ -137,6 +137,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       });
       setShowConfirm(false);
       setShowSent(true);
+      hapticSuccess();
     } catch (err) {
       console.error("SOS send error:", err);
       toast.error("Failed to send alert. Please call emergency services directly: 112");

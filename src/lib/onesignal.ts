@@ -26,6 +26,12 @@ export const initOneSignal = async () => {
 
 export const setOneSignalExternalUserId = async (userId: string) => {
   if (!ONESIGNAL_APP_ID) return;
+
+  // Hand off player ID to Despia native shell
+  if (isDespiaNative()) {
+    setDespiaOneSignalPlayerId(userId);
+  }
+
   try {
     const OneSignalModule = await import("react-onesignal");
     const OneSignal = OneSignalModule.default;
