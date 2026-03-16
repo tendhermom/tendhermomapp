@@ -621,6 +621,39 @@ export type Database = {
         }
         Relationships: []
       }
+      triage_sessions: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          outcome: string
+          pathway: string
+          recommendation: string
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          outcome: string
+          pathway: string
+          recommendation: string
+          severity: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          outcome?: string
+          pathway?: string
+          recommendation?: string
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
