@@ -28,7 +28,7 @@ const getGreeting = () => {
 };
 
 const QUICK_ACCESS = [
-  { id: "triage", label: "Triage", icon: "fitness-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "sos", label: "Emergency", icon: "shield-checkmark-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
   { id: "baby-shower", label: "Baby Shower", icon: "balloon-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "community", label: "Voice Out", icon: "chatbubbles-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },

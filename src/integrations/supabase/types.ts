@@ -14,39 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      antenatal_visits: {
-        Row: {
-          created_at: string
-          doctor_name: string | null
-          hospital: string | null
-          id: string
-          notes: string | null
-          user_id: string
-          visit_date: string
-          week_number: number | null
-        }
-        Insert: {
-          created_at?: string
-          doctor_name?: string | null
-          hospital?: string | null
-          id?: string
-          notes?: string | null
-          user_id: string
-          visit_date?: string
-          week_number?: number | null
-        }
-        Update: {
-          created_at?: string
-          doctor_name?: string | null
-          hospital?: string | null
-          id?: string
-          notes?: string | null
-          user_id?: string
-          visit_date?: string
-          week_number?: number | null
-        }
-        Relationships: []
-      }
       baby_shower_posts: {
         Row: {
           baby_name: string
@@ -85,50 +52,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      bookings: {
-        Row: {
-          booking_date: string
-          created_at: string
-          doctor_id: string
-          id: string
-          notes: string | null
-          status: string
-          time_slot: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          booking_date: string
-          created_at?: string
-          doctor_id: string
-          id?: string
-          notes?: string | null
-          status?: string
-          time_slot: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          booking_date?: string
-          created_at?: string
-          doctor_id?: string
-          id?: string
-          notes?: string | null
-          status?: string
-          time_slot?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: false
-            referencedRelation: "doctors"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       community_points: {
         Row: {
@@ -196,45 +119,6 @@ export type Database = {
           likes_count?: number
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      doctors: {
-        Row: {
-          available: boolean
-          consultation_fee: number | null
-          created_at: string
-          experience_years: number | null
-          hospital: string | null
-          id: string
-          image_url: string | null
-          name: string
-          rating: number | null
-          specialty: string
-        }
-        Insert: {
-          available?: boolean
-          consultation_fee?: number | null
-          created_at?: string
-          experience_years?: number | null
-          hospital?: string | null
-          id?: string
-          image_url?: string | null
-          name: string
-          rating?: number | null
-          specialty: string
-        }
-        Update: {
-          available?: boolean
-          consultation_fee?: number | null
-          created_at?: string
-          experience_years?: number | null
-          hospital?: string | null
-          id?: string
-          image_url?: string | null
-          name?: string
-          rating?: number | null
-          specialty?: string
         }
         Relationships: []
       }
@@ -316,69 +200,6 @@ export type Database = {
           user_id?: string
           whatsapp_enabled?: boolean
           whatsapp_number?: string | null
-        }
-        Relationships: []
-      }
-      expert_availability: {
-        Row: {
-          created_at: string
-          day_of_week: number
-          end_time: string
-          expert_id: string
-          id: string
-          start_time: string
-        }
-        Insert: {
-          created_at?: string
-          day_of_week: number
-          end_time: string
-          expert_id: string
-          id?: string
-          start_time: string
-        }
-        Update: {
-          created_at?: string
-          day_of_week?: number
-          end_time?: string
-          expert_id?: string
-          id?: string
-          start_time?: string
-        }
-        Relationships: []
-      }
-      health_content: {
-        Row: {
-          body: string
-          category: string
-          created_at: string
-          icon: string | null
-          id: string
-          published: boolean
-          title: string
-          trimester: Database["public"]["Enums"]["pregnancy_stage"] | null
-          week_number: number | null
-        }
-        Insert: {
-          body: string
-          category?: string
-          created_at?: string
-          icon?: string | null
-          id?: string
-          published?: boolean
-          title: string
-          trimester?: Database["public"]["Enums"]["pregnancy_stage"] | null
-          week_number?: number | null
-        }
-        Update: {
-          body?: string
-          category?: string
-          created_at?: string
-          icon?: string | null
-          id?: string
-          published?: boolean
-          title?: string
-          trimester?: Database["public"]["Enums"]["pregnancy_stage"] | null
-          week_number?: number | null
         }
         Relationships: []
       }
@@ -613,75 +434,6 @@ export type Database = {
         }
         Relationships: []
       }
-      reminders: {
-        Row: {
-          created_at: string
-          done: boolean
-          id: string
-          reminder_date: string
-          time: string
-          title: string
-          type: Database["public"]["Enums"]["reminder_type"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          done?: boolean
-          id?: string
-          reminder_date?: string
-          time?: string
-          title: string
-          type?: Database["public"]["Enums"]["reminder_type"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          done?: boolean
-          id?: string
-          reminder_date?: string
-          time?: string
-          title?: string
-          type?: Database["public"]["Enums"]["reminder_type"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      test_results: {
-        Row: {
-          created_at: string
-          id: string
-          notes: string | null
-          result: string | null
-          status: string
-          test_date: string
-          test_name: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          notes?: string | null
-          result?: string | null
-          status?: string
-          test_date?: string
-          test_name: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          notes?: string | null
-          result?: string | null
-          status?: string
-          test_date?: string
-          test_name?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       triage_sessions: {
         Row: {
           answers: Json
@@ -733,39 +485,6 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
-        }
-        Relationships: []
-      }
-      vitals: {
-        Row: {
-          blood_pressure: string | null
-          blood_sugar: string | null
-          created_at: string
-          id: string
-          notes: string | null
-          recorded_at: string
-          user_id: string
-          weight_kg: number | null
-        }
-        Insert: {
-          blood_pressure?: string | null
-          blood_sugar?: string | null
-          created_at?: string
-          id?: string
-          notes?: string | null
-          recorded_at?: string
-          user_id: string
-          weight_kg?: number | null
-        }
-        Update: {
-          blood_pressure?: string | null
-          blood_sugar?: string | null
-          created_at?: string
-          id?: string
-          notes?: string | null
-          recorded_at?: string
-          user_id?: string
-          weight_kg?: number | null
         }
         Relationships: []
       }
