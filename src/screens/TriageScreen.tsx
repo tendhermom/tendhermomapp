@@ -65,14 +65,14 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
       // Save session
       if (user && selectedPathway) {
         setSaving(true);
-        await supabase.from("triage_sessions").insert({
+        await supabase.from("triage_sessions").insert([{
           user_id: user.id,
           pathway: selectedPathway.id,
-          answers: newAnswers as unknown as Record<string, unknown>,
+          answers: newAnswers as unknown as Record<string, unknown>[],
           outcome: optionOutcome.title,
           severity: optionOutcome.severity,
           recommendation: optionOutcome.action,
-        });
+        }]);
         setSaving(false);
       }
     } else if (next) {
