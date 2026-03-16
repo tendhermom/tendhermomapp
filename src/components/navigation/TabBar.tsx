@@ -8,10 +8,10 @@ interface TabBarProps {
 
 const tabs = [
   { id: "home", label: "Home", icon: "home-outline", activeIcon: "home" },
-  { id: "triage", label: "Triage", icon: "medkit-outline", activeIcon: "medkit" },
+  { id: "triage", label: "Triage", icon: "fitness-outline", activeIcon: "fitness" },
   { id: "sos", label: "SOS", icon: "pulse-outline", activeIcon: "pulse" },
-  { id: "community", label: "Community", icon: "chatbubbles-outline", activeIcon: "chatbubbles" },
-  { id: "profile", label: "Profile", icon: "person-outline", activeIcon: "person" },
+  { id: "community", label: "Community", icon: "gift-outline", activeIcon: "gift" },
+  { id: "profile", label: "Profile", icon: "person-circle-outline", activeIcon: "person-circle" },
 ];
 
 const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {
