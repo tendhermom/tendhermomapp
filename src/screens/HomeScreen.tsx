@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { motion, AnimatePresence } from "framer-motion";
+import LazyVideo from "@/components/LazyVideo";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
@@ -183,17 +184,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)",
           }}
         >
-          <video
-            className="w-full"
-            controls
-            playsInline
-            preload="metadata"
-            poster=""
-            style={{ borderRadius: "18px" }}
-          >
-            <source src="/videos/explainer.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          <LazyVideo src="/videos/explainer.mp4" />
         </div>
       </motion.div>
 
