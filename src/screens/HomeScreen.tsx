@@ -3,6 +3,10 @@ import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { motion } from "framer-motion";
+import community1st from "@/assets/community-1st-trimester.jpg";
+import community2nd from "@/assets/community-2nd-trimester.jpg";
+import community3rd from "@/assets/community-3rd-trimester.jpg";
+import communityPostpartum from "@/assets/community-postpartum.jpg";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
@@ -28,10 +32,10 @@ const getGreeting = () => {
 };
 
 const COMMUNITY_CHANNELS = [
-  { id: "first_trimester", name: "1st Trimester", subtitle: "Weeks 1–13", icon: "leaf-outline" },
-  { id: "second_trimester", name: "2nd Trimester", subtitle: "Weeks 14–26", icon: "flower-outline" },
-  { id: "third_trimester", name: "3rd Trimester", subtitle: "Weeks 27–40", icon: "heart-outline" },
-  { id: "postpartum", name: "Postpartum", subtitle: "After birth", icon: "happy-outline" },
+  { id: "first_trimester", name: "1st Trimester", subtitle: "Weeks 1–13", image: community1st },
+  { id: "second_trimester", name: "2nd Trimester", subtitle: "Weeks 14–26", image: community2nd },
+  { id: "third_trimester", name: "3rd Trimester", subtitle: "Weeks 27–40", image: community3rd },
+  { id: "postpartum", name: "Postpartum", subtitle: "After birth", image: communityPostpartum },
 ];
 
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
@@ -164,32 +168,27 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
                 transition={{ delay: 0.15 + i * 0.06, type: "spring", stiffness: 300, damping: 28 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => onNavigate("community")}
-                className="rounded-[18px] p-4 flex-shrink-0 flex flex-col gap-3 ios-press relative"
+                className="rounded-[18px] flex-shrink-0 flex flex-col ios-press relative overflow-hidden"
                 style={{
-                  width: 140,
+                  width: 150,
                   background: "hsl(var(--surface))",
                   boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)",
                 }}
               >
                 {isUserStage && (
                   <span
-                    className="absolute top-2.5 right-2.5 text-[8px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                    style={{ background: "linear-gradient(135deg, hsl(153 42% 94%), hsl(153 42% 88%))", color: "hsl(var(--green))" }}
+                    className="absolute top-2.5 right-2.5 z-10 text-[8px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                    style={{ background: "rgba(255,255,255,0.9)", color: "hsl(var(--green))" }}
                   >
                     You
                   </span>
                 )}
-                <div
-                  className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center"
-                  style={{
-                    background: isUserStage
-                      ? "linear-gradient(135deg, hsl(153 42% 94%), hsl(153 42% 88%))"
-                      : "linear-gradient(135deg, hsl(11 74% 96%), hsl(11 74% 91%))",
-                  }}
-                >
-                  <IonIcon name={ch.icon} size={20} style={{ color: isUserStage ? "hsl(var(--green))" : "hsl(var(--coral))" }} />
-                </div>
-                <div>
+                <img
+                  src={ch.image}
+                  alt={ch.name}
+                  className="w-full h-[90px] object-cover rounded-t-[18px]"
+                />
+                <div className="p-3">
                   <h3 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{ch.name}</h3>
                   <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{ch.subtitle}</p>
                 </div>
