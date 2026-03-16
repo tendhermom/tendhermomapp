@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import type { CommunityPost } from "@/stores/communityStore";
@@ -7,14 +8,6 @@ interface CommunityCardProps {
   onLike: () => void;
   onComment: () => void;
 }
-
-const channelLabel: Record<string, string> = {
-  general: "General",
-  first_trimester: "1st Trimester",
-  second_trimester: "2nd Trimester",
-  third_trimester: "3rd Trimester",
-  postpartum: "Postpartum",
-};
 
 const timeAgo = (dateStr: string) => {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -27,7 +20,7 @@ const timeAgo = (dateStr: string) => {
   return `${days}d`;
 };
 
-const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
+const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, onLike, onComment }, ref) => {
   const initials = (post.author_name || "A")
     .split(" ")
     .map(n => n[0])
@@ -37,6 +30,7 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
 
   return (
     <div
+      ref={ref}
       className="rounded-2xl p-4 space-y-3"
       style={{ background: "hsl(var(--surface))", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}
     >
@@ -56,17 +50,9 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
           <p className="text-[14px] font-semibold font-sans truncate" style={{ color: "hsl(var(--dark))" }}>
             {post.author_name}
           </p>
-          <div className="flex items-center gap-2">
-            <span
-              className="text-[10px] font-semibold font-sans uppercase tracking-wider px-2 py-0.5 rounded-full"
-              style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
-            >
-              {channelLabel[post.channel] || post.channel}
-            </span>
-            <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              {timeAgo(post.created_at)}
-            </span>
-          </div>
+          <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+            {timeAgo(post.created_at)}
+          </span>
         </div>
       </div>
 
@@ -86,11 +72,11 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-5 pt-1">
+      <div className="flex items-center gap-5 pt-1" style={{ borderTop: "0.5px solid hsl(var(--border-subtle))" }}>
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={onLike}
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1.5 pt-2"
         >
           <IonIcon
             name={post.liked_by_me ? "heart" : "heart-outline"}
@@ -108,7 +94,7 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={onComment}
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1.5 pt-2"
         >
           <IonIcon name="chatbubble-outline" size={16} style={{ color: "hsl(var(--text-muted))" }} />
           <span className="text-[12px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
@@ -118,13 +104,15 @@ const CommunityCard = ({ post, onLike, onComment }: CommunityCardProps) => {
 
         <motion.button
           whileTap={{ scale: 0.9 }}
-          className="flex items-center gap-1.5 ml-auto"
+          className="flex items-center gap-1.5 ml-auto pt-2"
         >
           <IonIcon name="share-outline" size={16} style={{ color: "hsl(var(--text-muted))" }} />
         </motion.button>
       </div>
     </div>
   );
-};
+});
+
+CommunityCard.displayName = "CommunityCard";
 
 export default CommunityCard;

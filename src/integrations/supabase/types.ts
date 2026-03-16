@@ -53,6 +53,27 @@ export type Database = {
         }
         Relationships: []
       }
+      community_memberships: {
+        Row: {
+          community: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          community: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          community?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_points: {
         Row: {
           comments_count: number
