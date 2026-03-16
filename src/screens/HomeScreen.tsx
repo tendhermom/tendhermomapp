@@ -1,9 +1,8 @@
-import { useState, memo } from "react";
+import { useState } from "react";
 import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { motion, AnimatePresence } from "framer-motion";
-import LazyVideo from "@/components/LazyVideo";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
