@@ -109,19 +109,33 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "notifications") {
     return <NotificationsScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "privacy") {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
+        <Privacy />
+      </Suspense>
+    );
+  }
+  if (subScreen === "terms") {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
+        <Terms />
+      </Suspense>
+    );
+  }
 
   const handleMenuPress = (route: string) => {
     hapticLight();
     if (route === "share-app") {
       nativeShare({
         title: "TendherMom",
-        text: "Join TendherMom — maternal health support for Nigerian mothers 🤰",
+        text: "Join TendherMom — maternal health support for Nigerian mothers",
         url: "https://tendhermomapp.lovable.app",
       });
       return;
     }
     if (route === "privacy" || route === "terms") {
-      window.open(`/${route}`, "_blank");
+      setSubScreen(route);
       return;
     }
     if (["edit-profile", "notifications"].includes(route)) {
