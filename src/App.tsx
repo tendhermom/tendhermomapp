@@ -14,6 +14,9 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
 
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+
 const Index = lazy(() => import("./pages/Index"));
 
 const queryClient = new QueryClient({
