@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import { hapticSelection } from "@/lib/despia";
 
 interface TabBarProps {
   activeTab: string;
