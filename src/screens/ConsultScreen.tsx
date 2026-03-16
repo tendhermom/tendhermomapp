@@ -96,7 +96,7 @@ const ConsultScreen = ({ onNavigate }: ConsultScreenProps) => {
   return (
     <motion.div className="space-y-6 pb-4" variants={staggerContainer} initial="hidden" animate="show">
       <motion.div variants={fadeUp}>
-        <TopBar onProfilePress={() => onNavigate("profile")} />
+        <TopBar />
       </motion.div>
 
       <motion.div variants={fadeUp}>
