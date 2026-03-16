@@ -249,10 +249,10 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={() => { hapticLight(); setShowDeleteDialog(true); }}
-        className="w-full py-[12px] flex items-center justify-center gap-2"
+        className="w-full tend-card py-[15px] flex items-center justify-center gap-2"
       >
-        <IonIcon name="trash-outline" size={18} style={{ color: "hsl(var(--destructive))" }} />
-        <span className="text-destructive/70 text-[13px] font-medium font-sans">Delete Account</span>
+        <IonIcon name="trash-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
+        <span className="text-destructive text-[15px] font-semibold font-sans">Delete Account</span>
       </motion.button>
 
       {/* Delete confirmation dialog */}
