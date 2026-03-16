@@ -15,7 +15,6 @@ import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
 
 const Index = lazy(() => import("./pages/Index"));
-const AdminDashboard = lazy(() => import("./screens/AdminDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,32 +69,7 @@ const AuthListener = () => {
 };
 
 const AppContent = () => {
-  const user = useAuthStore((s) => s.user);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useAuthStore((s) => s.isLoading);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [rolesChecked, setRolesChecked] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      setRolesChecked(false);
-      setIsAdmin(false);
-      return;
-    }
-
-    const checkRoles = async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      const roles = (data || []).map((r: any) => r.role);
-      setIsAdmin(roles.includes("admin"));
-      setRolesChecked(true);
-    };
-
-    checkRoles();
-  }, [isAuthenticated, user?.id]);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -105,22 +79,6 @@ const AppContent = () => {
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route
-        path="/admin/*"
-        element={
-          <ProtectedRoute>
-            <Suspense fallback={<LoadingSpinner />}>
-              {rolesChecked && isAdmin ? (
-                <AdminDashboard />
-              ) : rolesChecked ? (
-                <NotFound />
-              ) : (
-                <LoadingSpinner />
-              )}
-            </Suspense>
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/"
         element={
