@@ -4,12 +4,11 @@ import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 
 interface TopBarProps {
   onProfilePress: () => void;
-  onAIChatPress: () => void;
   onNotificationsPress?: () => void;
   initials?: string;
 }
 
-const TopBar = ({ onProfilePress, onAIChatPress, onNotificationsPress, initials = "AO" }: TopBarProps) => {
+const TopBar = ({ onProfilePress, onNotificationsPress, initials = "AO" }: TopBarProps) => {
   const unreadCount = useUnreadNotifications();
 
   return (
@@ -44,16 +43,6 @@ const TopBar = ({ onProfilePress, onAIChatPress, onNotificationsPress, initials 
             )}
           </motion.button>
         )}
-
-        {/* AI Chat */}
-        <motion.button
-          whileTap={{ scale: 0.92 }}
-          onClick={onAIChatPress}
-          className="w-[40px] h-[40px] rounded-full flex items-center justify-center ios-press"
-          style={{ background: "hsl(var(--light-green))" }}
-        >
-          <IonIcon name="chatbox-ellipses-outline" size={20} style={{ color: "hsl(var(--green))" }} />
-        </motion.button>
       </div>
     </div>
   );
