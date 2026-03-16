@@ -60,11 +60,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
 
   return (
     <div className="space-y-6 pb-4">
-      <TopBar
-        onProfilePress={() => setSubScreen("edit-profile")}
-        onNotificationsPress={() => setSubScreen("notifications")}
-        initials={initials}
-      />
+      <TopBar onNotificationsPress={() => setSubScreen("notifications")} />
 
       {/* Profile hero card */}
       <div className="hero-card p-5">

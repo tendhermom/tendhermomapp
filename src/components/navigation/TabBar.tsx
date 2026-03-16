@@ -11,7 +11,7 @@ const tabs = [
   { id: "triage", label: "Triage", icon: "medkit-outline", activeIcon: "medkit" },
   { id: "sos", label: "SOS", icon: "pulse-outline", activeIcon: "pulse" },
   { id: "community", label: "Community", icon: "chatbubbles-outline", activeIcon: "chatbubbles" },
-  { id: "baby-shower", label: "Cuties", icon: "heart-circle-outline", activeIcon: "heart-circle" },
+  { id: "profile", label: "Profile", icon: "person-outline", activeIcon: "person" },
 ];
 
 const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {

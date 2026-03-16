@@ -73,7 +73,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
 
   return (
     <div className="space-y-5 pb-4 relative">
-      <TopBar onProfilePress={() => onNavigate("profile")} />
+      <TopBar />
 
       <div>
         <h1 className="font-serif text-[26px]" style={{ color: "hsl(var(--dark))" }}>Community</h1>
