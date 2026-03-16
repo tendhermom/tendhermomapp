@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
+import BiometricLock from "./components/BiometricLock";
 
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -109,6 +110,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         {!splashDone && <SplashScreen onFinish={handleSplashFinish} />}
+        <BiometricLock />
         <BrowserRouter>
           <AuthListener />
           <AppContent />
