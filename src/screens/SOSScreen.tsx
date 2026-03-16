@@ -91,15 +91,14 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const handleSendSOS = async () => {
     setIsSending(true);
     try {
-      const contactsPayload = contacts.map((c) => ({
+    const contactsPayload = contacts.map((c) => ({
         name: c.name,
         phone: c.phone,
         whatsapp: c.whatsapp_number || c.phone,
-        email: c.email,
         channels: [
           ...(c.sms_enabled ? ["sms" as const] : []),
           ...(c.whatsapp_enabled ? ["whatsapp" as const] : []),
-          ...(c.email_enabled && c.email ? ["email" as const] : []),
+          ...(c.email_enabled ? ["voice" as const] : []), // email_enabled repurposed for voice
         ],
       }));
 
