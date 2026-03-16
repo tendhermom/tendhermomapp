@@ -158,7 +158,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   return (
     <div className="space-y-6 pb-4 pt-1">
       {/* Header — Apple large-title style */}
-      <div className="flex items-center gap-3 pt-1">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+        className="flex items-center gap-3 pt-1"
+      >
         <div
           className="w-[44px] h-[44px] rounded-2xl flex items-center justify-center"
           style={{ background: "hsl(var(--light-coral))" }}
@@ -170,10 +175,15 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
             Emergency
           </h1>
         </div>
-      </div>
+      </motion.div>
 
       {/* SOS Button Area */}
-      <div className="flex flex-col items-center py-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 24, delay: 0.1 }}
+        className="flex flex-col items-center py-4"
+      >
         <motion.div
           animate={{ scale: [1, 1.12, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -214,7 +224,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Plan banner for free users */}
       {isFree && (

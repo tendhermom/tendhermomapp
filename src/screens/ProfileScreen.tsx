@@ -75,7 +75,12 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       <TopBar onNotificationsPress={() => setSubScreen("notifications")} />
 
       {/* Profile hero card */}
-      <div className="hero-card p-5">
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.05 }}
+        className="hero-card p-5"
+      >
         <div className="relative z-10 flex items-center gap-4">
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -115,11 +120,17 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
             <IonIcon name="create-outline" size={20} style={{ color: "rgba(255,255,255,0.7)" }} />
           </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Menu sections */}
       {menuSections.map((section, si) => (
-        <div key={si} className="tend-card overflow-hidden">
+        <motion.div
+          key={si}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.12 + si * 0.08 }}
+          className="tend-card overflow-hidden"
+        >
           {section.items.map((item, i) => (
             <motion.button
               key={item.label}
@@ -139,7 +150,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
             </motion.button>
           ))}
-        </div>
+        </motion.div>
       ))}
 
       {/* App version */}
