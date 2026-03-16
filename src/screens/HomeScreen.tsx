@@ -199,42 +199,60 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
 
       {/* Common Symptoms */}
       <motion.div variants={fadeUp}>
-        <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>Common Symptoms</h2>
-        <div className="space-y-2">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-serif text-[20px]" style={{ color: "hsl(var(--dark))" }}>Common Symptoms</h2>
+          <span className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>
+            {COMMON_SYMPTOMS.length} topics
+          </span>
+        </div>
+        <div
+          className="rounded-[20px] overflow-hidden"
+          style={{
+            background: "hsl(var(--surface))",
+            boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)",
+          }}
+        >
           {COMMON_SYMPTOMS.map((symptom, i) => {
             const isExpanded = expandedSymptom === i;
+            const isGreen = i % 2 === 0;
+            const isLast = i === COMMON_SYMPTOMS.length - 1;
             return (
-              <motion.div
-                key={symptom.name}
-                className="rounded-[16px] overflow-hidden"
-                style={{
-                  background: "hsl(var(--surface))",
-                  boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 12px -4px hsla(0,0%,0%,0.06)",
-                }}
-              >
+              <div key={symptom.name}>
                 <button
                   onClick={() => setExpandedSymptom(isExpanded ? null : i)}
-                  className="w-full flex items-center gap-3 p-3.5 text-left ios-press"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left ios-press"
                 >
                   <div
-                    className="w-[38px] h-[38px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-                    style={{ background: i % 2 === 0 ? "hsl(var(--light-green))" : "hsl(var(--light-coral))" }}
+                    className="w-[36px] h-[36px] rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: isGreen
+                        ? "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))"
+                        : "linear-gradient(135deg, hsl(var(--light-coral)), hsl(14 82% 92%))",
+                      boxShadow: isGreen
+                        ? "0 2px 8px -2px hsla(153,42%,30%,0.2)"
+                        : "0 2px 8px -2px hsla(11,74%,63%,0.2)",
+                    }}
                   >
                     <IonIcon
                       name={symptom.icon}
-                      size={20}
-                      style={{ color: i % 2 === 0 ? "hsl(var(--green))" : "hsl(var(--coral))" }}
+                      size={18}
+                      style={{ color: isGreen ? "hsl(var(--green))" : "hsl(var(--coral))" }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{symptom.name}</h3>
-                    <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{symptom.cause}</p>
+                    <h3 className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{symptom.name}</h3>
+                    <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{symptom.cause}</p>
                   </div>
-                  <IonIcon
-                    name={isExpanded ? "chevron-up" : "chevron-down"}
-                    size={16}
-                    style={{ color: "hsl(var(--text-muted))" }}
-                  />
+                  <motion.div
+                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <IonIcon
+                      name="chevron-down"
+                      size={14}
+                      style={{ color: "hsl(var(--text-muted))" }}
+                    />
+                  </motion.div>
                 </button>
                 <AnimatePresence>
                   {isExpanded && (
@@ -242,12 +260,19 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="px-3.5 pb-3.5 pt-0">
-                        <div className="rounded-[12px] p-3" style={{ background: "hsl(var(--bg))" }}>
-                          <p className="text-[13px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                      <div className="px-4 pb-3 pt-0">
+                        <div
+                          className="rounded-[14px] p-3.5"
+                          style={{
+                            background: isGreen
+                              ? "linear-gradient(135deg, hsl(var(--light-green)), hsla(144,28%,93%,0.5))"
+                              : "linear-gradient(135deg, hsl(var(--light-coral)), hsla(14,82%,96%,0.5))",
+                          }}
+                        >
+                          <p className="text-[12.5px] font-sans leading-[1.7]" style={{ color: "hsl(var(--dark))" }}>
                             {symptom.detail}
                           </p>
                         </div>
@@ -255,7 +280,10 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+                {!isLast && (
+                  <div className="mx-4 h-px" style={{ background: "hsl(var(--border-subtle))" }} />
+                )}
+              </div>
             );
           })}
         </div>
