@@ -37,8 +37,6 @@ const Index = () => {
         return <CommunityScreen onNavigate={handleNavigate} />;
       case "baby-shower":
         return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
-      case "babyShower":
-        return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "notifications":
