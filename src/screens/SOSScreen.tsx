@@ -99,6 +99,9 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const handleSendSOS = async () => {
     setIsSending(true);
     hapticHeavy();
+    // Keep screen awake and track location in background during SOS
+    preventSleep.enable();
+    backgroundLocation.start();
     try {
     const contactsPayload = contacts.map((c) => ({
         name: c.name,
