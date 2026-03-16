@@ -257,10 +257,10 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {/* Back */}
-        <motion.button whileTap={{ scale: 0.88 }} onClick={reset} className="ios-press flex items-center gap-1.5">
-          <IonIcon name="chevron-back" size={20} style={{ color: "hsl(var(--dark))" }} />
-          <span className="text-[14px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>Start over</span>
+        {/* Back — Apple-style inline nav */}
+        <motion.button whileTap={{ scale: 0.92 }} onClick={reset} className="ios-press flex items-center gap-1 -ml-1.5 py-1">
+          <IonIcon name="chevron-back" size={22} style={{ color: "hsl(var(--green))" }} />
+          <span className="text-[15px] font-sans font-medium" style={{ color: "hsl(var(--green))" }}>Start over</span>
         </motion.button>
 
         {/* Result card */}
