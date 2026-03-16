@@ -1,18 +1,16 @@
 import { useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-import { useAuthStore } from "@/stores/authStore";
 
 // Lazy-load all screens
 const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
 const TriageScreen = lazy(() => import("@/screens/TriageScreen"));
 const SOSScreen = lazy(() => import("@/screens/SOSScreen"));
 const CommunityScreen = lazy(() => import("@/screens/CommunityScreen"));
-const RecordsScreen = lazy(() => import("@/screens/RecordsScreen"));
+const BabyShowerScreen = lazy(() => import("@/screens/BabyShowerScreen"));
 const ProfileScreen = lazy(() => import("@/screens/ProfileScreen"));
 const NotificationsScreen = lazy(() => import("@/screens/NotificationsScreen"));
 const EmergencyContactsScreen = lazy(() => import("@/screens/EmergencyContactsScreen"));
-const EditProfileScreen = lazy(() => import("@/screens/EditProfileScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
@@ -37,8 +35,8 @@ const Index = () => {
         return <SOSScreen onNavigate={handleNavigate} />;
       case "community":
         return <CommunityScreen onNavigate={handleNavigate} />;
-      case "records":
-        return <RecordsScreen onBack={() => setActiveTab("home")} />;
+      case "baby-shower":
+        return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "notifications":
