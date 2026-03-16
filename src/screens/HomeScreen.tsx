@@ -32,10 +32,10 @@ const getGreeting = () => {
 };
 
 const COMMUNITY_CHANNELS = [
-  { id: "first_trimester", name: "1st Trimester", subtitle: "Weeks 1–13", icon: "leaf-outline" },
-  { id: "second_trimester", name: "2nd Trimester", subtitle: "Weeks 14–26", icon: "flower-outline" },
-  { id: "third_trimester", name: "3rd Trimester", subtitle: "Weeks 27–40", icon: "heart-outline" },
-  { id: "postpartum", name: "Postpartum", subtitle: "After birth", icon: "happy-outline" },
+  { id: "first_trimester", name: "1st Trimester", subtitle: "Weeks 1–13", image: community1st },
+  { id: "second_trimester", name: "2nd Trimester", subtitle: "Weeks 14–26", image: community2nd },
+  { id: "third_trimester", name: "3rd Trimester", subtitle: "Weeks 27–40", image: community3rd },
+  { id: "postpartum", name: "Postpartum", subtitle: "After birth", image: communityPostpartum },
 ];
 
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
