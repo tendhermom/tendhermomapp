@@ -28,10 +28,10 @@ const getGreeting = () => {
 };
 
 const QUICK_ACCESS = [
-  { id: "antenatal", label: "Antenatal", icon: "calendar-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "sos", label: "Emergency", icon: "warning-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
-  { id: "baby-shower", label: "Baby Shower", icon: "gift-outline", color: "hsl(153 42% 30%)", bg: "hsl(var(--light-green))" },
-  { id: "community", label: "Voice Out", icon: "megaphone-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "sos", label: "Emergency", icon: "shield-checkmark-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "baby-shower", label: "Baby Shower", icon: "balloon-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "community", label: "Voice Out", icon: "chatbubbles-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
 ];
 
 const COMMON_SYMPTOMS = [
