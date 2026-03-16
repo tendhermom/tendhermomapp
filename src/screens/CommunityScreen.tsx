@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CommunityCard from "@/components/cards/CommunityCard";
 import IonIcon from "@/components/IonIcon";
