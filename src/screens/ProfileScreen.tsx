@@ -150,7 +150,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
             </motion.button>
           ))}
-        </div>
+        </motion.div>
       ))}
 
       {/* App version */}

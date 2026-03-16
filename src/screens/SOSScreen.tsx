@@ -224,7 +224,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Plan banner for free users */}
       {isFree && (
