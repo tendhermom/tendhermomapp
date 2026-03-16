@@ -168,9 +168,9 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
                 transition={{ delay: 0.15 + i * 0.06, type: "spring", stiffness: 300, damping: 28 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => onNavigate("community")}
-                className="rounded-[18px] p-4 flex-shrink-0 flex flex-col gap-3 ios-press relative"
+                className="rounded-[18px] flex-shrink-0 flex flex-col ios-press relative overflow-hidden"
                 style={{
-                  width: 140,
+                  width: 150,
                   background: "hsl(var(--surface))",
                   boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)",
                 }}
