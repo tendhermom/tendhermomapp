@@ -6,6 +6,7 @@ import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import { useAuthStore } from "@/stores/authStore";
+import { nativeShare, hapticLight } from "@/lib/despia";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
