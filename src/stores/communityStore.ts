@@ -192,17 +192,14 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     });
 
     if (!error) {
-      // Award points for commenting
       await usePointsStore.getState().awardComment(user.id);
-      const post = get().posts.find(p => p.id === postId);
-      if (post) {
-        await supabase.from("community_posts").update({ comments_count: post.comments_count + 1 }).eq("id", postId);
-        set({
-          posts: get().posts.map(p =>
-            p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
-          ),
-        });
-      }
+      // Atomic increment — no race condition
+      await supabase.rpc("increment_comments", { p_post_id: postId });
+      set({
+        posts: get().posts.map(p =>
+          p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+        ),
+      });
       return true;
     }
     return false;
