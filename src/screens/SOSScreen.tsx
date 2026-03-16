@@ -156,18 +156,20 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   };
 
   return (
-    <div className="space-y-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center gap-3 pt-4">
+    <div className="space-y-6 pb-4 pt-1">
+      {/* Header — Apple large-title style */}
+      <div className="flex items-center gap-3 pt-1">
         <div
           className="w-[44px] h-[44px] rounded-2xl flex items-center justify-center"
           style={{ background: "hsl(var(--light-coral))" }}
         >
           <IonIcon name="warning" size={22} style={{ color: "hsl(var(--coral))" }} />
         </div>
-        <h1 className="font-serif text-[28px]" style={{ color: "hsl(var(--dark))" }}>
-          Emergency
-        </h1>
+        <div>
+          <h1 className="font-serif text-[30px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
+            Emergency
+          </h1>
+        </div>
       </div>
 
       {/* SOS Button Area */}

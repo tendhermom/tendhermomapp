@@ -98,12 +98,12 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const userChannel = user?.current_stage || "first_trimester";
 
   return (
-    <div className="space-y-5 pb-4 relative">
+    <div className="space-y-5 pb-4 pt-1 relative">
       <TopBar />
 
-      <div>
-        <h1 className="font-serif text-[26px]" style={{ color: "hsl(var(--dark))" }}>Community</h1>
-        <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Connect with other moms</p>
+      <div className="pt-1">
+        <h1 className="font-serif text-[30px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>Community</h1>
+        <p className="text-[13px] font-sans mt-1.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>Connect with other moms</p>
       </div>
 
       {/* Channel tabs */}

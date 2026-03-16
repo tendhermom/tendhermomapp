@@ -71,7 +71,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   };
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-6 pb-4 pt-1">
       <TopBar onNotificationsPress={() => setSubScreen("notifications")} />
 
       {/* Profile hero card */}
