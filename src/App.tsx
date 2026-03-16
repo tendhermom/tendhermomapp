@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,12 +12,9 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
-import OnboardingScreen from "./screens/OnboardingScreen";
-import TermsScreen from "./screens/TermsScreen";
+import SplashScreen from "./components/SplashScreen";
 
 const Index = lazy(() => import("./pages/Index"));
-const ExpertDashboard = lazy(() => import("./screens/ExpertDashboard"));
-const ExpertPendingScreen = lazy(() => import("./screens/ExpertPendingScreen"));
 const AdminDashboard = lazy(() => import("./screens/AdminDashboard"));
 
 const queryClient = new QueryClient({
@@ -76,18 +73,13 @@ const AppContent = () => {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useAuthStore((s) => s.isLoading);
-  const [onboardingDone, setOnboardingDone] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isExpertApproved, setIsExpertApproved] = useState(false);
   const [rolesChecked, setRolesChecked] = useState(false);
 
-  // Check user roles when authenticated
   useEffect(() => {
     if (!isAuthenticated || !user) {
       setRolesChecked(false);
       setIsAdmin(false);
-      setIsExpertApproved(false);
       return;
     }
 
@@ -99,7 +91,6 @@ const AppContent = () => {
 
       const roles = (data || []).map((r: any) => r.role);
       setIsAdmin(roles.includes("admin"));
-      setIsExpertApproved(roles.includes("expert"));
       setRolesChecked(true);
     };
 
@@ -107,55 +98,6 @@ const AppContent = () => {
   }, [isAuthenticated, user?.id]);
 
   if (isLoading) return <LoadingSpinner />;
-
-  // Check if current path is /admin
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
-
-  // Show onboarding if authenticated but profile has no due_date and no lmp_date (fresh signup) and is a mother
-  const needsOnboarding = isAuthenticated && user && !user.due_date && !user.lmp_date && !onboardingDone
-    && user.user_type === "mother";
-
-  // Expert who just signed up (user_type not set yet, or just registered)
-  const isNewUser = isAuthenticated && user && !user.due_date && !user.lmp_date && !onboardingDone
-    && user.user_type !== "mother";
-
-  // For new users (no onboarding data), always show onboarding
-  const showOnboarding = isAuthenticated && user && !user.due_date && !user.lmp_date && !onboardingDone;
-
-  // Show terms after onboarding completes (for mother signups only)
-  const needsTerms = isAuthenticated && user && onboardingDone && !termsAccepted && user.user_type === "mother";
-
-  if (showOnboarding) {
-    return <OnboardingScreen onComplete={() => setOnboardingDone(true)} />;
-  }
-
-  if (needsTerms) {
-    return (
-      <TermsScreen
-        onAccept={() => setTermsAccepted(true)}
-        onDecline={() => {
-          useAuthStore.getState().logout();
-        }}
-      />
-    );
-  }
-
-  // Expert user routing
-  if (isAuthenticated && user?.user_type === "expert" && !isAdminRoute) {
-    if (!rolesChecked) return <LoadingSpinner />;
-    if (isExpertApproved) {
-      return (
-        <Suspense fallback={<LoadingSpinner />}>
-          <ExpertDashboard />
-        </Suspense>
-      );
-    }
-    return (
-      <Suspense fallback={<LoadingSpinner />}>
-        <ExpertPendingScreen />
-      </Suspense>
-    );
-  }
 
   return (
     <Routes>
@@ -194,17 +136,23 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthListener />
-        <AppContent />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [splashDone, setSplashDone] = useState(false);
+  const handleSplashFinish = useCallback(() => setSplashDone(true), []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        {!splashDone && <SplashScreen onFinish={handleSplashFinish} />}
+        <BrowserRouter>
+          <AuthListener />
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
