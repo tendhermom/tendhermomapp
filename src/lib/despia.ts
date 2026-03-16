@@ -302,6 +302,18 @@ export const initDespia = () => {
     // Lock to portrait on phones
     setOrientation("portrait");
 
+    // Jailbreak detection — warn user if device is compromised
+    checkJailbreak();
+
+    // App Tracking Transparency (iOS) — prompt on first launch
+    const attKey = "despia_att_prompted";
+    if (!localStorage.getItem(attKey)) {
+      setTimeout(() => {
+        requestATT();
+        localStorage.setItem(attKey, "1");
+      }, 2000); // Delay to let app settle
+    }
+
     // Expose safe-area CSS custom properties
     const root = document.documentElement;
     const sides = ["top", "bottom", "left", "right"] as const;
@@ -311,11 +323,6 @@ export const initDespia = () => {
         `env(safe-area-inset-${side}, 0px)`
       );
     });
-
-    // Prevent zoom is handled by viewport meta
-    // Splash screen is handled by Despia editor config
-    // File inputs, camera, media gallery are auto-intercepted
-    // Deeplinks and external links are handled by Despia config
 
     console.log("[Despia] Bridge initialized — all protocols ready");
   }

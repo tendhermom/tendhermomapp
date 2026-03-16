@@ -4,7 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { hapticHeavy, hapticWarning, hapticSuccess } from "@/lib/despia";
+import { hapticHeavy, hapticWarning, hapticSuccess, screenShield, preventSleep, backgroundLocation } from "@/lib/despia";
 
 interface EmergencyContact {
   id: string;
@@ -52,6 +52,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     fetchContacts();
   }, [user]);
 
+  // Screen Shield — prevent screenshots on SOS screen
+  useEffect(() => {
+    screenShield.enable();
+    return () => { screenShield.disable(); };
+  }, []);
+
   // GPS capture on mount
   useEffect(() => {
     setGpsLoading(true);
@@ -93,6 +99,9 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const handleSendSOS = async () => {
     setIsSending(true);
     hapticHeavy();
+    // Keep screen awake and track location in background during SOS
+    preventSleep.enable();
+    backgroundLocation.start();
     try {
     const contactsPayload = contacts.map((c) => ({
         name: c.name,
@@ -143,6 +152,8 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       toast.error("Failed to send alert. Please call emergency services directly: 112");
     } finally {
       setIsSending(false);
+      preventSleep.disable();
+      backgroundLocation.stop();
     }
   };
 
