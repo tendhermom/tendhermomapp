@@ -31,24 +31,29 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
     setActiveChannel(userChannel as ChannelId);
   }, [user?.current_stage]);
 
-  // Realtime subscription
+  // Realtime subscription — throttled to prevent refetch storms at scale
+  const lastRefetch = useRef(0);
+  const throttledRefetch = useCallback(() => {
+    const now = Date.now();
+    if (now - lastRefetch.current < 3000) return; // 3s throttle
+    lastRefetch.current = now;
+    fetchPosts(activeChannel);
+  }, [activeChannel, fetchPosts]);
+
   useEffect(() => {
     const channel = supabase
-      .channel("community-realtime")
+      .channel(`community-${activeChannel}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "community_posts", filter: `channel=eq.${activeChannel}` },
-        () => {
-          // Refresh posts when new post arrives
-          fetchPosts(activeChannel);
-        }
+        throttledRefetch
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeChannel]);
+  }, [activeChannel, throttledRefetch]);
 
   // Create post modal
   const [showCreate, setShowCreate] = useState(false);
