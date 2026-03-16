@@ -52,6 +52,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     fetchContacts();
   }, [user]);
 
+  // Screen Shield — prevent screenshots on SOS screen
+  useEffect(() => {
+    screenShield.enable();
+    return () => { screenShield.disable(); };
+  }, []);
+
   // GPS capture on mount
   useEffect(() => {
     setGpsLoading(true);
