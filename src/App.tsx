@@ -15,7 +15,6 @@ import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
 
 const Index = lazy(() => import("./pages/Index"));
-const AdminDashboard = lazy(() => import("./screens/AdminDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
