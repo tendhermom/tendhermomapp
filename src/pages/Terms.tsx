@@ -1,18 +1,25 @@
 import { useNavigate } from "react-router-dom";
 
-const Terms = () => {
+interface TermsProps {
+  onBack?: () => void;
+}
+
+const Terms = ({ onBack }: TermsProps = {}) => {
   const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
 
   return (
-    <div className="min-h-screen" style={{ background: "hsl(var(--bg))" }}>
+    <div className="min-h-0" style={{ background: "hsl(var(--bg))" }}>
       <div className="max-w-2xl mx-auto px-5 py-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-[14px] font-sans font-medium mb-6 flex items-center gap-1"
-          style={{ color: "hsl(var(--green))" }}
-        >
-          ← Back
-        </button>
+        {!onBack && (
+          <button
+            onClick={handleBack}
+            className="text-[14px] font-sans font-medium mb-6 flex items-center gap-1"
+            style={{ color: "hsl(var(--green))" }}
+          >
+            ← Back
+          </button>
+        )}
 
         <h1 className="text-[28px] font-serif font-bold mb-2" style={{ color: "hsl(var(--dark))" }}>
           Terms of Service

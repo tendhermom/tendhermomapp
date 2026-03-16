@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
@@ -19,6 +19,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
+const Privacy = lazy(() => import("@/pages/Privacy"));
+const Terms = lazy(() => import("@/pages/Terms"));
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
@@ -94,19 +97,36 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "notifications") {
     return <NotificationsScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "privacy" || subScreen === "terms") {
+    return (
+      <div className="space-y-4 pb-4">
+        <div className="flex items-center gap-3">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setSubScreen(null)} className="p-1">
+            <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
+          </motion.button>
+          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
+            {subScreen === "privacy" ? "Privacy Policy" : "Terms of Service"}
+          </h1>
+        </div>
+        <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
+          {subScreen === "privacy" ? <Privacy onBack={() => setSubScreen(null)} /> : <Terms onBack={() => setSubScreen(null)} />}
+        </Suspense>
+      </div>
+    );
+  }
 
   const handleMenuPress = (route: string) => {
     hapticLight();
     if (route === "share-app") {
       nativeShare({
         title: "TendherMom",
-        text: "Join TendherMom — maternal health support for Nigerian mothers 🤰",
+        text: "Join TendherMom — maternal health support for Nigerian mothers",
         url: "https://tendhermomapp.lovable.app",
       });
       return;
     }
     if (route === "privacy" || route === "terms") {
-      window.open(`/${route}`, "_blank");
+      setSubScreen(route);
       return;
     }
     if (["edit-profile", "notifications"].includes(route)) {
@@ -220,10 +240,10 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={() => { hapticLight(); setShowDeleteDialog(true); }}
-        className="w-full py-[12px] flex items-center justify-center gap-2"
+        className="w-full tend-card py-[15px] flex items-center justify-center gap-2"
       >
-        <IonIcon name="trash-outline" size={18} style={{ color: "hsl(var(--destructive))" }} />
-        <span className="text-destructive/70 text-[13px] font-medium font-sans">Delete Account</span>
+        <IonIcon name="trash-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
+        <span className="text-destructive text-[15px] font-semibold font-sans">Delete Account</span>
       </motion.button>
 
       {/* Delete confirmation dialog */}
