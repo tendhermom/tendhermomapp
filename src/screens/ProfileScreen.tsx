@@ -7,6 +7,18 @@ import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight } from "@/lib/despia";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
@@ -22,7 +34,7 @@ const menuSections = [
   },
   {
     items: [
-      { icon: "shield-checkmark-outline", label: "Privacy & Security", route: "privacy" },
+      { icon: "shield-checkmark-outline", label: "Privacy Policy", route: "privacy" },
       { icon: "help-circle-outline", label: "Help & Support", route: "help" },
       { icon: "document-text-outline", label: "Terms of Service", route: "terms" },
     ],
@@ -31,6 +43,8 @@ const menuSections = [
 
 const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const user = useAuthStore((s) => s.user);
   const { logout, getCurrentWeek } = useAuthStore();
   const navigate = useNavigate();
@@ -38,6 +52,34 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const handleLogout = async () => {
     await logout();
     navigate("/login");
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("You must be logged in to delete your account.");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+
+      await supabase.auth.signOut();
+      useAuthStore.getState().setUser(null);
+      navigate("/login");
+      toast.success("Your account has been deleted.");
+    } catch (err) {
+      console.error("Delete account failed:", err);
+      toast.error("Failed to delete account. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const initials = user?.full_name
@@ -61,6 +103,10 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
         text: "Join TendherMom — maternal health support for Nigerian mothers 🤰",
         url: "https://tendhermomapp.lovable.app",
       });
+      return;
+    }
+    if (route === "privacy" || route === "terms") {
+      window.open(`/${route}`, "_blank");
       return;
     }
     if (["edit-profile", "notifications"].includes(route)) {
@@ -169,6 +215,43 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
         <IonIcon name="log-out-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
         <span className="text-destructive text-[15px] font-semibold font-sans">Log Out</span>
       </motion.button>
+
+      {/* Delete account */}
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={() => { hapticLight(); setShowDeleteDialog(true); }}
+        className="w-full py-[12px] flex items-center justify-center gap-2"
+      >
+        <IonIcon name="trash-outline" size={18} style={{ color: "hsl(var(--destructive))" }} />
+        <span className="text-destructive/70 text-[13px] font-medium font-sans">Delete Account</span>
+      </motion.button>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="rounded-2xl max-w-[340px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[17px] font-serif">Delete Account?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[14px]">
+              This will permanently delete your profile, posts, emergency contacts, and all associated data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-3">
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="flex-1 mt-0 rounded-xl"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => { e.preventDefault(); handleDeleteAccount(); }}
+              className="flex-1 bg-destructive hover:bg-destructive/90 rounded-xl"
+            >
+              {isDeleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
