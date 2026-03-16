@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
 interface IonIconProps {
   name: string;
@@ -18,17 +18,22 @@ declare global {
   }
 }
 
-const IonIcon = ({ name, size = 24, className = "", style = {} }: IonIconProps) => {
-  return (
-    <ion-icon
-      name={name}
-      className={className}
-      style={{
-        fontSize: `${size}px`,
-        ...style,
-      }}
-    />
-  );
-};
+const IonIcon = forwardRef<HTMLElement, IonIconProps>(
+  ({ name, size = 24, className = "", style = {} }, ref) => {
+    return (
+      <ion-icon
+        ref={ref as any}
+        name={name}
+        className={className}
+        style={{
+          fontSize: `${size}px`,
+          ...style,
+        }}
+      />
+    );
+  }
+);
+
+IonIcon.displayName = "IonIcon";
 
 export default IonIcon;

@@ -149,7 +149,7 @@ const NotificationsScreen = ({ onBack }: NotificationsScreenProps) => {
             No notifications yet
           </p>
           <p className="text-[13px] font-sans text-center" style={{ color: "hsl(var(--text-muted))" }}>
-            You'll see booking confirmations, reminders, and community updates here
+            You'll see emergency alerts and community updates here
           </p>
         </div>
       ) : (
