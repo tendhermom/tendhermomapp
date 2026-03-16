@@ -784,6 +784,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
+      decrement_likes: { Args: { p_post_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -791,6 +792,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_comments: { Args: { p_post_id: string }; Returns: undefined }
+      increment_likes: { Args: { p_post_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
