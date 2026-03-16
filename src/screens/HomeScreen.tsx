@@ -1,12 +1,8 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
-import { motion } from "framer-motion";
-import community1st from "@/assets/community-1st-trimester.jpg";
-import community2nd from "@/assets/community-2nd-trimester.jpg";
-import community3rd from "@/assets/community-3rd-trimester.jpg";
-import communityPostpartum from "@/assets/community-postpartum.jpg";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
@@ -31,24 +27,74 @@ const getGreeting = () => {
   return "Good evening";
 };
 
-const COMMUNITY_CHANNELS = [
-  { id: "first_trimester", name: "1st Trimester", subtitle: "Weeks 1–13", image: community1st },
-  { id: "second_trimester", name: "2nd Trimester", subtitle: "Weeks 14–26", image: community2nd },
-  { id: "third_trimester", name: "3rd Trimester", subtitle: "Weeks 27–40", image: community3rd },
-  { id: "postpartum", name: "Postpartum", subtitle: "After birth", image: communityPostpartum },
+const QUICK_ACCESS = [
+  { id: "antenatal", label: "Antenatal", icon: "calendar-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "sos", label: "Emergency", icon: "warning-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "baby-shower", label: "Baby Shower", icon: "gift-outline", color: "hsl(153 42% 30%)", bg: "hsl(var(--light-green))" },
+  { id: "community", label: "Voice Out", icon: "megaphone-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+];
+
+const COMMON_SYMPTOMS = [
+  {
+    name: "Morning Sickness",
+    icon: "water-outline",
+    cause: "Hormonal changes (hCG surge)",
+    detail: "Nausea and vomiting are most common in the first trimester. Eating small, frequent meals and staying hydrated can help. It usually resolves by week 14–16.",
+  },
+  {
+    name: "Fatigue",
+    icon: "moon-outline",
+    cause: "Progesterone increase & blood volume changes",
+    detail: "Your body is working overtime to support the growing baby. Rest when you can, maintain iron-rich nutrition, and avoid overexertion.",
+  },
+  {
+    name: "Back Pain",
+    icon: "body-outline",
+    cause: "Shifting centre of gravity & ligament relaxation",
+    detail: "As your belly grows, your posture shifts. Gentle stretching, proper support pillows, and prenatal exercises can relieve discomfort.",
+  },
+  {
+    name: "Swollen Feet",
+    icon: "footsteps-outline",
+    cause: "Fluid retention & increased blood volume",
+    detail: "Mild swelling (oedema) in ankles and feet is normal, especially in the third trimester. Elevate your feet and reduce salt intake. Sudden severe swelling needs medical attention.",
+  },
+  {
+    name: "Heartburn",
+    icon: "flame-outline",
+    cause: "Relaxed oesophageal sphincter & uterine pressure",
+    detail: "Progesterone relaxes the valve between your stomach and oesophagus. Eat smaller meals, avoid spicy food, and stay upright after eating.",
+  },
+  {
+    name: "Headaches",
+    icon: "flash-outline",
+    cause: "Hormonal fluctuations & blood pressure changes",
+    detail: "Common in the first and third trimesters. Stay hydrated, rest in a dark room, and avoid screen fatigue. Persistent or severe headaches should be reported to your doctor.",
+  },
+  {
+    name: "Frequent Urination",
+    icon: "timer-outline",
+    cause: "Growing uterus pressing on the bladder",
+    detail: "Very common throughout pregnancy, especially in the first and third trimesters. Don't reduce water intake — hydration is essential. Kegel exercises can help with bladder control.",
+  },
+  {
+    name: "Braxton Hicks",
+    icon: "pulse-outline",
+    cause: "Uterine muscles practising for labour",
+    detail: "These irregular, usually painless contractions are your body's rehearsal. They typically start mid-pregnancy. If they become regular or painful, contact your healthcare provider.",
+  },
 ];
 
 const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
   const daysLeft = useAuthStore((s) => s.getDaysRemaining());
+  const [expandedSymptom, setExpandedSymptom] = useState<number | null>(null);
 
   const displayName = user?.full_name?.split(" ")[0] || "there";
   const greeting = getGreeting();
   const trimester = currentWeek <= 13 ? "1st Trimester" : currentWeek <= 26 ? "2nd Trimester" : currentWeek <= 40 ? "3rd Trimester" : "Postpartum";
   const hasDueDate = !!user?.due_date;
-
-  const userStage = user?.current_stage || "first_trimester";
 
   return (
     <motion.div
@@ -62,7 +108,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         <TopBar onNotificationsPress={() => onNavigate("notifications")} />
       </motion.div>
 
-      {/* Hero Greeting Bar */}
+      {/* Hero Greeting */}
       <motion.div
         variants={fadeUp}
         className="rounded-[20px] p-5 relative overflow-hidden"
@@ -96,145 +142,115 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         )}
       </motion.div>
 
-      {/* Quick Actions */}
+      {/* Quick Access Grid */}
       <motion.div variants={fadeUp}>
-        <p className="label-caps text-text-muted mb-3">QUICK ACTIONS</p>
-
-        {/* Triage Card */}
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onNavigate("triage")}
-          className="w-full rounded-[18px] p-4 flex items-center gap-4 text-left ios-press mb-3"
-          style={{
-            background: "hsl(var(--surface))",
-            boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(153,42%,30%,0.08)",
-          }}
-        >
-          <div
-            className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, hsl(153 42% 94%), hsl(153 42% 88%))" }}
-          >
-            <IonIcon name="medkit-outline" size={24} style={{ color: "hsl(var(--green))" }} />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-[16px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>Check a symptom</h3>
-            <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
-              Something feels off? Get a clinical assessment in under 2 minutes.
-            </p>
-          </div>
-          <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--text-muted))" }} />
-        </motion.button>
-
-        {/* Baby Shower Card */}
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onNavigate("baby-shower")}
-          className="w-full rounded-[18px] p-4 flex items-center gap-4 text-left ios-press relative overflow-hidden"
-          style={{
-            background: "hsl(var(--coral))",
-            boxShadow: "0 6px 24px -4px hsla(11,74%,63%,0.45)",
-          }}
-        >
-          <div className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <IonIcon name="gift-outline" size={24} style={{ color: "white" }} />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-[16px] font-bold font-sans text-white">Baby Shower</h3>
-            <p className="text-[12px] font-sans mt-0.5 text-white/70">
-              Celebrate new arrivals and share your bundle of joy.
-            </p>
-          </div>
-          <IonIcon name="chevron-forward" size={16} style={{ color: "rgba(255,255,255,0.5)" }} />
-        </motion.button>
+        <p className="label-caps text-text-muted mb-3">QUICK ACCESS</p>
+        <div className="grid grid-cols-4 gap-3">
+          {QUICK_ACCESS.map((item) => (
+            <motion.button
+              key={item.id}
+              whileTap={{ scale: 0.92 }}
+              onClick={() => onNavigate(item.id)}
+              className="flex flex-col items-center gap-2 ios-press"
+            >
+              <div
+                className="w-[52px] h-[52px] rounded-[16px] flex items-center justify-center"
+                style={{ background: item.bg }}
+              >
+                <IonIcon name={item.icon} size={26} style={{ color: item.color }} />
+              </div>
+              <span className="text-[11px] font-sans font-medium text-center leading-tight" style={{ color: "hsl(var(--dark))" }}>
+                {item.label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
-      {/* Communities — horizontal carousel */}
+      {/* Video Explainer */}
       <motion.div variants={fadeUp}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-serif text-dark text-[20px]">Communities</h2>
-          <button onClick={() => onNavigate("community")} className="ios-press">
-            <span className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--green))" }}>See all</span>
-          </button>
+        <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>How TendherMom Works</h2>
+        <div
+          className="rounded-[18px] overflow-hidden"
+          style={{
+            boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)",
+          }}
+        >
+          <video
+            className="w-full"
+            controls
+            playsInline
+            preload="metadata"
+            poster=""
+            style={{ borderRadius: "18px" }}
+          >
+            <source src="/videos/explainer.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
+      </motion.div>
 
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5" style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}>
-          {COMMUNITY_CHANNELS.map((ch, i) => {
-            const isUserStage = ch.id === userStage;
+      {/* Common Symptoms */}
+      <motion.div variants={fadeUp}>
+        <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>Common Symptoms</h2>
+        <div className="space-y-2">
+          {COMMON_SYMPTOMS.map((symptom, i) => {
+            const isExpanded = expandedSymptom === i;
             return (
-              <motion.button
-                key={ch.id}
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15 + i * 0.06, type: "spring", stiffness: 300, damping: 28 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavigate("community")}
-                className="rounded-[18px] flex-shrink-0 flex flex-col ios-press relative overflow-hidden"
+              <motion.div
+                key={symptom.name}
+                className="rounded-[16px] overflow-hidden"
                 style={{
-                  width: 150,
                   background: "hsl(var(--surface))",
-                  boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)",
+                  boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 12px -4px hsla(0,0%,0%,0.06)",
                 }}
               >
-                {isUserStage && (
-                  <span
-                    className="absolute top-2.5 right-2.5 z-10 text-[8px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                    style={{ background: "rgba(255,255,255,0.9)", color: "hsl(var(--green))" }}
+                <button
+                  onClick={() => setExpandedSymptom(isExpanded ? null : i)}
+                  className="w-full flex items-center gap-3 p-3.5 text-left ios-press"
+                >
+                  <div
+                    className="w-[38px] h-[38px] rounded-[12px] flex items-center justify-center flex-shrink-0"
+                    style={{ background: i % 2 === 0 ? "hsl(var(--light-green))" : "hsl(var(--light-coral))" }}
                   >
-                    You
-                  </span>
-                )}
-                <img
-                  src={ch.image}
-                  alt={ch.name}
-                  className="w-full h-[90px] object-cover rounded-t-[18px]"
-                />
-                <div className="p-3">
-                  <h3 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{ch.name}</h3>
-                  <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{ch.subtitle}</p>
-                </div>
-              </motion.button>
+                    <IonIcon
+                      name={symptom.icon}
+                      size={20}
+                      style={{ color: i % 2 === 0 ? "hsl(var(--green))" : "hsl(var(--coral))" }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{symptom.name}</h3>
+                    <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{symptom.cause}</p>
+                  </div>
+                  <IonIcon
+                    name={isExpanded ? "chevron-up" : "chevron-down"}
+                    size={16}
+                    style={{ color: "hsl(var(--text-muted))" }}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3.5 pb-3.5 pt-0">
+                        <div className="rounded-[12px] p-3" style={{ background: "hsl(var(--bg))" }}>
+                          <p className="text-[13px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                            {symptom.detail}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             );
           })}
-        </div>
-      </motion.div>
-
-      {/* How Triage Works */}
-      <motion.div variants={fadeUp}>
-        <h2 className="font-serif text-dark text-[20px] mb-3">How triage works</h2>
-        <div className="rounded-[18px] p-5 space-y-4" style={{ background: "hsl(var(--surface))", boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)" }}>
-          {[
-            { step: "1", text: "Tell us what you're feeling" },
-            { step: "2", text: "Answer 3–4 focused questions" },
-            { step: "3", text: "Get a clear, medically-reviewed answer" },
-          ].map((item) => (
-            <div key={item.step} className="flex items-start gap-3">
-              <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, hsl(153 42% 94%), hsl(153 42% 88%))" }}>
-                <span className="text-[13px] font-bold font-sans" style={{ color: "hsl(var(--green))" }}>{item.step}</span>
-              </div>
-              <p className="text-[14px] font-sans pt-1" style={{ color: "hsl(var(--dark))" }}>{item.text}</p>
-            </div>
-          ))}
-
-          <div className="flex items-center gap-2 pt-2" style={{ borderTop: "0.5px solid hsl(var(--border))" }}>
-            <IonIcon name="shield-checkmark" size={16} style={{ color: "hsl(var(--green))" }} />
-            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              Reviewed by Dr. Adaeze Nwosu, FWACS · LUTH
-            </p>
-          </div>
-        </div>
-
-        {/* Outcome Legend */}
-        <div className="rounded-[18px] p-4 mt-2.5 space-y-2.5" style={{ background: "hsl(var(--surface))", boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)" }}>
-          {[
-            { color: "hsl(var(--green))", text: "You're safe — monitor and rest at home." },
-            { color: "hsl(38, 92%, 50%)", text: "Needs attention — call your doctor today." },
-            { color: "hsl(var(--coral))", text: "Go now — hospital immediately. Do not wait." },
-          ].map((item) => (
-            <div key={item.text} className="flex items-center gap-2.5">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: item.color }} />
-              <p className="text-[12px] font-sans" style={{ color: "hsl(var(--dark))" }}>{item.text}</p>
-            </div>
-          ))}
         </div>
       </motion.div>
     </motion.div>
