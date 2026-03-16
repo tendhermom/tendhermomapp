@@ -3,6 +3,10 @@ import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { motion } from "framer-motion";
+import community1st from "@/assets/community-1st-trimester.jpg";
+import community2nd from "@/assets/community-2nd-trimester.jpg";
+import community3rd from "@/assets/community-3rd-trimester.jpg";
+import communityPostpartum from "@/assets/community-postpartum.jpg";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
