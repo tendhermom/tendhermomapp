@@ -120,16 +120,18 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   if (!selectedPathway) {
     return (
       <motion.div
-        className="space-y-5 pb-4"
+        className="space-y-5 pb-4 pt-1"
         initial="hidden"
         animate="show"
         variants={stagger}
       >
-        {/* Header */}
-        <motion.div variants={fadeUp}>
-          <h1 className="font-serif text-[26px]" style={{ color: "hsl(var(--dark))" }}>Symptom Triage</h1>
-          <p className="text-[13px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
-            Select what you're feeling. We'll guide you in under 2 minutes.
+        {/* Header — Apple large-title style */}
+        <motion.div variants={fadeUp} className="pt-1">
+          <h1 className="font-serif text-[30px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
+            Symptom Triage
+          </h1>
+          <p className="text-[13px] font-sans mt-1.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+            Select what you're feeling. We'll guide you in under 2&nbsp;minutes.
           </p>
         </motion.div>
 
@@ -255,10 +257,10 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {/* Back */}
-        <motion.button whileTap={{ scale: 0.88 }} onClick={reset} className="ios-press flex items-center gap-1.5">
-          <IonIcon name="chevron-back" size={20} style={{ color: "hsl(var(--dark))" }} />
-          <span className="text-[14px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>Start over</span>
+        {/* Back — Apple-style inline nav */}
+        <motion.button whileTap={{ scale: 0.92 }} onClick={reset} className="ios-press flex items-center gap-1 -ml-1.5 py-1">
+          <IonIcon name="chevron-back" size={22} style={{ color: "hsl(var(--green))" }} />
+          <span className="text-[15px] font-sans font-medium" style={{ color: "hsl(var(--green))" }}>Start over</span>
         </motion.button>
 
         {/* Result card */}
@@ -365,19 +367,19 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.88 }} onClick={reset} className="ios-press">
-          <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
+      {/* Header — Apple-style nav bar */}
+      <div className="flex items-center gap-2 pt-1">
+        <motion.button whileTap={{ scale: 0.92 }} onClick={reset} className="ios-press -ml-1.5 p-1">
+          <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--green))" }} />
         </motion.button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-serif text-[20px] truncate" style={{ color: "hsl(var(--dark))" }}>{selectedPathway.name}</h1>
+          <h1 className="font-serif text-[21px] truncate" style={{ color: "hsl(var(--dark))" }}>{selectedPathway.name}</h1>
         </div>
         <span
-          className="text-[11px] font-sans font-semibold px-3 py-1 rounded-full"
+          className="text-[11px] font-sans font-semibold px-3 py-1.5 rounded-full"
           style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
         >
-          Q{questionIndex + 1}/{totalQuestions}
+          {questionIndex + 1} of {totalQuestions}
         </span>
       </div>
 
