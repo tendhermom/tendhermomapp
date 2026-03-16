@@ -92,6 +92,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
 
   const handleSendSOS = async () => {
     setIsSending(true);
+    hapticHeavy();
     try {
     const contactsPayload = contacts.map((c) => ({
         name: c.name,
