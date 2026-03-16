@@ -120,16 +120,18 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   if (!selectedPathway) {
     return (
       <motion.div
-        className="space-y-5 pb-4"
+        className="space-y-5 pb-4 pt-1"
         initial="hidden"
         animate="show"
         variants={stagger}
       >
-        {/* Header */}
-        <motion.div variants={fadeUp}>
-          <h1 className="font-serif text-[26px]" style={{ color: "hsl(var(--dark))" }}>Symptom Triage</h1>
-          <p className="text-[13px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
-            Select what you're feeling. We'll guide you in under 2 minutes.
+        {/* Header — Apple large-title style */}
+        <motion.div variants={fadeUp} className="pt-1">
+          <h1 className="font-serif text-[30px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
+            Symptom Triage
+          </h1>
+          <p className="text-[13px] font-sans mt-1.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+            Select what you're feeling. We'll guide you in under 2&nbsp;minutes.
           </p>
         </motion.div>
 
