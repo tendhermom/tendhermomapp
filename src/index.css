@@ -100,7 +100,7 @@
 }
 
 .screen-scroll {
-  height: calc(100dvh - 80px);
+  height: calc(100dvh - 80px - var(--safe-area-bottom, 0px));
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;

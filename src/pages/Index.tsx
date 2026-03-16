@@ -75,7 +75,7 @@ const Index = () => {
             transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
             className="screen-scroll"
           >
-            <div className="px-5 pt-14 pb-8">
+            <div className="px-5 pb-8" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 56px)" }}>
               <Suspense fallback={<ScreenFallback />}>
                 {renderScreen()}
               </Suspense>
