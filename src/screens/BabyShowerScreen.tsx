@@ -29,7 +29,6 @@ const fadeUp = {
 
 const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const isPremium = user?.plan_type === "premium";
 
   const [posts, setPosts] = useState<BabyShowerPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,28 +71,31 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleReaction = async (postId: string, type: "congrats" | "love" | "celebrate") => {
+  const handleReaction = async (postId: string, type: "congrats" | "love" | "like" | "celebrate") => {
     if (!user) return;
-    if (!isPremium) {
-      toast.error("Upgrade to Premium to react");
-      return;
-    }
 
     const existing = userReactions[postId];
-    if (existing) {
-      // Remove existing reaction
+    if (existing === type) {
+      // Remove reaction
       await supabase.from("reactions").delete().eq("post_id", postId).eq("user_id", user.id);
       setUserReactions((prev) => {
         const next = { ...prev };
         delete next[postId];
         return next;
       });
-      // Decrement count
       setPosts((prev) =>
         prev.map((p) => (p.id === postId ? { ...p, reactions_count: Math.max(0, p.reactions_count - 1) } : p))
       );
+    } else if (existing) {
+      // Switch reaction type
+      await supabase
+        .from("reactions")
+        .update({ type })
+        .eq("post_id", postId)
+        .eq("user_id", user.id);
+      setUserReactions((prev) => ({ ...prev, [postId]: type }));
     } else {
-      // Add reaction
+      // Add new reaction
       await supabase.from("reactions").insert({ post_id: postId, user_id: user.id, type });
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
       setPosts((prev) =>
@@ -121,7 +123,6 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
     let imageUrl: string | null = null;
 
     try {
-      // Upload image if selected
       if (imageFile) {
         const ext = imageFile.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
@@ -150,7 +151,7 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
 
       if (error) throw error;
 
-      toast.success("Baby post created!");
+      toast.success("Baby post created! 🎉");
       setShowCreateForm(false);
       setBabyName("");
       setParentNames("");
@@ -179,32 +180,19 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
     <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}>
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.88 }} onClick={onBack} className="ios-press">
+        <motion.button whileTap={{ scale: 0.88 }} onClick={onBack}>
           <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
         </motion.button>
-        <h1 className="font-serif flex-1 text-[24px]" style={{ color: "hsl(var(--dark))" }}>Baby Shower</h1>
-        {isPremium && (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowCreateForm(true)}
-            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--coral))" }}
-          >
-            <IonIcon name="add" size={20} style={{ color: "white" }} />
-          </motion.button>
-        )}
+        <h1 className="font-serif flex-1 text-[24px]" style={{ color: "hsl(var(--dark))" }}>Baby Shower 🎉</h1>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowCreateForm(true)}
+          className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+          style={{ background: "hsl(var(--coral))" }}
+        >
+          <IonIcon name="add" size={20} style={{ color: "white" }} />
+        </motion.button>
       </motion.div>
-
-      {/* Premium banner */}
-      {!isPremium && (
-        <motion.div variants={fadeUp} className="tend-card p-4 flex items-center gap-3" style={{ background: "hsl(var(--light-coral))" }}>
-          <IonIcon name="lock-closed" size={20} style={{ color: "hsl(var(--coral))" }} />
-          <div className="flex-1">
-            <p className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--coral))" }}>Premium Feature</p>
-            <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to celebrate & post your baby</p>
-          </div>
-        </motion.div>
-      )}
 
       {/* Posts grouped by month */}
       {loading ? (
@@ -212,10 +200,23 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
           <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Loading…</span>
         </div>
       ) : monthKeys.length === 0 ? (
-        <div className="tend-card p-8 text-center">
-          <IonIcon name="gift" size={32} style={{ color: "hsl(var(--border))" }} />
-          <p className="text-[14px] font-sans mt-2" style={{ color: "hsl(var(--text-muted))" }}>No baby shower posts yet</p>
-        </div>
+        <motion.div variants={fadeUp} className="tend-card p-10 text-center">
+          <div className="w-[64px] h-[64px] rounded-full mx-auto flex items-center justify-center mb-3" style={{ background: "hsl(var(--light-coral))" }}>
+            <IonIcon name="gift" size={30} style={{ color: "hsl(var(--coral))" }} />
+          </div>
+          <h3 className="font-serif text-[18px] mb-1" style={{ color: "hsl(var(--dark))" }}>No Celebrations Yet</h3>
+          <p className="text-[13px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
+            Be the first to celebrate your baby with the community!
+          </p>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowCreateForm(true)}
+            className="px-5 py-2.5 rounded-full text-[14px] font-semibold font-sans text-white"
+            style={{ background: "hsl(var(--coral))" }}
+          >
+            Post Your Baby
+          </motion.button>
+        </motion.div>
       ) : (
         monthKeys.map((month) => (
           <motion.div key={month} variants={fadeUp}>
@@ -252,13 +253,13 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
         ))
       )}
 
-      {/* Post your baby CTA (for premium without + button) */}
-      {isPremium && !showCreateForm && (
+      {/* Post CTA */}
+      {!showCreateForm && monthKeys.length > 0 && (
         <motion.div variants={fadeUp}>
           <motion.button
             whileTap={{ scale: 0.96 }}
             onClick={() => setShowCreateForm(true)}
-            className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans ios-press flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
             style={{ background: "hsl(var(--coral))", color: "white" }}
           >
             <IonIcon name="camera-outline" size={20} style={{ color: "white" }} />
@@ -288,7 +289,7 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
               style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "85vh", overflowY: "auto" }}
             >
               <h3 className="font-serif text-[20px] mb-5" style={{ color: "hsl(var(--dark))" }}>
-                Celebrate Your Baby
+                Celebrate Your Baby 🎉
               </h3>
 
               <div className="space-y-4">
@@ -366,7 +367,7 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
                             : "hsl(var(--text-muted))",
                         }}
                       >
-                        {g === "boy" ? "Boy" : "Girl"}
+                        {g === "boy" ? "👶 Boy" : "👶 Girl"}
                       </motion.button>
                     ))}
                   </div>
