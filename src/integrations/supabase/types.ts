@@ -774,6 +774,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_community_points: {
+        Args: { _field: string; _points_to_add: number; _user_id: string }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           _action: string

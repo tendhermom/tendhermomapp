@@ -11,8 +11,7 @@ interface Contact {
   name: string;
   phone: string;
   whatsapp: string;
-  email: string | null;
-  channels: ("sms" | "whatsapp" | "email")[];
+  channels: ("sms" | "whatsapp" | "voice")[];
 }
 
 interface SOSRequest {
@@ -47,16 +46,16 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    // Verify the user via getUser instead of getClaims
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = claimsData.claims.sub as string;
+    const userId = userData.user.id;
 
     // Rate limit: max 3 SOS alerts per 10 minutes
     const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
@@ -104,7 +103,7 @@ serve(async (req) => {
     for (const contact of contacts) {
       const contactResult: Record<string, string> = {};
       for (const channel of contact.channels) {
-        console.log(`[SOS] ${channel.toUpperCase()} → ${contact.name} (${channel === "email" ? contact.email : contact.phone}): ${is_test ? "TEST " : ""}alert`);
+        console.log(`[SOS] ${channel.toUpperCase()} → ${contact.name} (${contact.phone}): ${is_test ? "TEST " : ""}alert`);
         contactResult[channel] = "queued";
       }
       channelResults[contact.name] = contactResult;

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 
-// Points config
 const POINTS_PER_POST = 10;
 const POINTS_PER_LIKE = 2;
 const POINTS_PER_COMMENT = 5;
@@ -47,7 +46,22 @@ interface PointsState {
   awardComment: (userId: string) => Promise<void>;
 }
 
-export const usePointsStore = create<PointsState>((set, get) => ({
+const awardPoints = async (userId: string, points: number, field: string): Promise<UserPoints | null> => {
+  const { data, error } = await db.rpc("award_community_points", {
+    _user_id: userId,
+    _points_to_add: points,
+    _field: field,
+  });
+  if (error || !data) return null;
+  return {
+    points: data.points,
+    posts_count: data.posts_count,
+    likes_count: data.likes_count,
+    comments_count: data.comments_count,
+  };
+};
+
+export const usePointsStore = create<PointsState>((set) => ({
   userPoints: null,
   loading: false,
 
@@ -62,36 +76,24 @@ export const usePointsStore = create<PointsState>((set, get) => ({
     if (data) {
       set({ userPoints: { points: data.points, posts_count: data.posts_count, likes_count: data.likes_count, comments_count: data.comments_count }, loading: false });
     } else {
-      // Create initial row
-      await db.from("community_points").insert({ user_id: userId, points: 0, posts_count: 0, likes_count: 0, comments_count: 0 });
-      set({ userPoints: { points: 0, posts_count: 0, likes_count: 0, comments_count: 0 }, loading: false });
+      // Use atomic upsert to create initial row
+      const result = await awardPoints(userId, 0, "posts_count");
+      set({ userPoints: result || { points: 0, posts_count: 0, likes_count: 0, comments_count: 0 }, loading: false });
     }
   },
 
   awardPost: async (userId) => {
-    const current = get().userPoints;
-    if (!current) return;
-    const newPoints = current.points + POINTS_PER_POST;
-    const newPosts = current.posts_count + 1;
-    await db.from("community_points").update({ points: newPoints, posts_count: newPosts, updated_at: new Date().toISOString() }).eq("user_id", userId);
-    set({ userPoints: { ...current, points: newPoints, posts_count: newPosts } });
+    const result = await awardPoints(userId, POINTS_PER_POST, "posts_count");
+    if (result) set({ userPoints: result });
   },
 
   awardLike: async (userId) => {
-    const current = get().userPoints;
-    if (!current) return;
-    const newPoints = current.points + POINTS_PER_LIKE;
-    const newLikes = current.likes_count + 1;
-    await db.from("community_points").update({ points: newPoints, likes_count: newLikes, updated_at: new Date().toISOString() }).eq("user_id", userId);
-    set({ userPoints: { ...current, points: newPoints, likes_count: newLikes } });
+    const result = await awardPoints(userId, POINTS_PER_LIKE, "likes_count");
+    if (result) set({ userPoints: result });
   },
 
   awardComment: async (userId) => {
-    const current = get().userPoints;
-    if (!current) return;
-    const newPoints = current.points + POINTS_PER_COMMENT;
-    const newComments = current.comments_count + 1;
-    await db.from("community_points").update({ points: newPoints, comments_count: newComments, updated_at: new Date().toISOString() }).eq("user_id", userId);
-    set({ userPoints: { ...current, points: newPoints, comments_count: newComments } });
+    const result = await awardPoints(userId, POINTS_PER_COMMENT, "comments_count");
+    if (result) set({ userPoints: result });
   },
 }));
