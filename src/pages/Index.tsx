@@ -74,6 +74,14 @@ const Index = () => {
     }
   };
 
+  if (showOnboarding) {
+    return (
+      <Suspense fallback={<ScreenFallback />}>
+        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-foreground/5 flex justify-center">
       <div className="app-shell">
