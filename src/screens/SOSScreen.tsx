@@ -86,6 +86,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       toast.error("Add at least one emergency contact first");
       return;
     }
+    hapticWarning();
     setShowConfirm(true);
   }, [contacts]);
 
