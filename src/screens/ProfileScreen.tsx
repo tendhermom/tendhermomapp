@@ -6,6 +6,7 @@ import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import { useAuthStore } from "@/stores/authStore";
+import { nativeShare, hapticLight } from "@/lib/despia";
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
@@ -16,6 +17,7 @@ const menuSections = [
     items: [
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
       { icon: "notifications-outline", label: "Notifications", route: "notifications" },
+      { icon: "share-social-outline", label: "Share TendherMom", route: "share-app" },
     ],
   },
   {
@@ -52,6 +54,15 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   }
 
   const handleMenuPress = (route: string) => {
+    hapticLight();
+    if (route === "share-app") {
+      nativeShare({
+        title: "TendherMom",
+        text: "Join TendherMom — maternal health support for Nigerian mothers 🤰",
+        url: "https://tendhermomapp.lovable.app",
+      });
+      return;
+    }
     if (["edit-profile", "notifications"].includes(route)) {
       setSubScreen(route);
     } else if (route) {

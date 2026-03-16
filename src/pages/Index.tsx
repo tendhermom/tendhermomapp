@@ -1,6 +1,7 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
+import { StatusBarThemes, hapticSelection } from "@/lib/despia";
 
 // Lazy-load all screens
 const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
@@ -21,7 +22,21 @@ const ScreenFallback = () => (
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
 
+  // Theme status bar based on active screen
+  useEffect(() => {
+    const emergencyScreens = ["sos", "emergency-contacts"];
+    const lightScreens = ["community", "baby-shower"];
+    if (emergencyScreens.includes(activeTab)) {
+      StatusBarThemes.emergency();
+    } else if (lightScreens.includes(activeTab)) {
+      StatusBarThemes.light();
+    } else {
+      StatusBarThemes.primary();
+    }
+  }, [activeTab]);
+
   const handleNavigate = (screen: string) => {
+    hapticSelection();
     setActiveTab(screen);
   };
 
@@ -60,7 +75,7 @@ const Index = () => {
             transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
             className="screen-scroll"
           >
-            <div className="px-5 pt-14 pb-8">
+            <div className="px-5 pb-8" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 56px)" }}>
               <Suspense fallback={<ScreenFallback />}>
                 {renderScreen()}
               </Suspense>

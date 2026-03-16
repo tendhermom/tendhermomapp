@@ -4,6 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { hapticHeavy, hapticWarning, hapticSuccess } from "@/lib/despia";
 
 interface EmergencyContact {
   id: string;
@@ -85,11 +86,13 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       toast.error("Add at least one emergency contact first");
       return;
     }
+    hapticWarning();
     setShowConfirm(true);
   }, [contacts]);
 
   const handleSendSOS = async () => {
     setIsSending(true);
+    hapticHeavy();
     try {
     const contactsPayload = contacts.map((c) => ({
         name: c.name,
@@ -134,6 +137,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       });
       setShowConfirm(false);
       setShowSent(true);
+      hapticSuccess();
     } catch (err) {
       console.error("SOS send error:", err);
       toast.error("Failed to send alert. Please call emergency services directly: 112");

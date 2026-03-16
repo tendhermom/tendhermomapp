@@ -54,6 +54,12 @@
     --border-subtle: 0 0% 92%;
     --light-green: 144 28% 93%;
     --light-coral: 14 82% 96%;
+
+    /* Despia safe-area variables — overridden by native bridge at runtime */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
   }
 }
 
@@ -94,7 +100,7 @@
 }
 
 .screen-scroll {
-  height: calc(100dvh - 80px);
+  height: calc(100dvh - 80px - var(--safe-area-bottom, 0px));
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;

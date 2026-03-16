@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import { hapticSelection } from "@/lib/despia";
 
 interface TabBarProps {
   activeTab: string;
@@ -31,7 +32,10 @@ const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {
                 <motion.button
                   key={tab.id}
                   whileTap={{ scale: 0.88 }}
-                  onClick={() => onTabChange(tab.id)}
+                  onClick={() => {
+                    hapticSelection();
+                    onTabChange(tab.id);
+                  }}
                   className="flex flex-col items-center -mt-6 relative"
                 >
                   <div
@@ -55,7 +59,10 @@ const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {
               <motion.button
                 key={tab.id}
                 whileTap={{ scale: 0.85 }}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => {
+                  hapticSelection();
+                  onTabChange(tab.id);
+                }}
                 className="flex flex-col items-center gap-[3px] min-w-[60px] py-1 relative"
               >
                 {isActive && (
