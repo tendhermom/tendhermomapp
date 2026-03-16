@@ -91,15 +91,14 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const handleSendSOS = async () => {
     setIsSending(true);
     try {
-      const contactsPayload = contacts.map((c) => ({
+    const contactsPayload = contacts.map((c) => ({
         name: c.name,
         phone: c.phone,
         whatsapp: c.whatsapp_number || c.phone,
-        email: c.email,
         channels: [
           ...(c.sms_enabled ? ["sms" as const] : []),
           ...(c.whatsapp_enabled ? ["whatsapp" as const] : []),
-          ...(c.email_enabled && c.email ? ["email" as const] : []),
+          ...(c.email_enabled ? ["voice" as const] : []), // email_enabled repurposed for voice
         ],
       }));
 
@@ -148,7 +147,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     const badges: string[] = [];
     if (c.sms_enabled) badges.push("SMS");
     if (c.whatsapp_enabled) badges.push("WhatsApp");
-    if (c.email_enabled && c.email) badges.push("Email");
+    if (c.email_enabled) badges.push("Voice");
     return badges;
   };
 
@@ -406,7 +405,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                 <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
                   This will send your GPS location and an emergency message to {contacts.length} contact{contacts.length !== 1 ? "s" : ""} via SMS
                   {contacts.some((c) => c.whatsapp_enabled) ? ", WhatsApp" : ""}
-                  {contacts.some((c) => c.email_enabled && c.email) ? " and Email" : ""}.
+                  {contacts.some((c) => c.email_enabled) ? " and Voice Call" : ""}.
                 </p>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
@@ -464,7 +463,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                 <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
                   Sent to {sentInfo.count} contact{sentInfo.count !== 1 ? "s" : ""} at {sentInfo.time} via SMS
                   {contacts.some((c) => c.whatsapp_enabled) ? ", WhatsApp" : ""}
-                  {contacts.some((c) => c.email_enabled && c.email) ? " and Email" : ""}.
+                  {contacts.some((c) => c.email_enabled) ? " and Voice Call" : ""}.
                 </p>
                 <motion.button
                   whileTap={{ scale: 0.97 }}

@@ -42,6 +42,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
     ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
   const week = getCurrentWeek();
+  const stageName = user?.current_stage?.replace(/_/g, " ") || "First trimester";
 
   if (subScreen === "edit-profile") {
     return <EditProfileScreen onBack={() => setSubScreen(null)} />;
@@ -77,15 +78,21 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               <span className="text-white text-[22px] font-bold font-sans">{initials}</span>
             )}
           </motion.button>
-          <div className="flex-1">
-            <h3 className="text-white text-[20px] font-serif">{user?.full_name || "User"}</h3>
-            <p className="text-white/60 text-[13px] font-sans mt-0.5">{user?.email || ""}</p>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white text-[20px] font-serif truncate">{user?.full_name || "User"}</h3>
+            <p className="text-white/60 text-[13px] font-sans mt-0.5 truncate">{user?.email || ""}</p>
             <div className="flex items-center gap-2 mt-2">
               <span
                 className="label-caps px-2.5 py-[3px] rounded-full"
                 style={{ background: "hsl(var(--coral))", color: "white" }}
               >
                 Week {week}
+              </span>
+              <span
+                className="label-caps px-2.5 py-[3px] rounded-full capitalize"
+                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)" }}
+              >
+                {stageName}
               </span>
             </div>
           </div>
@@ -107,7 +114,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               key={item.label}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleMenuPress(item.route)}
-              className="flex items-center gap-3.5 w-full px-[18px] py-[15px] text-left ios-press"
+              className="flex items-center gap-3.5 w-full px-[18px] py-[15px] text-left"
               style={{
                 borderBottom: i < section.items.length - 1
                   ? "0.5px solid hsl(var(--border))"
@@ -124,11 +131,18 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
         </div>
       ))}
 
+      {/* App version */}
+      <div className="text-center">
+        <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+          TendherMom v1.0.0
+        </p>
+      </div>
+
       {/* Log out */}
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={handleLogout}
-        className="w-full tend-card py-[15px] flex items-center justify-center gap-2 ios-press"
+        className="w-full tend-card py-[15px] flex items-center justify-center gap-2"
       >
         <IonIcon name="log-out-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
         <span className="text-destructive text-[15px] font-semibold font-sans">Log Out</span>
