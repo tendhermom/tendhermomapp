@@ -109,7 +109,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           </h1>
         </div>
         <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
-          {subScreen === "privacy" ? <Privacy /> : <Terms />}
+          {subScreen === "privacy" ? <Privacy onBack={() => setSubScreen(null)} /> : <Terms onBack={() => setSubScreen(null)} />}
         </Suspense>
       </div>
     );
