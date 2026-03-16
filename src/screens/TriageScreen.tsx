@@ -367,19 +367,19 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.88 }} onClick={reset} className="ios-press">
-          <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
+      {/* Header — Apple-style nav bar */}
+      <div className="flex items-center gap-2 pt-1">
+        <motion.button whileTap={{ scale: 0.92 }} onClick={reset} className="ios-press -ml-1.5 p-1">
+          <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--green))" }} />
         </motion.button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-serif text-[20px] truncate" style={{ color: "hsl(var(--dark))" }}>{selectedPathway.name}</h1>
+          <h1 className="font-serif text-[21px] truncate" style={{ color: "hsl(var(--dark))" }}>{selectedPathway.name}</h1>
         </div>
         <span
-          className="text-[11px] font-sans font-semibold px-3 py-1 rounded-full"
+          className="text-[11px] font-sans font-semibold px-3 py-1.5 rounded-full"
           style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
         >
-          Q{questionIndex + 1}/{totalQuestions}
+          {questionIndex + 1} of {totalQuestions}
         </span>
       </div>
 
