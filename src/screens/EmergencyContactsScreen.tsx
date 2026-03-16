@@ -12,10 +12,9 @@ interface EmergencyContact {
   phone: string;
   relationship: string | null;
   whatsapp_number: string | null;
-  email: string | null;
   sms_enabled: boolean;
   whatsapp_enabled: boolean;
-  email_enabled: boolean;
+  voice_enabled: boolean;
   is_primary: boolean;
 }
 
@@ -31,17 +30,15 @@ const emptyContact: Omit<EmergencyContact, "id"> = {
   phone: "",
   relationship: null,
   whatsapp_number: null,
-  email: null,
   sms_enabled: true,
   whatsapp_enabled: false,
-  email_enabled: false,
+  voice_enabled: false,
   is_primary: false,
 };
 
 const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const isFree = user?.plan_type === "free";
-  const maxContacts = isFree ? 1 : 5;
+  const maxContacts = 5;
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +57,12 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
       .select("*")
       .eq("user_id", user.id)
       .order("is_primary", { ascending: false });
-    if (data) setContacts(data as EmergencyContact[]);
+    if (data) {
+      setContacts(data.map((c: any) => ({
+        ...c,
+        voice_enabled: c.email_enabled ?? false, // repurpose email_enabled column for voice
+      })));
+    }
     setLoading(false);
   };
 
@@ -72,8 +74,6 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
       errs.phone = "Enter a valid Nigerian phone number (+234XXXXXXXXXX)";
     if (c.whatsapp_enabled && c.whatsapp_number && !PHONE_REGEX.test(c.whatsapp_number.replace(/\s/g, "")))
       errs.whatsapp_number = "Enter a valid Nigerian phone number";
-    if (c.email_enabled && c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))
-      errs.email = "Enter a valid email address";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -89,10 +89,10 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
       phone: editingContact.phone!.replace(/\s/g, ""),
       relationship: editingContact.relationship || null,
       whatsapp_number: editingContact.whatsapp_number?.replace(/\s/g, "") || null,
-      email: editingContact.email?.trim() || null,
+      email: null,
       sms_enabled: editingContact.sms_enabled ?? true,
       whatsapp_enabled: editingContact.whatsapp_enabled ?? false,
-      email_enabled: editingContact.email_enabled ?? false,
+      email_enabled: editingContact.voice_enabled ?? false, // store voice in email_enabled column
       is_primary: contacts.length === 0,
     };
 
@@ -124,21 +124,16 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   };
 
   const handleSendTest = async () => {
-    if (isFree) {
-      toast.error("Test alerts are available for Premium users only");
-      return;
-    }
     toast.info("Sending test alert to all contacts…");
     try {
       const contactsPayload = contacts.map((c) => ({
         name: c.name,
         phone: c.phone,
         whatsapp: c.whatsapp_number || c.phone,
-        email: c.email,
         channels: [
           ...(c.sms_enabled ? ["sms" as const] : []),
           ...(c.whatsapp_enabled ? ["whatsapp" as const] : []),
-          ...(c.email_enabled && c.email ? ["email" as const] : []),
+          ...(c.voice_enabled ? ["voice" as const] : []),
         ],
       }));
 
@@ -251,22 +246,6 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             />
             {errors.whatsapp_number && <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--coral))" }}>{errors.whatsapp_number}</p>}
           </div>
-
-          {/* Email */}
-          <div>
-            <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={editingContact.email || ""}
-              onChange={(e) => setEditingContact({ ...editingContact, email: e.target.value })}
-              placeholder="email@example.com"
-              className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
-              style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}
-            />
-            {errors.email && <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--coral))" }}>{errors.email}</p>}
-          </div>
         </div>
 
         {/* Channel toggles */}
@@ -275,14 +254,17 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             Alert Channels
           </h4>
           {[
-            { key: "sms_enabled", label: "SMS", icon: "chatbubble" },
-            { key: "whatsapp_enabled", label: "WhatsApp", icon: "logo-whatsapp" },
-            { key: "email_enabled", label: "Email", icon: "mail" },
+            { key: "sms_enabled", label: "SMS", icon: "chatbubble", desc: "Text message via Twilio" },
+            { key: "whatsapp_enabled", label: "WhatsApp", icon: "logo-whatsapp", desc: "WhatsApp message via Twilio" },
+            { key: "voice_enabled", label: "Voice Call", icon: "call", desc: "Automated call via Termii" },
           ].map((ch) => (
             <div key={ch.key} className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <IonIcon name={ch.icon} size={18} style={{ color: "hsl(var(--green))" }} />
-                <span className="text-[14px] font-sans" style={{ color: "hsl(var(--dark))" }}>{ch.label}</span>
+                <div>
+                  <span className="text-[14px] font-sans block" style={{ color: "hsl(var(--dark))" }}>{ch.label}</span>
+                  <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{ch.desc}</span>
+                </div>
               </div>
               <Switch
                 checked={(editingContact as any)[ch.key] ?? false}
@@ -357,7 +339,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             <motion.div
               key={c.id}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setEditingContact(c)}
+              onClick={() => setEditingContact({ ...c })}
               className="flex items-center gap-3 px-[18px] py-[14px] cursor-pointer"
               style={{ borderBottom: i < contacts.length - 1 ? "0.5px solid hsl(var(--border))" : "none" }}
             >
@@ -381,7 +363,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
                 <div className="flex items-center gap-1 mt-1">
                   {c.sms_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>SMS</span>}
                   {c.whatsapp_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>WhatsApp</span>}
-                  {c.email_enabled && c.email && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>Email</span>}
+                  {c.voice_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>Voice</span>}
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -403,17 +385,8 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         </div>
       )}
 
-      {/* Free plan upgrade */}
-      {isFree && contacts.length >= 1 && (
-        <div className="tend-card p-4" style={{ borderLeft: "3px solid hsl(var(--coral))" }}>
-          <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            Free plan allows 1 contact. Upgrade to Premium for up to 5 contacts and test alerts.
-          </p>
-        </div>
-      )}
-
-      {/* Test alert button (Premium only) */}
-      {!isFree && contacts.length > 0 && (
+      {/* Test alert button */}
+      {contacts.length > 0 && (
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleSendTest}
