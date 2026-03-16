@@ -97,18 +97,22 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "notifications") {
     return <NotificationsScreen onBack={() => setSubScreen(null)} />;
   }
-  if (subScreen === "privacy") {
+  if (subScreen === "privacy" || subScreen === "terms") {
+    const PageComponent = subScreen === "privacy" ? Privacy : Terms;
     return (
-      <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
-        <Privacy />
-      </Suspense>
-    );
-  }
-  if (subScreen === "terms") {
-    return (
-      <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
-        <Terms />
-      </Suspense>
+      <div className="space-y-4 pb-4">
+        <div className="flex items-center gap-3">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setSubScreen(null)} className="p-1">
+            <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
+          </motion.button>
+          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
+            {subScreen === "privacy" ? "Privacy Policy" : "Terms of Service"}
+          </h1>
+        </div>
+        <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
+          <InlinePageContent component={PageComponent} />
+        </Suspense>
+      </div>
     );
   }
 
