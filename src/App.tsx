@@ -110,6 +110,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         {!splashDone && <SplashScreen onFinish={handleSplashFinish} />}
+        <BiometricLock />
         <BrowserRouter>
           <AuthListener />
           <AppContent />
