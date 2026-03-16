@@ -1,14 +1,35 @@
 /**
- * Despia Native Bridge
- * Provides native capabilities when running inside Despia wrapper:
- * - Status bar theming
- * - Haptic feedback
- * - Native share sheet
- * - OneSignal player ID handoff
- * - Biometric authentication
+ * Despia Native Bridge — Complete Feature Integration
+ * Covers all Despia runtime APIs, SDK bridges, and infrastructure features.
+ * 
+ * Protocol Reference:
+ *   statusbarcolor://  — Status bar theming
+ *   haptic://           — Native haptics (7 types)
+ *   shareapp://         — Native share sheet
+ *   setonesignalplayerid:// — OneSignal player ID handoff
+ *   identityvault://    — Biometric-secured key-value storage
+ *   screenshield://     — Screenshot/recording prevention
+ *   preventsleep://     — Keep screen awake
+ *   fullscreen://       — Toggle fullscreen mode
+ *   orientation://      — Lock device orientation
+ *   att://              — App Tracking Transparency prompt
+ *   jailbreakcheck://   — Jailbreak/root detection
+ *   vendorid://         — Vendor ID retrieval
+ *   backgroundlocation:// — Background location tracking
+ *   localpush://        — Local push notifications
+ *   airprint://         — AirPrint support
+ *   pkpass://           — Mobile wallet pass
+ * 
+ * Web Interception Layer (automatic — no code needed):
+ *   <input type="file">  → native file picker
+ *   capture attribute    → native camera modal
+ *   accept="image/*"     → native media gallery
+ *   Deeplinks/HTTPS      → native routing
+ *   External links       → configurable handling
  */
 
-// Detect if running inside Despia native shell
+// ─── Native Detection ─────────────────────────────────────────
+
 export const isDespiaNative = (): boolean => {
   try {
     return (
@@ -21,37 +42,35 @@ export const isDespiaNative = (): boolean => {
   }
 };
 
+/** Send a protocol command to Despia shell. No-op in browser. */
+const despiaCommand = (protocol: string, path: string = "", params?: Record<string, string>) => {
+  if (!isDespiaNative()) return;
+  try {
+    const url = params
+      ? `${protocol}://${path}?${new URLSearchParams(params).toString()}`
+      : `${protocol}://${path}`;
+    window.location.href = url;
+  } catch (e) {
+    console.warn(`[Despia] ${protocol} failed:`, e);
+  }
+};
+
 // ─── Status Bar ───────────────────────────────────────────────
 
 type StatusBarStyle = "light" | "dark";
 
-/**
- * Set the native status bar color and text style.
- * @param hex - Background color as hex (e.g. "#2D6A4F")
- * @param style - "light" for white text, "dark" for black text
- */
 export const setStatusBarColor = (hex: string, style: StatusBarStyle = "light") => {
-  if (!isDespiaNative()) return;
-  try {
-    window.location.href = `statusbarcolor://${hex}?style=${style}`;
-  } catch (e) {
-    console.warn("[Despia] Status bar color failed:", e);
-  }
+  despiaCommand("statusbarcolor", hex, { style });
 };
 
-// Theme presets matching TendherMom design tokens
 export const StatusBarThemes = {
-  /** Default green header — used on Home, Triage, Profile */
   primary: () => setStatusBarColor("#2D6A4F", "light"),
-  /** Coral — used on SOS/Emergency screens */
   emergency: () => setStatusBarColor("#E8735A", "light"),
-  /** Light background — used on Community, Baby Shower */
   light: () => setStatusBarColor("#F5F0EB", "dark"),
-  /** White surface — used on modals/sheets */
   surface: () => setStatusBarColor("#FFFFFF", "dark"),
 } as const;
 
-// ─── Haptics ──────────────────────────────────────────────────
+// ─── Haptics (7 types — 5 native + 2 feedback) ───────────────
 
 type HapticStyle =
   | "light"
@@ -62,18 +81,11 @@ type HapticStyle =
   | "error"
   | "selection";
 
-/**
- * Trigger native haptic feedback.
- * Falls back to Vibration API on Android web.
- */
 export const haptic = (style: HapticStyle = "medium") => {
   if (isDespiaNative()) {
-    try {
-      window.location.href = `haptic://${style}`;
-      return;
-    } catch {}
+    despiaCommand("haptic", style);
+    return;
   }
-
   // Web fallback via Vibration API
   if (typeof navigator !== "undefined" && navigator.vibrate) {
     const patterns: Record<HapticStyle, number | number[]> = {
@@ -89,7 +101,6 @@ export const haptic = (style: HapticStyle = "medium") => {
   }
 };
 
-// Convenience aliases
 export const hapticLight = () => haptic("light");
 export const hapticMedium = () => haptic("medium");
 export const hapticHeavy = () => haptic("heavy");
@@ -97,6 +108,27 @@ export const hapticSuccess = () => haptic("success");
 export const hapticWarning = () => haptic("warning");
 export const hapticError = () => haptic("error");
 export const hapticSelection = () => haptic("selection");
+
+// ─── Identity Vault (Biometric-secured KV storage) ────────────
+
+export const identityVault = {
+  /** Store a key-value pair secured by biometrics */
+  set: (key: string, value: string) => {
+    despiaCommand("identityvault", "set", { key, value });
+  },
+  /** Retrieve a value (triggers biometric prompt) */
+  get: (key: string) => {
+    despiaCommand("identityvault", "get", { key });
+  },
+  /** Remove a key from vault */
+  remove: (key: string) => {
+    despiaCommand("identityvault", "remove", { key });
+  },
+  /** Check if biometrics are available */
+  checkBiometrics: () => {
+    despiaCommand("identityvault", "checkbiometrics");
+  },
+};
 
 // ─── Native Share ─────────────────────────────────────────────
 
@@ -106,24 +138,16 @@ interface ShareOptions {
   url?: string;
 }
 
-/**
- * Open native share sheet. Falls back to Web Share API.
- * Returns true if share was initiated.
- */
 export const nativeShare = async (options: ShareOptions): Promise<boolean> => {
   if (isDespiaNative()) {
-    try {
-      const params = new URLSearchParams({
-        title: options.title,
-        text: options.text,
-        ...(options.url && { url: options.url }),
-      });
-      window.location.href = `shareapp://?${params.toString()}`;
-      return true;
-    } catch {}
+    despiaCommand("shareapp", "", {
+      title: options.title,
+      text: options.text,
+      ...(options.url && { url: options.url }),
+    });
+    return true;
   }
 
-  // Web Share API fallback
   if (typeof navigator !== "undefined" && navigator.share) {
     try {
       await navigator.share(options);
@@ -133,7 +157,6 @@ export const nativeShare = async (options: ShareOptions): Promise<boolean> => {
     }
   }
 
-  // Clipboard fallback
   if (options.url && typeof navigator !== "undefined" && navigator.clipboard) {
     try {
       await navigator.clipboard.writeText(options.url);
@@ -146,24 +169,116 @@ export const nativeShare = async (options: ShareOptions): Promise<boolean> => {
 
 // ─── OneSignal Player ID Handoff ──────────────────────────────
 
-/**
- * Pass OneSignal player ID to the native shell for push routing.
- */
 export const setDespiaOneSignalPlayerId = (playerId: string) => {
-  if (!isDespiaNative()) return;
-  try {
-    window.location.href = `setonesignalplayerid://${playerId}`;
-  } catch (e) {
-    console.warn("[Despia] OneSignal player ID handoff failed:", e);
-  }
+  despiaCommand("setonesignalplayerid", playerId);
+};
+
+// ─── Screen Shield (prevent screenshots/recordings) ───────────
+
+export const screenShield = {
+  enable: () => despiaCommand("screenshield", "enable"),
+  disable: () => despiaCommand("screenshield", "disable"),
+};
+
+// ─── Prevent Sleep ────────────────────────────────────────────
+
+export const preventSleep = {
+  enable: () => despiaCommand("preventsleep", "enable"),
+  disable: () => despiaCommand("preventsleep", "disable"),
+};
+
+// ─── Fullscreen Mode ──────────────────────────────────────────
+
+export const fullscreen = {
+  enter: () => despiaCommand("fullscreen", "enter"),
+  exit: () => despiaCommand("fullscreen", "exit"),
+};
+
+// ─── Orientation Lock ─────────────────────────────────────────
+
+type OrientationMode = "portrait" | "landscape" | "auto";
+
+export const setOrientation = (mode: OrientationMode) => {
+  despiaCommand("orientation", mode);
+};
+
+// ─── App Tracking Transparency (ATT) ─────────────────────────
+
+export const requestATT = () => {
+  despiaCommand("att", "request");
+};
+
+// ─── Jailbreak Detection ──────────────────────────────────────
+
+export const checkJailbreak = () => {
+  despiaCommand("jailbreakcheck", "check");
+};
+
+// ─── Vendor ID ────────────────────────────────────────────────
+
+export const getVendorId = () => {
+  despiaCommand("vendorid", "get");
+};
+
+// ─── Background Location ──────────────────────────────────────
+
+export const backgroundLocation = {
+  start: () => despiaCommand("backgroundlocation", "start"),
+  stop: () => despiaCommand("backgroundlocation", "stop"),
+};
+
+// ─── Local Push Notifications ─────────────────────────────────
+
+interface LocalNotificationOptions {
+  title: string;
+  body: string;
+  delaySeconds?: number;
+  id?: string;
+}
+
+export const localNotification = {
+  schedule: (options: LocalNotificationOptions) => {
+    despiaCommand("localpush", "schedule", {
+      title: options.title,
+      body: options.body,
+      delay: String(options.delaySeconds || 0),
+      ...(options.id && { id: options.id }),
+    });
+  },
+  cancel: (id: string) => {
+    despiaCommand("localpush", "cancel", { id });
+  },
+  cancelAll: () => {
+    despiaCommand("localpush", "cancelall");
+  },
+};
+
+// ─── AirPrint ─────────────────────────────────────────────────
+
+export const airPrint = (url: string) => {
+  despiaCommand("airprint", "", { url });
+};
+
+// ─── PkPass (Mobile Wallet) ──────────────────────────────────
+
+export const addToWallet = (passUrl: string) => {
+  despiaCommand("pkpass", "", { url: passUrl });
+};
+
+// ─── Native Clipboard ─────────────────────────────────────────
+
+export const nativeClipboard = {
+  copy: (text: string) => {
+    if (isDespiaNative()) {
+      despiaCommand("clipboard", "copy", { text });
+      return;
+    }
+    navigator.clipboard?.writeText(text);
+  },
 };
 
 // ─── Safe Area Helpers ────────────────────────────────────────
 
-/**
- * Get computed safe area inset value (px).
- * Returns 0 when not in a native context.
- */
 export const getSafeAreaInset = (
   side: "top" | "bottom" | "left" | "right"
 ): number => {
@@ -176,19 +291,18 @@ export const getSafeAreaInset = (
 
 // ─── Initialization ───────────────────────────────────────────
 
-/**
- * Initialize Despia native bridge. Call once on app boot.
- * Sets default status bar theme and logs native detection.
- */
 export const initDespia = () => {
   const native = isDespiaNative();
   console.log(`[Despia] Native: ${native}`);
 
   if (native) {
-    // Set default status bar to primary green
+    // Set default status bar
     StatusBarThemes.primary();
 
-    // Expose safe-area CSS custom properties from env()
+    // Lock to portrait on phones
+    setOrientation("portrait");
+
+    // Expose safe-area CSS custom properties
     const root = document.documentElement;
     const sides = ["top", "bottom", "left", "right"] as const;
     sides.forEach((side) => {
@@ -197,5 +311,12 @@ export const initDespia = () => {
         `env(safe-area-inset-${side}, 0px)`
       );
     });
+
+    // Prevent zoom is handled by viewport meta
+    // Splash screen is handled by Despia editor config
+    // File inputs, camera, media gallery are auto-intercepted
+    // Deeplinks and external links are handled by Despia config
+
+    console.log("[Despia] Bridge initialized — all protocols ready");
   }
 };
