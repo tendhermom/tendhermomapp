@@ -144,22 +144,29 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
 
       {/* Quick Access Grid */}
       <motion.div variants={fadeUp}>
-        <p className="label-caps text-text-muted mb-3">QUICK ACCESS</p>
-        <div className="grid grid-cols-4 gap-3">
+        <p className="label-caps text-text-muted mb-2.5">QUICK ACCESS</p>
+        <div
+          className="grid grid-cols-4 gap-2 rounded-[20px] p-3"
+          style={{
+            background: "hsl(var(--surface))",
+            boxShadow: "0 2px 12px -2px hsla(0,0%,0%,0.06)",
+          }}
+        >
           {QUICK_ACCESS.map((item) => (
             <motion.button
               key={item.id}
               whileTap={{ scale: 0.92 }}
               onClick={() => onNavigate(item.id)}
-              className="flex flex-col items-center gap-2 ios-press"
+              className="flex flex-col items-center gap-1.5 ios-press py-1"
             >
               <div
-                className="w-[52px] h-[52px] rounded-[16px] flex items-center justify-center"
+                className="w-[50px] h-[50px] rounded-[14px] flex items-center justify-center relative overflow-hidden"
                 style={{ background: item.bg }}
               >
-                <IonIcon name={item.icon} size={26} style={{ color: item.color }} />
+                <div className="absolute inset-0 opacity-[0.08]" style={{ background: `radial-gradient(circle at 30% 30%, ${item.color}, transparent 70%)` }} />
+                <IonIcon name={item.icon} size={24} style={{ color: item.color }} />
               </div>
-              <span className="text-[11px] font-sans font-medium text-center leading-tight" style={{ color: "hsl(var(--dark))" }}>
+              <span className="text-[10px] font-sans font-semibold text-center leading-tight tracking-wide" style={{ color: "hsl(var(--dark))" }}>
                 {item.label}
               </span>
             </motion.button>
@@ -168,8 +175,8 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
       </motion.div>
 
       {/* Video Explainer */}
-      <motion.div variants={fadeUp}>
-        <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>How TendherMom Works</h2>
+      <motion.div variants={fadeUp} className="-mt-1">
+        <h2 className="font-serif text-[20px] mb-2" style={{ color: "hsl(var(--dark))" }}>How Triage Works</h2>
         <div
           className="rounded-[18px] overflow-hidden"
           style={{
