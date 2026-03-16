@@ -5,9 +5,47 @@ import PATHWAYS, { CATEGORIES, type TriagePathway, type TriageOutcome, type Seve
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 
+// Category images
+import imgFetal from "@/assets/triage/fetal.jpg";
+import imgHaemorrhage from "@/assets/triage/haemorrhage.jpg";
+import imgHypertensive from "@/assets/triage/hypertensive.jpg";
+import imgAbdominal from "@/assets/triage/abdominal.jpg";
+import imgLabour from "@/assets/triage/labour.jpg";
+import imgInfection from "@/assets/triage/infection.jpg";
+import imgRespiratory from "@/assets/triage/respiratory.jpg";
+import imgCardiac from "@/assets/triage/cardiac.jpg";
+import imgNeurological from "@/assets/triage/neurological.jpg";
+import imgLiver from "@/assets/triage/liver.jpg";
+import imgRenal from "@/assets/triage/renal.jpg";
+import imgEarlyPregnancy from "@/assets/triage/early_pregnancy.jpg";
+import imgSkin from "@/assets/triage/skin.jpg";
+import imgMusculoskeletal from "@/assets/triage/musculoskeletal.jpg";
+import imgPostpartum from "@/assets/triage/postpartum.jpg";
+import imgMentalHealth from "@/assets/triage/mental_health.jpg";
+
 interface TriageScreenProps {
   onNavigate: (screen: string) => void;
 }
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  fetal: imgFetal,
+  haemorrhage: imgHaemorrhage,
+  hypertensive: imgHypertensive,
+  abdominal: imgAbdominal,
+  labour: imgLabour,
+  infection: imgInfection,
+  respiratory: imgRespiratory,
+  cardiac: imgCardiac,
+  neurological: imgNeurological,
+  liver: imgLiver,
+  haematological: imgHaemorrhage, // reuse
+  renal: imgRenal,
+  early_pregnancy: imgEarlyPregnancy,
+  skin: imgSkin,
+  musculoskeletal: imgMusculoskeletal,
+  postpartum: imgPostpartum,
+  mental_health: imgMentalHealth,
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -56,7 +94,6 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   const questionIndex = selectedPathway?.questions.findIndex((q) => q.id === currentQuestionId) ?? -1;
   const totalQuestions = selectedPathway?.questions.length ?? 0;
 
-  // Group pathways by category
   const groupedPathways = useMemo(() => {
     const groups: Record<string, TriagePathway[]> = {};
     PATHWAYS.forEach((p) => {
@@ -69,11 +106,6 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   const activeCategories = useMemo(
     () => CATEGORIES.filter((c) => groupedPathways[c.id]?.length),
     [groupedPathways]
-  );
-
-  const filteredPathways = useMemo(
-    () => (selectedCategory ? groupedPathways[selectedCategory] || [] : PATHWAYS),
-    [selectedCategory, groupedPathways]
   );
 
   const startPathway = useCallback((pathway: TriagePathway) => {
@@ -112,124 +144,87 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setCurrentQuestionId(null);
     setAnswers([]);
     setOutcome(null);
+    setSelectedCategory(null);
+  }, []);
+
+  const backToCategory = useCallback(() => {
+    setSelectedPathway(null);
+    setCurrentQuestionId(null);
+    setAnswers([]);
+    setOutcome(null);
   }, []);
 
   // ========================
-  // PATHWAY SELECTION SCREEN
+  // CATEGORY CAROUSEL (HOME)
   // ========================
-  if (!selectedPathway) {
+  if (!selectedCategory && !selectedPathway) {
     return (
       <motion.div
-        className="space-y-5 pb-4 pt-1"
+        className="space-y-6 pb-4 pt-1"
         initial="hidden"
         animate="show"
         variants={stagger}
       >
-        {/* Header — Apple large-title style */}
+        {/* Header */}
         <motion.div variants={fadeUp} className="pt-1">
           <h1 className="font-serif text-[30px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
             Symptom Triage
           </h1>
           <p className="text-[13px] font-sans mt-1.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            Select what you're feeling. We'll guide you in under 2&nbsp;minutes.
+            Choose a category to begin your assessment
           </p>
         </motion.div>
 
-        {/* Category filter chips */}
-        <motion.div variants={fadeUp} className="flex gap-2 overflow-x-auto hide-scrollbar pb-1 -mx-1 px-1">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setSelectedCategory(null)}
-            className="flex-shrink-0 px-3.5 py-[7px] rounded-full text-[11px] font-sans font-semibold ios-press transition-colors"
-            style={{
-              background: !selectedCategory ? "hsl(var(--green))" : "hsl(var(--surface))",
-              color: !selectedCategory ? "white" : "hsl(var(--text-muted))",
-              boxShadow: !selectedCategory ? "0 4px 12px -2px hsla(153,42%,30%,0.3)" : "0 1px 3px hsla(0,0%,0%,0.04)",
-            }}
-          >
-            All
-          </motion.button>
-          {activeCategories.map((cat) => (
-            <motion.button
-              key={cat.id}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-              className="flex-shrink-0 px-3.5 py-[7px] rounded-full text-[11px] font-sans font-semibold ios-press flex items-center gap-1.5 transition-colors"
-              style={{
-                background: selectedCategory === cat.id ? "hsl(var(--green))" : "hsl(var(--surface))",
-                color: selectedCategory === cat.id ? "white" : "hsl(var(--text-muted))",
-                boxShadow: selectedCategory === cat.id ? "0 4px 12px -2px hsla(153,42%,30%,0.3)" : "0 1px 3px hsla(0,0%,0%,0.04)",
-              }}
-            >
-              <IonIcon name={cat.icon} size={13} style={{ color: selectedCategory === cat.id ? "white" : "hsl(var(--text-muted))" }} />
-              {cat.label}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Pathways count */}
-        <motion.div variants={fadeUp} className="flex items-center justify-between">
-          <p className="label-caps text-text-muted">
-            {selectedCategory
-              ? activeCategories.find((c) => c.id === selectedCategory)?.label?.toUpperCase()
-              : "ALL SYMPTOMS"}
-          </p>
-          <span className="text-[10px] font-sans font-semibold tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>
-            {filteredPathways.length} pathways
-          </span>
-        </motion.div>
-
-        {/* Pathway cards — unified container */}
-        <motion.div
-          variants={fadeUp}
-          className="rounded-[20px] overflow-hidden"
-          style={{
-            background: "hsl(var(--surface))",
-            boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)",
-          }}
-        >
-          {filteredPathways.map((pathway, i) => {
-            const isLast = i === filteredPathways.length - 1;
-            const isGreen = i % 2 === 0;
+        {/* Category Carousel Grid — 2 columns */}
+        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+          {activeCategories.map((cat, i) => {
+            const pathwayCount = groupedPathways[cat.id]?.length || 0;
             return (
-              <div key={pathway.id}>
-                <motion.button
-                  variants={fadeUp}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => startPathway(pathway)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left ios-press"
+              <motion.button
+                key={cat.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 + i * 0.04, type: "spring", stiffness: 300, damping: 28 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setSelectedCategory(cat.id)}
+                className="relative rounded-[18px] overflow-hidden text-left ios-press"
+                style={{
+                  aspectRatio: "3/4",
+                  boxShadow: "0 4px 20px -4px hsla(0,0%,0%,0.12)",
+                }}
+              >
+                {/* Image */}
+                <img
+                  src={CATEGORY_IMAGES[cat.id] || imgFetal}
+                  alt={cat.label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                {/* Gradient overlay */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: "linear-gradient(0deg, hsla(0,0%,0%,0.7) 0%, hsla(0,0%,0%,0.25) 50%, hsla(0,0%,0%,0.05) 100%)",
+                  }}
+                />
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                  <h3 className="text-white text-[14px] font-semibold font-sans leading-tight">
+                    {cat.label}
+                  </h3>
+                  <p className="text-white/60 text-[11px] font-sans mt-0.5">
+                    {pathwayCount} symptom{pathwayCount !== 1 ? "s" : ""}
+                  </p>
+                </div>
+                {/* Top-right badge */}
+                <div
+                  className="absolute top-3 right-3 w-[28px] h-[28px] rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
                 >
-                  <div
-                    className="w-[38px] h-[38px] rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{
-                      background: isGreen
-                        ? "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))"
-                        : "linear-gradient(135deg, hsl(var(--light-coral)), hsl(14 82% 92%))",
-                      boxShadow: isGreen
-                        ? "0 2px 8px -2px hsla(153,42%,30%,0.2)"
-                        : "0 2px 8px -2px hsla(11,74%,63%,0.2)",
-                    }}
-                  >
-                    <IonIcon
-                      name={pathway.icon}
-                      size={18}
-                      style={{ color: isGreen ? "hsl(var(--green))" : "hsl(var(--coral))" }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-                      {pathway.name}
-                    </h3>
-                    <p className="text-[10px] font-sans mt-0.5 truncate" style={{ color: "hsl(var(--text-muted))" }}>
-                      {pathway.description}
-                    </p>
-                  </div>
-                  <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--text-muted))" }} />
-                </motion.button>
-                {!isLast && (
-                  <div className="mx-4 h-px" style={{ background: "hsl(var(--border-subtle))" }} />
-                )}
-              </div>
+                  <IonIcon name="chevron-forward" size={14} style={{ color: "white" }} />
+                </div>
+              </motion.button>
             );
           })}
         </motion.div>
@@ -246,6 +241,115 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   }
 
   // ========================
+  // CATEGORY SYMPTOM LIST
+  // ========================
+  if (selectedCategory && !selectedPathway) {
+    const cat = CATEGORIES.find((c) => c.id === selectedCategory);
+    const pathways = groupedPathways[selectedCategory] || [];
+
+    return (
+      <motion.div
+        className="space-y-5 pb-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        {/* Back + Header with category image */}
+        <div className="relative rounded-[20px] overflow-hidden -mx-0" style={{ marginTop: 4 }}>
+          <img
+            src={CATEGORY_IMAGES[selectedCategory] || imgFetal}
+            alt={cat?.label}
+            className="w-full h-[160px] object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(0deg, hsla(0,0%,0%,0.65) 0%, hsla(0,0%,0%,0.2) 60%, hsla(0,0%,0%,0.1) 100%)" }}
+          />
+          <div className="absolute top-3 left-2">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setSelectedCategory(null)}
+              className="flex items-center gap-0.5 ios-press px-2 py-1 rounded-full"
+              style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
+            >
+              <IonIcon name="chevron-back" size={18} style={{ color: "white" }} />
+              <span className="text-[13px] font-sans font-medium text-white">Back</span>
+            </motion.button>
+          </div>
+          <div className="absolute bottom-4 left-4 right-4">
+            <h1 className="font-serif text-[26px] text-white leading-tight">
+              {cat?.label}
+            </h1>
+            <p className="text-white/60 text-[12px] font-sans mt-1">
+              {pathways.length} symptom{pathways.length !== 1 ? "s" : ""} to check
+            </p>
+          </div>
+        </div>
+
+        {/* Symptom pathway cards */}
+        <div
+          className="rounded-[20px] overflow-hidden"
+          style={{
+            background: "hsl(var(--surface))",
+            boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)",
+          }}
+        >
+          {pathways.map((pathway, i) => {
+            const isLast = i === pathways.length - 1;
+            const isGreen = i % 2 === 0;
+            return (
+              <div key={pathway.id}>
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + i * 0.05, type: "spring", stiffness: 300, damping: 28 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => startPathway(pathway)}
+                  className="w-full flex items-center gap-3.5 px-4 py-4 text-left ios-press"
+                >
+                  <div
+                    className="w-[44px] h-[44px] rounded-[14px] flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: isGreen
+                        ? "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))"
+                        : "linear-gradient(135deg, hsl(var(--light-coral)), hsl(14 82% 92%))",
+                      boxShadow: isGreen
+                        ? "0 3px 12px -3px hsla(153,42%,30%,0.2)"
+                        : "0 3px 12px -3px hsla(11,74%,63%,0.2)",
+                    }}
+                  >
+                    <IonIcon
+                      name={pathway.icon}
+                      size={22}
+                      style={{ color: isGreen ? "hsl(var(--green))" : "hsl(var(--coral))" }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
+                      {pathway.name}
+                    </h3>
+                    <p className="text-[11px] font-sans mt-0.5 line-clamp-1" style={{ color: "hsl(var(--text-muted))" }}>
+                      {pathway.description}
+                    </p>
+                  </div>
+                  <div
+                    className="w-[32px] h-[32px] rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "hsl(var(--light-green))" }}
+                  >
+                    <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--green))" }} />
+                  </div>
+                </motion.button>
+                {!isLast && (
+                  <div className="mx-4 h-px" style={{ background: "hsl(var(--border-subtle))" }} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ========================
   // OUTCOME SCREEN
   // ========================
   if (outcome) {
@@ -257,13 +361,11 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {/* Back — Apple-style inline nav */}
         <motion.button whileTap={{ scale: 0.92 }} onClick={reset} className="ios-press flex items-center gap-1 -ml-1.5 py-1">
           <IonIcon name="chevron-back" size={22} style={{ color: "hsl(var(--green))" }} />
           <span className="text-[15px] font-sans font-medium" style={{ color: "hsl(var(--green))" }}>Start over</span>
         </motion.button>
 
-        {/* Result card */}
         <motion.div
           initial={{ scale: 0.92, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -271,7 +373,6 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
           className="rounded-[22px] p-6 relative overflow-hidden"
           style={{ background: config.bg, boxShadow: config.glow }}
         >
-          {/* Decorative circles */}
           <div className="absolute -top-16 -right-16 w-[120px] h-[120px] rounded-full" style={{ background: `radial-gradient(circle, ${config.color}10 0%, transparent 70%)` }} />
 
           <motion.div
@@ -308,7 +409,6 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
           </div>
         </motion.div>
 
-        {/* SOS shortcut for red outcomes */}
         {outcome.severity === "red" && (
           <motion.button
             initial={{ opacity: 0, y: 12 }}
@@ -334,7 +434,6 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
           </motion.button>
         )}
 
-        {/* Actions */}
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={reset}
@@ -359,7 +458,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   }
 
   // ========================
-  // QUESTION FLOW
+  // QUESTION FLOW — Premium UI
   // ========================
   return (
     <motion.div
@@ -367,13 +466,13 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Header — Apple-style nav bar */}
+      {/* Header */}
       <div className="flex items-center gap-2 pt-1">
-        <motion.button whileTap={{ scale: 0.92 }} onClick={reset} className="ios-press -ml-1.5 p-1">
+        <motion.button whileTap={{ scale: 0.92 }} onClick={backToCategory} className="ios-press -ml-1.5 p-1">
           <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--green))" }} />
         </motion.button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-serif text-[21px] truncate" style={{ color: "hsl(var(--dark))" }}>{selectedPathway.name}</h1>
+          <h1 className="font-serif text-[21px] truncate" style={{ color: "hsl(var(--dark))" }}>{selectedPathway?.name}</h1>
         </div>
         <span
           className="text-[11px] font-sans font-semibold px-3 py-1.5 rounded-full"
@@ -383,63 +482,114 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         </span>
       </div>
 
-      {/* Progress bar */}
-      <div className="h-[4px] rounded-full overflow-hidden" style={{ background: "hsl(var(--border))" }}>
-        <motion.div
-          className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg, hsl(var(--green)), hsl(153 42% 40%))" }}
-          initial={{ width: 0 }}
-          animate={{ width: `${((questionIndex + 1) / totalQuestions) * 100}%` }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        />
+      {/* Progress bar — segmented */}
+      <div className="flex gap-1">
+        {Array.from({ length: totalQuestions }).map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 h-[5px] rounded-full overflow-hidden"
+            style={{ background: "hsl(var(--border))" }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              style={{
+                background: i <= questionIndex
+                  ? "linear-gradient(90deg, hsl(var(--green)), hsl(153 42% 40%))"
+                  : "transparent",
+              }}
+              initial={{ width: 0 }}
+              animate={{ width: i <= questionIndex ? "100%" : "0%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            />
+          </div>
+        ))}
       </div>
 
-      {/* Question */}
+      {/* Question Card */}
       <AnimatePresence mode="wait">
         {currentQuestion && (
           <motion.div
             key={currentQuestion.id}
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
+            exit={{ opacity: 0, x: -40 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="space-y-4"
           >
+            {/* Question text — premium card */}
             <div
-              className="rounded-[18px] p-4"
+              className="rounded-[20px] p-5 relative overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, hsl(var(--light-green)), hsla(144,28%,93%,0.5))",
+                background: "linear-gradient(145deg, hsl(153 42% 22%), hsl(153 42% 30%), hsl(153 38% 26%))",
+                boxShadow: "0 8px 32px -8px hsla(153,42%,20%,0.4)",
               }}
             >
-              <h2 className="font-serif text-[19px] leading-snug" style={{ color: "hsl(var(--dark))" }}>
+              <div className="absolute -top-16 -right-16 w-[120px] h-[120px] rounded-full" style={{ background: "radial-gradient(circle, hsla(0,0%,100%,0.06) 0%, transparent 70%)" }} />
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className="w-[24px] h-[24px] rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.15)" }}
+                >
+                  <span className="text-[11px] font-sans font-bold text-white">{questionIndex + 1}</span>
+                </div>
+                <span className="text-[10px] font-sans font-semibold tracking-wider uppercase text-white/40">
+                  Question
+                </span>
+              </div>
+              <h2 className="font-serif text-[20px] leading-snug text-white">
                 {currentQuestion.text}
               </h2>
             </div>
 
-            <div className="space-y-2">
-              {currentQuestion.options.map((option, i) => (
-                <motion.button
-                  key={option.label}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 + i * 0.06, type: "spring", stiffness: 300, damping: 30 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleAnswer(option.label, option.next, option.outcome)}
-                  className="w-full rounded-[16px] p-4 text-left ios-press flex items-center gap-3"
-                  style={{
-                    background: "hsl(var(--surface))",
-                    boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 12px -4px hsla(0,0%,0%,0.06)",
-                  }}
-                >
-                  <div
-                    className="w-[10px] h-[10px] rounded-full flex-shrink-0 border-2"
-                    style={{ borderColor: "hsl(var(--green))", background: "transparent" }}
-                  />
-                  <span className="text-[13px] font-sans leading-snug" style={{ color: "hsl(var(--dark))" }}>
-                    {option.label}
-                  </span>
-                </motion.button>
-              ))}
+            {/* Answer options — premium cards */}
+            <div className="space-y-2.5">
+              {currentQuestion.options.map((option, i) => {
+                const isGreen = i % 2 === 0;
+                return (
+                  <motion.button
+                    key={option.label}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08 + i * 0.07, type: "spring", stiffness: 300, damping: 28 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleAnswer(option.label, option.next, option.outcome)}
+                    className="w-full rounded-[16px] p-4 text-left ios-press flex items-center gap-3.5 group"
+                    style={{
+                      background: "hsl(var(--surface))",
+                      boxShadow: "0 2px 8px -2px hsla(0,0%,0%,0.06), 0 1px 2px hsla(0,0%,0%,0.04)",
+                      border: "1px solid hsl(var(--border-subtle))",
+                    }}
+                  >
+                    <div
+                      className="w-[36px] h-[36px] rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{
+                        background: isGreen
+                          ? "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))"
+                          : "linear-gradient(135deg, hsl(var(--light-coral)), hsl(14 82% 92%))",
+                      }}
+                    >
+                      <span
+                        className="text-[13px] font-sans font-bold"
+                        style={{ color: isGreen ? "hsl(var(--green))" : "hsl(var(--coral))" }}
+                      >
+                        {String.fromCharCode(65 + i)}
+                      </span>
+                    </div>
+                    <span className="flex-1 text-[13.5px] font-sans font-medium leading-snug" style={{ color: "hsl(var(--dark))" }}>
+                      {option.label}
+                    </span>
+                    <IonIcon name="chevron-forward" size={14} style={{ color: "hsl(var(--text-muted))" }} />
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Reassurance footer */}
+            <div className="flex items-center gap-2 pt-2">
+              <IonIcon name="lock-closed" size={12} style={{ color: "hsl(var(--text-muted))" }} />
+              <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                Your answers are private and encrypted
+              </p>
             </div>
           </motion.div>
         )}
