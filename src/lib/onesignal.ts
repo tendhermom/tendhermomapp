@@ -1,3 +1,5 @@
+import { setDespiaOneSignalPlayerId, isDespiaNative } from "./despia";
+
 const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 
 export const initOneSignal = async () => {
