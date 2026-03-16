@@ -177,23 +177,18 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
               >
                 {isUserStage && (
                   <span
-                    className="absolute top-2.5 right-2.5 text-[8px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                    style={{ background: "linear-gradient(135deg, hsl(153 42% 94%), hsl(153 42% 88%))", color: "hsl(var(--green))" }}
+                    className="absolute top-2.5 right-2.5 z-10 text-[8px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                    style={{ background: "rgba(255,255,255,0.9)", color: "hsl(var(--green))" }}
                   >
                     You
                   </span>
                 )}
-                <div
-                  className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center"
-                  style={{
-                    background: isUserStage
-                      ? "linear-gradient(135deg, hsl(153 42% 94%), hsl(153 42% 88%))"
-                      : "linear-gradient(135deg, hsl(11 74% 96%), hsl(11 74% 91%))",
-                  }}
-                >
-                  <IonIcon name={ch.icon} size={20} style={{ color: isUserStage ? "hsl(var(--green))" : "hsl(var(--coral))" }} />
-                </div>
-                <div>
+                <img
+                  src={ch.image}
+                  alt={ch.name}
+                  className="w-full h-[90px] object-cover rounded-t-[18px]"
+                />
+                <div className="p-3">
                   <h3 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{ch.name}</h3>
                   <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{ch.subtitle}</p>
                 </div>
