@@ -22,7 +22,21 @@ const ScreenFallback = () => (
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
 
+  // Theme status bar based on active screen
+  useEffect(() => {
+    const emergencyScreens = ["sos", "emergency-contacts"];
+    const lightScreens = ["community", "baby-shower"];
+    if (emergencyScreens.includes(activeTab)) {
+      StatusBarThemes.emergency();
+    } else if (lightScreens.includes(activeTab)) {
+      StatusBarThemes.light();
+    } else {
+      StatusBarThemes.primary();
+    }
+  }, [activeTab]);
+
   const handleNavigate = (screen: string) => {
+    hapticSelection();
     setActiveTab(screen);
   };
 
