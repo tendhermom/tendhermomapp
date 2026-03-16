@@ -152,6 +152,8 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       toast.error("Failed to send alert. Please call emergency services directly: 112");
     } finally {
       setIsSending(false);
+      preventSleep.disable();
+      backgroundLocation.stop();
     }
   };
 
