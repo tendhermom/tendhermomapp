@@ -147,7 +147,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     const badges: string[] = [];
     if (c.sms_enabled) badges.push("SMS");
     if (c.whatsapp_enabled) badges.push("WhatsApp");
-    if (c.email_enabled && c.email) badges.push("Email");
+    if (c.email_enabled) badges.push("Voice");
     return badges;
   };
 
