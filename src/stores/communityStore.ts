@@ -138,16 +138,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     const post = get().posts.find(p => p.id === postId);
     if (!post) return;
 
-    if (post.liked_by_me) {
-      await db.from("post_likes").delete().eq("post_id", postId).eq("user_id", userId);
-      await supabase.from("community_posts").update({ likes_count: Math.max(0, post.likes_count - 1) }).eq("id", postId);
-    } else {
-      await db.from("post_likes").insert({ post_id: postId, user_id: userId });
-      await supabase.from("community_posts").update({ likes_count: post.likes_count + 1 }).eq("id", postId);
-      // Award points for liking
-      await usePointsStore.getState().awardLike(userId);
-    }
-
+    // Optimistic UI update first
     set({
       posts: get().posts.map(p =>
         p.id === postId
@@ -155,6 +146,15 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
           : p
       ),
     });
+
+    if (post.liked_by_me) {
+      await db.from("post_likes").delete().eq("post_id", postId).eq("user_id", userId);
+      await supabase.rpc("decrement_likes", { p_post_id: postId });
+    } else {
+      await db.from("post_likes").insert({ post_id: postId, user_id: userId });
+      await supabase.rpc("increment_likes", { p_post_id: postId });
+      await usePointsStore.getState().awardLike(userId);
+    }
   },
 
   fetchComments: async (postId) => {
@@ -192,17 +192,14 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     });
 
     if (!error) {
-      // Award points for commenting
       await usePointsStore.getState().awardComment(user.id);
-      const post = get().posts.find(p => p.id === postId);
-      if (post) {
-        await supabase.from("community_posts").update({ comments_count: post.comments_count + 1 }).eq("id", postId);
-        set({
-          posts: get().posts.map(p =>
-            p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
-          ),
-        });
-      }
+      // Atomic increment — no race condition
+      await supabase.rpc("increment_comments", { p_post_id: postId });
+      set({
+        posts: get().posts.map(p =>
+          p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+        ),
+      });
       return true;
     }
     return false;
