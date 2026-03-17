@@ -11,6 +11,13 @@ interface BabyShowerCardProps {
   reactionsCount?: number;
   userReaction?: string | null;
   onReaction?: (type: "congrats" | "love" | "like" | "celebrate") => void;
+  giftEnabled?: boolean;
+  giftTotal?: number;
+  isPremium?: boolean;
+  isOwner?: boolean;
+  onToggleGift?: () => void;
+  onSendGift?: () => void;
+  onViewGifts?: () => void;
 }
 
 const REACTIONS: { type: "congrats" | "love" | "like" | "celebrate"; icon: string; activeIcon: string; label: string; color: string }[] = [
@@ -28,6 +35,13 @@ const BabyShowerCard = ({
   reactionsCount = 0,
   userReaction,
   onReaction,
+  giftEnabled = false,
+  giftTotal = 0,
+  isPremium = false,
+  isOwner = false,
+  onToggleGift,
+  onSendGift,
+  onViewGifts,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
   const accentColor = gender === "boy" ? "hsl(214 60% 55%)" : "hsl(var(--coral))";
@@ -37,7 +51,6 @@ const BabyShowerCard = ({
 
   const handleTap = () => {
     if (userReaction) {
-      // Remove reaction
       onReaction?.(userReaction as any);
     } else {
       setShowPicker(true);
@@ -68,6 +81,13 @@ const BabyShowerCard = ({
             {gender === "boy" ? "Boy" : "Girl"}
           </span>
         </div>
+        {/* Gift badge */}
+        {giftEnabled && (
+          <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "hsl(45 90% 50%)" }}>
+            <IonIcon name="gift" size={10} style={{ color: "white" }} />
+            <span className="text-[9px] font-bold text-white font-sans">GIFTS</span>
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -80,6 +100,46 @@ const BabyShowerCard = ({
             {parentName}
           </p>
         </div>
+
+        {/* Gift section */}
+        {giftEnabled && (
+          <div className="flex items-center gap-1.5">
+            {isOwner ? (
+              <motion.button
+                whileTap={{ scale: 0.94 }}
+                onClick={onViewGifts}
+                className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
+                style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
+              >
+                <IonIcon name="gift" size={12} style={{ color: "hsl(45 90% 40%)" }} />
+                ₦{giftTotal.toLocaleString()}
+              </motion.button>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.94 }}
+                onClick={onSendGift}
+                className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
+                style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
+              >
+                <IonIcon name="gift-outline" size={12} style={{ color: "hsl(45 90% 40%)" }} />
+                Send Gift
+              </motion.button>
+            )}
+          </div>
+        )}
+
+        {/* Owner toggle gift */}
+        {isOwner && isPremium && !giftEnabled && (
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={onToggleGift}
+            className="w-full py-1.5 rounded-xl text-[10px] font-semibold font-sans flex items-center justify-center gap-1"
+            style={{ background: "hsl(var(--bg))", color: "hsl(var(--text-muted))", border: "1px dashed hsl(var(--border-subtle))" }}
+          >
+            <IonIcon name="gift-outline" size={11} style={{ color: "hsl(var(--text-muted))" }} />
+            Enable Gifts
+          </motion.button>
+        )}
 
         {/* Reaction button */}
         <div className="flex items-center justify-between">
