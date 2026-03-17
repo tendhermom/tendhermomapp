@@ -87,6 +87,8 @@ const Index = () => {
         return <AppointmentsScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "premium":
         return <PremiumScreen onBack={() => setActiveTab("profile")} />;
+      case "moderation":
+        return <ModerationScreen onBack={() => setActiveTab("profile")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
