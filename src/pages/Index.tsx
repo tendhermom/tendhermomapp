@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 
@@ -24,6 +24,21 @@ const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
 const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
 const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
 const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
+
+// Prefetch tab screens after initial paint for instant navigation
+const prefetchScreens = () => {
+  requestIdleCallback?.(() => {
+    import("@/screens/TriageScreen");
+    import("@/screens/SOSScreen");
+    import("@/screens/CommunityScreen");
+    import("@/screens/ProfileScreen");
+  }) ?? setTimeout(() => {
+    import("@/screens/TriageScreen");
+    import("@/screens/SOSScreen");
+    import("@/screens/CommunityScreen");
+    import("@/screens/ProfileScreen");
+  }, 2000);
+};
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
