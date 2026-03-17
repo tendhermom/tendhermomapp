@@ -250,7 +250,7 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
                 {/* Content */}
                 <motion.button
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => toggleComplete(item.week)}
+                  onClick={() => toggleComplete(item.id)}
                   className="flex-1 tend-card p-3.5 mb-2 text-left"
                   style={{ opacity: item.completed ? 0.6 : 1 }}
                 >
