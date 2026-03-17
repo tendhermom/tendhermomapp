@@ -277,6 +277,74 @@ export const nativeClipboard = {
   },
 };
 
+// ─── Native Contact Picker ────────────────────────────────────
+
+export interface NativeContact {
+  name: string;
+  phone: string;
+}
+
+/**
+ * Pick a contact from the device's native contact book.
+ * On native: triggers contactpicker:// protocol and listens for the callback.
+ * On web: uses the Contact Picker API if available, otherwise returns null.
+ */
+export const pickNativeContact = (): Promise<NativeContact | null> => {
+  return new Promise((resolve) => {
+    if (isDespiaNative()) {
+      // Despia sends the result back via a global callback
+      const callbackName = `__despia_contact_cb_${Date.now()}`;
+      (window as any)[callbackName] = (name: string, phone: string) => {
+        delete (window as any)[callbackName];
+        if (name && phone) {
+          resolve({ name, phone: phone.replace(/[\s()-]/g, "") });
+        } else {
+          resolve(null);
+        }
+      };
+      despiaCommand("contactpicker", "pick", { callback: callbackName });
+
+      // Timeout fallback — if no response in 30s, resolve null
+      setTimeout(() => {
+        if ((window as any)[callbackName]) {
+          delete (window as any)[callbackName];
+          resolve(null);
+        }
+      }, 30000);
+      return;
+    }
+
+    // Web Contact Picker API fallback (Chrome on Android)
+    if ("contacts" in navigator && "ContactsManager" in window) {
+      (navigator as any).contacts
+        .select(["name", "tel"], { multiple: false })
+        .then((results: any[]) => {
+          if (results && results.length > 0) {
+            const c = results[0];
+            resolve({
+              name: c.name?.[0] || "",
+              phone: (c.tel?.[0] || "").replace(/[\s()-]/g, ""),
+            });
+          } else {
+            resolve(null);
+          }
+        })
+        .catch(() => resolve(null));
+      return;
+    }
+
+    // No native contact access
+    resolve(null);
+  });
+};
+
+// ─── Native Torch / Flashlight ────────────────────────────────
+
+export const torch = {
+  on: () => despiaCommand("torch", "on"),
+  off: () => despiaCommand("torch", "off"),
+};
+
 // ─── Safe Area Helpers ────────────────────────────────────────
 
 export const getSafeAreaInset = (
