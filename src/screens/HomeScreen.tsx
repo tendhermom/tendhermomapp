@@ -55,7 +55,6 @@ const QUICK_ACTIONS = [
 const WEEKLY_HIGHLIGHTS = [
   { id: "appointments", label: "Book a Doctor", desc: "Premium: 15-min sessions", icon: "calendar-outline", color: "green" },
   { id: "baby-shower", label: "Baby Shower", desc: "Share & celebrate milestones", icon: "gift-outline", color: "coral" },
-  { id: "referrals", label: "Refer & Earn", desc: "Invite 10 friends, get Premium", icon: "people-outline", color: "coral" },
   { id: "gamification", label: "Your Level", desc: "Earn points & climb ranks", icon: "trophy-outline", color: "green" },
 ];
 
