@@ -60,7 +60,7 @@ const Index = () => {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onNavigate={handleNavigate} onMenuOpen={() => setDrawerOpen(true)} />;
+        return <HomeScreen onNavigate={handleNavigate} />;
       case "triage":
         return <TriageScreen onNavigate={handleNavigate} />;
       case "sos":
