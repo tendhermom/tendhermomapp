@@ -19,6 +19,7 @@ const HealthTrackerScreen = lazy(() => import("@/screens/HealthTrackerScreen"));
 const AIChatScreen = lazy(() => import("@/screens/AIChatScreen"));
 const GamificationScreen = lazy(() => import("@/screens/GamificationScreen"));
 const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
+const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
@@ -83,6 +84,8 @@ const Index = () => {
         return <GamificationScreen onBack={() => setActiveTab("home")} />;
       case "appointments":
         return <AppointmentsScreen onBack={() => setActiveTab("home")} />;
+      case "premium":
+        return <PremiumScreen onBack={() => setActiveTab("profile")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }

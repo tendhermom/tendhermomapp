@@ -243,9 +243,13 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           className="tend-card p-4 flex items-center gap-3"
-          style={{ borderLeft: "3px solid hsl(var(--coral))" }}
         >
-          <IonIcon name="diamond" size={22} style={{ color: "hsl(var(--coral))" }} />
+          <div
+            className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0"
+            style={{ background: "hsl(var(--light-coral))" }}
+          >
+            <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
+          </div>
           <div className="flex-1">
             <h4 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
               Free Plan · 1 Contact · 1 Trigger/Month
@@ -257,8 +261,8 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => onNavigate?.("premium")}
-            className="px-3 py-1.5 rounded-full text-[12px] font-semibold font-sans text-white"
-            style={{ background: "hsl(var(--coral))" }}
+            className="px-4 py-2 rounded-full text-[12px] font-semibold font-sans text-white"
+            style={{ background: "hsl(var(--green))" }}
           >
             Upgrade
           </motion.button>
