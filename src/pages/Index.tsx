@@ -50,7 +50,11 @@ const Index = () => {
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
-  
+
+  // Prefetch tab screens after first render
+  useEffect(() => {
+    prefetchScreens();
+  }, []);
 
   // Show onboarding for new users (no LMP set and hasn't completed onboarding)
   useEffect(() => {
