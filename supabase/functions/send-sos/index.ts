@@ -57,20 +57,46 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Rate limit: max 3 SOS alerts per 10 minutes
-    const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
-      _user_id: userId,
-      _action: "sos_alert",
-      _max_requests: 3,
-      _window_minutes: 10,
-    });
+    // Get user plan type
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("plan_type")
+      .eq("id", userId)
+      .single();
 
-    if (!allowed) {
-      return new Response(
-        JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const isFree = !profile || profile.plan_type === "free";
+
+    // Rate limit: free = 1/month, premium = unlimited (but max 10/10min as abuse guard)
+    if (isFree) {
+      const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
+        _user_id: userId,
+        _action: "sos_alert_monthly",
+        _max_requests: 1,
+        _window_minutes: 43200, // 30 days
+      });
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: "Free plan allows 1 SOS trigger per month. Upgrade to Premium for unlimited triggers." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
+        _user_id: userId,
+        _action: "sos_alert",
+        _max_requests: 10,
+        _window_minutes: 10,
+      });
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
+
+    // Enforce contact limits: free = 1, premium = 5
+    const maxContacts = isFree ? 1 : 5;
 
     const body: SOSRequest = await req.json();
     const { user_name, latitude, longitude, contacts, is_test } = body;
