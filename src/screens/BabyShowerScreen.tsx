@@ -535,7 +535,7 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
       </motion.div>
 
       {/* Month Carousel */}
-      <motion.div variants={fadeUp}>
+      <motion.div variants={fadeUp} className="-mx-5">
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--coral))", borderTopColor: "transparent" }} />
@@ -543,8 +543,8 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
         ) : (
           <div
             ref={scrollRef}
-            className="flex gap-3.5 overflow-x-auto pb-2 no-scrollbar"
-            style={{ scrollSnapType: "x mandatory", msOverflowStyle: "none", scrollbarWidth: "none" }}
+            className="flex gap-4 overflow-x-auto py-1 px-5 no-scrollbar"
+            style={{ scrollSnapType: "x mandatory" }}
           >
             {MONTH_CARDS.map((month, i) => {
               const isCurrent = month.label === currentMonthLabel;
