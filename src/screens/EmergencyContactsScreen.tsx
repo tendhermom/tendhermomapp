@@ -301,14 +301,38 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           Emergency Contacts
         </h1>
         {contacts.length < maxContacts && (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setEditingContact({ ...emptyContact })}
-            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--green))" }}
-          >
-            <IonIcon name="add" size={20} style={{ color: "white" }} />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {/* Import from phone contacts */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={async () => {
+                const contact = await pickNativeContact();
+                if (contact) {
+                  hapticSuccess();
+                  setEditingContact({
+                    ...emptyContact,
+                    name: contact.name,
+                    phone: contact.phone.startsWith("+") ? contact.phone : `+234${contact.phone.replace(/^0/, "")}`,
+                  });
+                } else if (!isDespiaNative() && !("contacts" in navigator)) {
+                  toast.info("Contact import is available in the native app");
+                }
+              }}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--light-green))" }}
+            >
+              <IonIcon name="person-circle" size={20} style={{ color: "hsl(var(--green))" }} />
+            </motion.button>
+            {/* Manual add */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setEditingContact({ ...emptyContact })}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--green))" }}
+            >
+              <IonIcon name="add" size={20} style={{ color: "white" }} />
+            </motion.button>
+          </div>
         )}
       </div>
 
