@@ -108,6 +108,9 @@ serve(async (req) => {
       });
     }
 
+    // Trim contacts to plan limit
+    const limitedContacts = contacts.slice(0, maxContacts);
+
     const now = new Date();
     const dateStr = now.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
     const timeStr = now.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" });
