@@ -50,9 +50,17 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const user = useAuthStore((s) => s.user);
   const { logout, getCurrentWeek } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
+      setIsAdmin(!!data);
+    });
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
