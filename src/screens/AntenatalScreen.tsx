@@ -144,7 +144,6 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="tend-card p-4"
-          style={{ borderLeft: `3px solid ${TYPE_CONFIG[nextUp.type].color}` }}
         >
           <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--coral))" }}>Coming Up — Week {nextUp.week}</p>
           <p className="text-[15px] font-sans font-semibold mt-1" style={{ color: "hsl(var(--dark))" }}>{nextUp.title}</p>
