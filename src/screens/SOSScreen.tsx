@@ -237,38 +237,6 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Plan banner for free users */}
-      {isFree && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="tend-card p-4 flex items-center gap-3"
-        >
-          <div
-            className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-            style={{ background: "hsl(var(--light-coral))" }}
-          >
-            <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-              Free Plan · 1 Contact · 1 Trigger/Month
-            </h4>
-            <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              Upgrade for 5 contacts & unlimited triggers
-            </p>
-          </div>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onNavigate?.("premium")}
-            className="px-4 py-2 rounded-full text-[12px] font-semibold font-sans text-white"
-            style={{ background: "hsl(var(--green))" }}
-          >
-            Upgrade
-          </motion.button>
-        </motion.div>
-      )}
-
       {/* Emergency Contacts Card */}
       <div>
         <div className="flex items-center justify-between mb-3">
