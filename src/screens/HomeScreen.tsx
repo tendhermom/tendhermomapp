@@ -8,7 +8,6 @@ import { useEffect } from "react";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
-  onMenuOpen: () => void;
 }
 
 const staggerContainer = {
