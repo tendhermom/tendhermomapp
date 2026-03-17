@@ -99,11 +99,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-foreground/5 flex justify-center">
       <div className="app-shell">
-        <DrawerMenu
-          isOpen={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          onNavigate={handleNavigate}
-        />
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
