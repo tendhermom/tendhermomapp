@@ -22,6 +22,8 @@ const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
 const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
 const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
 const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
+const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
+const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
@@ -92,6 +94,10 @@ const Index = () => {
         return <ModerationScreen onBack={() => setActiveTab("profile")} />;
       case "referrals":
         return <ReferralScreen onBack={() => setActiveTab("profile")} />;
+      case "antenatal":
+        return <AntenatalScreen onNavigate={handleNavigate} />;
+      case "insights":
+        return <InsightsScreen onBack={() => setActiveTab("home")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
