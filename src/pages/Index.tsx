@@ -90,6 +90,8 @@ const Index = () => {
         return <PremiumScreen onBack={() => setActiveTab("profile")} />;
       case "moderation":
         return <ModerationScreen onBack={() => setActiveTab("profile")} />;
+      case "referrals":
+        return <ReferralScreen onBack={() => setActiveTab("profile")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
