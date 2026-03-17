@@ -30,6 +30,7 @@ interface ProfileScreenProps {
 const menuSections = [
   {
     items: [
+      { icon: "diamond-outline", label: "Premium Plan", route: "premium" },
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
       { icon: "notifications-outline", label: "Notifications", route: "notifications" },
       { icon: "share-social-outline", label: "Share TendherMom", route: "share-app" },
