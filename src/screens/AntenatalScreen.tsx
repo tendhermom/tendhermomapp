@@ -338,20 +338,24 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
 
       {/* Type Stats Row */}
       <div className="flex gap-2">
-        {(Object.entries(totalByType) as [keyof typeof TYPE_CONFIG, number][]).map(([type, count]) => {
+        {(Object.entries(totalByType) as [keyof typeof TYPE_CONFIG, number][]).map(([type, count], i) => {
           const c = TYPE_CONFIG[type];
           return (
             <motion.div
               key={type}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex-1 tend-card p-3 flex flex-col items-center gap-1"
+              transition={{ delay: i * 0.05 }}
+              className="flex-1 tend-card p-3.5 flex flex-col items-center gap-1.5"
             >
-              <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center" style={{ background: c.bg }}>
-                <IonIcon name={c.icon} size={14} style={{ color: c.color }} />
+              <div
+                className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+                style={{ background: "hsl(var(--surface))", border: `1.5px solid hsl(var(--border-subtle))` }}
+              >
+                <IonIcon name={c.icon} size={17} style={{ color: c.color }} />
               </div>
-              <p className="text-[16px] font-sans font-bold" style={{ color: "hsl(var(--dark))" }}>{count}</p>
-              <p className="text-[9px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>{c.label}s</p>
+              <p className="text-[18px] font-sans font-bold" style={{ color: "hsl(var(--dark))" }}>{count}</p>
+              <p className="text-[9px] font-sans font-semibold uppercase tracking-widest" style={{ color: "hsl(var(--text-muted))" }}>{c.label}s</p>
             </motion.div>
           );
         })}
