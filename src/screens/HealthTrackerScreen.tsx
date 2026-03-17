@@ -282,6 +282,9 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
             </motion.div>
           )}
 
+          {/* Smart Health Guidance */}
+          <SmartGuidance entries={entries} currentWeek={currentWeek} />
+
           {/* Daily Tips */}
           <motion.div variants={fadeUp}>
             <p className="label-caps text-text-muted mb-2">DAILY WELLNESS TIPS</p>
