@@ -19,6 +19,13 @@ interface Reminder {
   completed: boolean;
 }
 
+interface CustomItem {
+  title: string;
+  description: string;
+  week: number;
+  type: "checkup" | "test" | "vaccine" | "milestone";
+}
+
 const ANTENATAL_SCHEDULE: Omit<Reminder, "id" | "completed">[] = [
   // First Trimester
   { week: 4, title: "Confirm Pregnancy", description: "Blood test (hCG) & urine test to confirm pregnancy", type: "test" },
@@ -56,31 +63,53 @@ const TYPE_CONFIG = {
 const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
-  const [completedItems, setCompletedItems] = useState<Set<number>>(new Set());
+  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<"all" | "upcoming" | "completed">("all");
+  const [customItems, setCustomItems] = useState<Omit<Reminder, "id" | "completed">[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newItem, setNewItem] = useState<CustomItem>({ title: "", description: "", week: currentWeek, type: "checkup" });
 
-  // Load completed items from localStorage
+  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`antenatal_completed_${user?.id}`);
-    if (saved) setCompletedItems(new Set(JSON.parse(saved)));
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Migrate old number-based sets to string IDs
+      setCompletedItems(new Set(parsed.map((v: number | string) => String(v))));
+    }
+    const savedCustom = localStorage.getItem(`antenatal_custom_${user?.id}`);
+    if (savedCustom) setCustomItems(JSON.parse(savedCustom));
   }, [user?.id]);
 
-  const toggleComplete = (week: number) => {
+  const toggleComplete = (id: string) => {
     hapticLight();
     setCompletedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(week)) next.delete(week);
-      else next.add(week);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       localStorage.setItem(`antenatal_completed_${user?.id}`, JSON.stringify([...next]));
       return next;
     });
   };
 
-  const schedule = ANTENATAL_SCHEDULE.map((item) => ({
-    ...item,
-    id: `week-${item.week}`,
-    completed: completedItems.has(item.week),
-  }));
+  const addCustomItem = () => {
+    if (!newItem.title.trim()) { toast.error("Please enter a title"); return; }
+    hapticLight();
+    const updated = [...customItems, { ...newItem, title: newItem.title.trim(), description: newItem.description.trim() }];
+    setCustomItems(updated);
+    localStorage.setItem(`antenatal_custom_${user?.id}`, JSON.stringify(updated));
+    setNewItem({ title: "", description: "", week: currentWeek, type: "checkup" });
+    setShowAddModal(false);
+    toast.success("Item added!");
+  };
+
+  const allItems = [...ANTENATAL_SCHEDULE, ...customItems];
+  const schedule = allItems
+    .sort((a, b) => a.week - b.week)
+    .map((item, i) => {
+      const id = i < ANTENATAL_SCHEDULE.length ? `week-${item.week}` : `custom-${i}`;
+      return { ...item, id, completed: completedItems.has(id) };
+    });
 
   const filtered = schedule.filter((item) => {
     if (filter === "upcoming") return !item.completed && item.week >= currentWeek;
