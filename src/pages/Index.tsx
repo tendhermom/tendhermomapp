@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-import DrawerMenu from "@/components/navigation/DrawerMenu";
+
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
 import { useAuthStore } from "@/stores/authStore";
 
