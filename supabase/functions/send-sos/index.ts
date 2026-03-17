@@ -129,7 +129,7 @@ serve(async (req) => {
     const smsMessage = `${testPrefix}EMERGENCY ALERT — TendherMom\n\n${user_name} needs urgent help. She triggered her emergency alert at ${timeStr} on ${dateStr}.\n\n${locationText}\n\nPlease contact her immediately or call emergency services: 112 (Nigeria).\n\nSent via TendherMom`;
 
     const channelResults: Record<string, any> = {};
-    for (const contact of contacts) {
+    for (const contact of limitedContacts) {
       const contactResult: Record<string, string> = {};
       for (const channel of contact.channels) {
         console.log(`[SOS] ${channel.toUpperCase()} → ${contact.name} (${contact.phone}): ${is_test ? "TEST " : ""}alert`);
@@ -138,10 +138,10 @@ serve(async (req) => {
       channelResults[contact.name] = contactResult;
     }
 
-    console.log(`[SOS] Alert dispatched for ${user_name} to ${contacts.length} contacts`);
+    console.log(`[SOS] Alert dispatched for ${user_name} to ${limitedContacts.length} contacts (plan: ${isFree ? "free" : "premium"})`);
 
     return new Response(
-      JSON.stringify({ success: true, contacts_notified: contacts.length, channel_results: channelResults, is_test }),
+      JSON.stringify({ success: true, contacts_notified: limitedContacts.length, channel_results: channelResults, is_test }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
