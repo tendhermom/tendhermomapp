@@ -1,11 +1,14 @@
 import { useState } from "react";
 import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
+import { usePointsStore } from "@/stores/pointsStore";
 import IonIcon from "@/components/IonIcon";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
+  onMenuOpen: () => void;
 }
 
 const staggerContainer = {
@@ -27,110 +30,118 @@ const getGreeting = () => {
   return "Good evening";
 };
 
-const QUICK_ACCESS = [
-  { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "sos", label: "Emergency", icon: "shield-checkmark-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
-  { id: "baby-shower", label: "Baby Shower", icon: "balloon-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "community", label: "Voice Out", icon: "chatbubbles-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+const GAMIFICATION_LEVELS = [
+  { name: "Newbie Nest", min: 0, color: "hsl(340 82% 72%)", badge: "🌸" },
+  { name: "Baby Steps", min: 50, color: "hsl(45 93% 58%)", badge: "🌻" },
+  { name: "Mommy Mode", min: 150, color: "hsl(153 42% 30%)", badge: "💚" },
+  { name: "Super Mom", min: 350, color: "hsl(210 80% 55%)", badge: "💙" },
+  { name: "Mommy Master", min: 600, color: "hsl(270 60% 55%)", badge: "💜" },
 ];
 
-const COMMON_SYMPTOMS = [
-  {
-    name: "Morning Sickness",
-    icon: "water-outline",
-    cause: "Hormonal changes (hCG surge)",
-    detail: "Nausea and vomiting are most common in the first trimester. Eating small, frequent meals and staying hydrated can help. It usually resolves by week 14–16.",
-  },
-  {
-    name: "Fatigue",
-    icon: "moon-outline",
-    cause: "Progesterone increase & blood volume changes",
-    detail: "Your body is working overtime to support the growing baby. Rest when you can, maintain iron-rich nutrition, and avoid overexertion.",
-  },
-  {
-    name: "Back Pain",
-    icon: "body-outline",
-    cause: "Shifting centre of gravity & ligament relaxation",
-    detail: "As your belly grows, your posture shifts. Gentle stretching, proper support pillows, and prenatal exercises can relieve discomfort.",
-  },
-  {
-    name: "Swollen Feet",
-    icon: "footsteps-outline",
-    cause: "Fluid retention & increased blood volume",
-    detail: "Mild swelling (oedema) in ankles and feet is normal, especially in the third trimester. Elevate your feet and reduce salt intake. Sudden severe swelling needs medical attention.",
-  },
-  {
-    name: "Heartburn",
-    icon: "flame-outline",
-    cause: "Relaxed oesophageal sphincter & uterine pressure",
-    detail: "Progesterone relaxes the valve between your stomach and oesophagus. Eat smaller meals, avoid spicy food, and stay upright after eating.",
-  },
-  {
-    name: "Headaches",
-    icon: "flash-outline",
-    cause: "Hormonal fluctuations & blood pressure changes",
-    detail: "Common in the first and third trimesters. Stay hydrated, rest in a dark room, and avoid screen fatigue. Persistent or severe headaches should be reported to your doctor.",
-  },
-  {
-    name: "Frequent Urination",
-    icon: "timer-outline",
-    cause: "Growing uterus pressing on the bladder",
-    detail: "Very common throughout pregnancy, especially in the first and third trimesters. Don't reduce water intake — hydration is essential. Kegel exercises can help with bladder control.",
-  },
-  {
-    name: "Braxton Hicks",
-    icon: "pulse-outline",
-    cause: "Uterine muscles practising for labour",
-    detail: "These irregular, usually painless contractions are your body's rehearsal. They typically start mid-pregnancy. If they become regular or painful, contact your healthcare provider.",
-  },
+const getGamificationLevel = (points: number) => {
+  let level = GAMIFICATION_LEVELS[0];
+  for (const l of GAMIFICATION_LEVELS) {
+    if (points >= l.min) level = l;
+  }
+  return level;
+};
+
+const QUICK_ACTIONS = [
+  { id: "health-tracker", label: "Health", icon: "heart-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "triage", label: "Triage", icon: "fitness-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "sos", label: "SOS", icon: "shield-checkmark-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "community", label: "Community", icon: "chatbubbles-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
 ];
 
-const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
+const WEEKLY_HIGHLIGHTS = [
+  { id: "appointments", label: "Book a Doctor", desc: "Premium: 15-min sessions", icon: "calendar-outline", color: "green" },
+  { id: "baby-shower", label: "Baby Shower", desc: "Share & celebrate milestones", icon: "gift-outline", color: "coral" },
+  { id: "gamification", label: "Your Level", desc: "Earn points & climb ranks", icon: "trophy-outline", color: "green" },
+];
+
+const HomeScreen = ({ onNavigate, onMenuOpen }: HomeScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
   const daysLeft = useAuthStore((s) => s.getDaysRemaining());
-  const [expandedSymptom, setExpandedSymptom] = useState<number | null>(null);
+  const progressPercent = useAuthStore((s) => s.getProgressPercent());
+  const { userPoints, fetchPoints } = usePointsStore();
+
+  useEffect(() => {
+    if (user?.id) fetchPoints(user.id);
+  }, [user?.id]);
 
   const displayName = user?.full_name?.split(" ")[0] || "there";
   const greeting = getGreeting();
   const trimester = currentWeek <= 13 ? "1st Trimester" : currentWeek <= 26 ? "2nd Trimester" : currentWeek <= 40 ? "3rd Trimester" : "Postpartum";
   const hasDueDate = !!user?.due_date;
+  const points = userPoints?.points || 0;
+  const level = getGamificationLevel(points);
+
+  // Baby size by week
+  const BABY_SIZES: Record<number, string> = {
+    4: "poppy seed", 8: "raspberry", 12: "lime", 16: "avocado", 20: "banana",
+    24: "corn cob", 28: "aubergine", 32: "squash", 36: "honeydew", 40: "watermelon",
+  };
+  const nearestWeek = Object.keys(BABY_SIZES).map(Number).reduce((prev, curr) =>
+    Math.abs(curr - currentWeek) < Math.abs(prev - currentWeek) ? curr : prev
+  );
+  const babySize = BABY_SIZES[nearestWeek] || "growing beautifully";
 
   return (
     <motion.div
-      className="space-y-6 pb-4"
+      className="space-y-5 pb-4"
       variants={staggerContainer}
       initial="hidden"
       animate="show"
     >
       {/* Top Bar */}
       <motion.div variants={fadeUp}>
-        <TopBar onNotificationsPress={() => onNavigate("notifications")} />
+        <TopBar
+          onMenuPress={onMenuOpen}
+          onAIChatPress={() => onNavigate("ai-chat")}
+          onNotificationsPress={() => onNavigate("notifications")}
+        />
       </motion.div>
 
-      {/* Hero Greeting */}
+      {/* Hero Greeting Card */}
       <motion.div
         variants={fadeUp}
-        className="rounded-[20px] p-5 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(145deg, hsl(153 42% 22%), hsl(153 42% 30%), hsl(153 38% 26%))",
-          boxShadow: "0 8px 32px -8px hsla(153,42%,20%,0.5)",
-        }}
+        className="hero-card p-5"
       >
-        <div className="absolute -top-20 -right-20 w-[160px] h-[160px] rounded-full" style={{ background: "radial-gradient(circle, hsla(0,0%,100%,0.06) 0%, transparent 70%)" }} />
         <p className="text-white/50 text-[13px] font-sans">{greeting}</p>
         <h1 className="text-white text-[26px] font-serif mt-0.5">
           Hello, <span style={{ color: "hsl(var(--coral))" }}>{displayName}</span>
         </h1>
         {hasDueDate ? (
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-[11px] font-sans font-semibold tracking-wide uppercase px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "hsl(var(--coral))" }}>
-              Week {currentWeek} · {trimester}
-            </span>
-            <span className="text-[11px] font-sans font-medium px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}>
-              {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today!" : `${Math.abs(daysLeft)} days since due date`}
-            </span>
-          </div>
+          <>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-[11px] font-sans font-semibold tracking-wide uppercase px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "hsl(var(--coral))" }}>
+                Week {currentWeek} · {trimester}
+              </span>
+              <span className="text-[11px] font-sans font-medium px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}>
+                {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today!" : `${Math.abs(daysLeft)} days past`}
+              </span>
+            </div>
+            {/* Progress bar */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-white/40">Pregnancy Progress</span>
+                <span className="text-[9px] font-sans font-semibold text-white/40">{progressPercent}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(progressPercent, 100)}%` }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  className="h-full rounded-full"
+                  style={{ background: "hsl(var(--coral))" }}
+                />
+              </div>
+            </div>
+            <p className="text-[11px] font-sans mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Baby is about the size of a <span className="font-semibold" style={{ color: "hsl(var(--coral))" }}>{babySize}</span>
+            </p>
+          </>
         ) : (
           <motion.button
             whileTap={{ scale: 0.97 }}
@@ -140,6 +151,18 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             <span className="text-[13px] font-sans font-medium" style={{ color: "hsl(var(--coral))" }}>Set your due date →</span>
           </motion.button>
         )}
+      </motion.div>
+
+      {/* Level Badge */}
+      <motion.div variants={fadeUp}>
+        <button onClick={() => onNavigate("gamification")} className="w-full tend-card p-3 flex items-center gap-3 ios-press">
+          <span className="text-[24px]">{level.badge}</span>
+          <div className="flex-1">
+            <p className="text-[13px] font-sans font-semibold" style={{ color: level.color }}>{level.name}</p>
+            <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{points} points earned</p>
+          </div>
+          <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+        </button>
       </motion.div>
 
       {/* Quick Access Grid */}
@@ -152,7 +175,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             boxShadow: "0 2px 12px -2px hsla(0,0%,0%,0.06)",
           }}
         >
-          {QUICK_ACCESS.map((item) => (
+          {QUICK_ACTIONS.map((item) => (
             <motion.button
               key={item.id}
               whileTap={{ scale: 0.92 }}
@@ -163,7 +186,6 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
                 className="w-[50px] h-[50px] rounded-[14px] flex items-center justify-center relative overflow-hidden"
                 style={{ background: item.bg }}
               >
-                <div className="absolute inset-0 opacity-[0.08]" style={{ background: `radial-gradient(circle at 30% 30%, ${item.color}, transparent 70%)` }} />
                 <IonIcon name={item.icon} size={24} style={{ color: item.color }} />
               </div>
               <span className="text-[10px] font-sans font-semibold text-center leading-tight tracking-wide" style={{ color: "hsl(var(--dark))" }}>
@@ -174,8 +196,41 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         </div>
       </motion.div>
 
+      {/* Featured Actions */}
+      <motion.div variants={fadeUp}>
+        <p className="label-caps text-text-muted mb-2.5">EXPLORE</p>
+        <div className="space-y-2">
+          {WEEKLY_HIGHLIGHTS.map((item) => (
+            <motion.button
+              key={item.id}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onNavigate(item.id)}
+              className="w-full tend-card p-4 flex items-center gap-3 ios-press text-left"
+            >
+              <div
+                className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: item.color === "coral" ? "hsl(var(--light-coral))" : "hsl(var(--light-green))",
+                }}
+              >
+                <IonIcon
+                  name={item.icon}
+                  size={20}
+                  style={{ color: item.color === "coral" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{item.label}</p>
+                <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{item.desc}</p>
+              </div>
+              <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Video Explainer */}
-      <motion.div variants={fadeUp} className="-mt-1">
+      <motion.div variants={fadeUp}>
         <h2 className="font-serif text-[20px] mb-2" style={{ color: "hsl(var(--dark))" }}>How Triage Works</h2>
         <div
           className="rounded-[18px] overflow-hidden"
@@ -191,100 +246,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             style={{ borderRadius: "18px" }}
           >
             <source src="/videos/explainer.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
           </video>
-        </div>
-      </motion.div>
-
-      {/* Common Symptoms */}
-      <motion.div variants={fadeUp}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-serif text-[20px]" style={{ color: "hsl(var(--dark))" }}>Common Symptoms</h2>
-          <span className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>
-            {COMMON_SYMPTOMS.length} topics
-          </span>
-        </div>
-        <div
-          className="rounded-[20px] overflow-hidden"
-          style={{
-            background: "hsl(var(--surface))",
-            boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)",
-          }}
-        >
-          {COMMON_SYMPTOMS.map((symptom, i) => {
-            const isExpanded = expandedSymptom === i;
-            const isGreen = i % 2 === 0;
-            const isLast = i === COMMON_SYMPTOMS.length - 1;
-            return (
-              <div key={symptom.name}>
-                <button
-                  onClick={() => setExpandedSymptom(isExpanded ? null : i)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left ios-press"
-                >
-                  <div
-                    className="w-[36px] h-[36px] rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{
-                      background: isGreen
-                        ? "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))"
-                        : "linear-gradient(135deg, hsl(var(--light-coral)), hsl(14 82% 92%))",
-                      boxShadow: isGreen
-                        ? "0 2px 8px -2px hsla(153,42%,30%,0.2)"
-                        : "0 2px 8px -2px hsla(11,74%,63%,0.2)",
-                    }}
-                  >
-                    <IonIcon
-                      name={symptom.icon}
-                      size={18}
-                      style={{ color: isGreen ? "hsl(var(--green))" : "hsl(var(--coral))" }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>{symptom.name}</h3>
-                    <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{symptom.cause}</p>
-                  </div>
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <IonIcon
-                      name="chevron-down"
-                      size={14}
-                      style={{ color: "hsl(var(--text-muted))" }}
-                    />
-                  </motion.div>
-                </button>
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 pb-3 pt-0">
-                        <div
-                          className="rounded-[14px] p-3.5"
-                          style={{
-                            background: isGreen
-                              ? "linear-gradient(135deg, hsl(var(--light-green)), hsla(144,28%,93%,0.5))"
-                              : "linear-gradient(135deg, hsl(var(--light-coral)), hsla(14,82%,96%,0.5))",
-                          }}
-                        >
-                          <p className="text-[12.5px] font-sans leading-[1.7]" style={{ color: "hsl(var(--dark))" }}>
-                            {symptom.detail}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                {!isLast && (
-                  <div className="mx-4 h-px" style={{ background: "hsl(var(--border-subtle))" }} />
-                )}
-              </div>
-            );
-          })}
         </div>
       </motion.div>
     </motion.div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
+import DrawerMenu from "@/components/navigation/DrawerMenu";
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -14,6 +15,10 @@ const ProfileScreen = lazy(() => import("@/screens/ProfileScreen"));
 const NotificationsScreen = lazy(() => import("@/screens/NotificationsScreen"));
 const EmergencyContactsScreen = lazy(() => import("@/screens/EmergencyContactsScreen"));
 const OnboardingScreen = lazy(() => import("@/screens/OnboardingScreen"));
+const HealthTrackerScreen = lazy(() => import("@/screens/HealthTrackerScreen"));
+const AIChatScreen = lazy(() => import("@/screens/AIChatScreen"));
+const GamificationScreen = lazy(() => import("@/screens/GamificationScreen"));
+const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
@@ -25,6 +30,7 @@ const Index = () => {
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Show onboarding for new users (no LMP set and hasn't completed onboarding)
   useEffect(() => {
@@ -54,7 +60,7 @@ const Index = () => {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onNavigate={handleNavigate} />;
+        return <HomeScreen onNavigate={handleNavigate} onMenuOpen={() => setDrawerOpen(true)} />;
       case "triage":
         return <TriageScreen onNavigate={handleNavigate} />;
       case "sos":
@@ -69,8 +75,16 @@ const Index = () => {
         return <NotificationsScreen onBack={() => setActiveTab("home")} />;
       case "emergency-contacts":
         return <EmergencyContactsScreen onBack={() => setActiveTab("sos")} />;
+      case "health-tracker":
+        return <HealthTrackerScreen onNavigate={handleNavigate} />;
+      case "ai-chat":
+        return <AIChatScreen onBack={() => setActiveTab("home")} />;
+      case "gamification":
+        return <GamificationScreen onBack={() => setActiveTab("home")} />;
+      case "appointments":
+        return <AppointmentsScreen onBack={() => setActiveTab("home")} />;
       default:
-        return <HomeScreen onNavigate={handleNavigate} />;
+        return <HomeScreen onNavigate={handleNavigate} onMenuOpen={() => setDrawerOpen(true)} />;
     }
   };
 
@@ -85,6 +99,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-foreground/5 flex justify-center">
       <div className="app-shell">
+        <DrawerMenu
+          isOpen={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onNavigate={handleNavigate}
+        />
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
