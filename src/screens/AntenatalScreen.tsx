@@ -302,6 +302,118 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
           </p>
         </div>
       )}
+
+      {/* Add More Button */}
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={() => { hapticLight(); setShowAddModal(true); }}
+        className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-[13px] font-sans font-semibold"
+        style={{ background: "hsl(var(--surface))", color: "hsl(var(--green))", border: "1.5px dashed hsl(var(--border-subtle))" }}
+      >
+        <IonIcon name="add-circle-outline" size={18} style={{ color: "hsl(var(--green))" }} />
+        Add More
+      </motion.button>
+
+      {/* Add Item Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(0,0,0,0.4)" }}
+            onClick={() => setShowAddModal(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="w-full max-w-[480px] rounded-t-3xl p-6 space-y-4"
+              style={{ background: "hsl(var(--card))" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-[17px] font-serif font-semibold" style={{ color: "hsl(var(--dark))" }}>Add Item</h3>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowAddModal(false)}>
+                  <IonIcon name="close-outline" size={22} style={{ color: "hsl(var(--text-muted))" }} />
+                </motion.button>
+              </div>
+
+              {/* Type Selector */}
+              <div className="flex gap-2">
+                {(["checkup", "test", "vaccine", "milestone"] as const).map((t) => {
+                  const c = TYPE_CONFIG[t];
+                  return (
+                    <motion.button
+                      key={t}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setNewItem((p) => ({ ...p, type: t }))}
+                      className="flex-1 py-2 rounded-xl text-[11px] font-sans font-semibold capitalize"
+                      style={{
+                        background: newItem.type === t ? c.color : c.bg,
+                        color: newItem.type === t ? "white" : c.color,
+                      }}
+                    >
+                      {c.label}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Week */}
+              <div>
+                <label className="text-[11px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Week</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={42}
+                  value={newItem.week}
+                  onChange={(e) => setNewItem((p) => ({ ...p, week: Number(e.target.value) }))}
+                  className="w-full mt-1 px-4 py-2.5 rounded-xl text-[14px] font-sans"
+                  style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", border: "1px solid hsl(var(--border-subtle))" }}
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="text-[11px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Iron supplement check"
+                  value={newItem.title}
+                  onChange={(e) => setNewItem((p) => ({ ...p, title: e.target.value }))}
+                  className="w-full mt-1 px-4 py-2.5 rounded-xl text-[14px] font-sans"
+                  style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", border: "1px solid hsl(var(--border-subtle))" }}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-[11px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Description</label>
+                <textarea
+                  placeholder="Brief description..."
+                  value={newItem.description}
+                  onChange={(e) => setNewItem((p) => ({ ...p, description: e.target.value }))}
+                  rows={2}
+                  className="w-full mt-1 px-4 py-2.5 rounded-xl text-[14px] font-sans resize-none"
+                  style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", border: "1px solid hsl(var(--border-subtle))" }}
+                />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={addCustomItem}
+                className="w-full py-3.5 rounded-2xl text-[14px] font-sans font-semibold text-white"
+                style={{ background: "hsl(var(--green))" }}
+              >
+                Add to Timeline
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
