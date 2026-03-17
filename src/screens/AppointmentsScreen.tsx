@@ -238,33 +238,7 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
   const initials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Premium gate
-  if (!isPremium) {
-    return (
-      <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.07 } } }}>
-        <motion.div variants={fadeUp} className="flex items-center gap-3">
-          <button onClick={onBack} className="ios-press">
-            <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
-          </button>
-          <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>Appointments</h1>
-        </motion.div>
-        <motion.div variants={fadeUp} className="flex flex-col items-center text-center py-12">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ background: "hsl(var(--light-coral))" }}>
-            <IonIcon name="lock-closed-outline" size={32} style={{ color: "hsl(var(--coral))" }} />
-          </div>
-          <h2 className="text-[20px] font-serif mb-2" style={{ color: "hsl(var(--dark))" }}>Premium Feature</h2>
-          <p className="text-[13px] font-sans max-w-[260px]" style={{ color: "hsl(var(--text-muted))" }}>
-            Upgrade to Premium to book appointments with certified doctors and get personalised medical advice.
-          </p>
-          <motion.button whileTap={{ scale: 0.97 }} onClick={() => onNavigate?.("premium")}
-            className="mt-6 px-6 py-3 rounded-[14px] text-[14px] font-sans font-semibold ios-press"
-            style={{ background: "hsl(var(--coral))", color: "white" }}>
-            Upgrade to Premium
-          </motion.button>
-        </motion.div>
-      </motion.div>
-    );
-  }
+  // Premium gate removed for testing — all users can book
 
   // Success state
   if (step === "success") {
