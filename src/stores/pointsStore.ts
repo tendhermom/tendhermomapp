@@ -13,11 +13,11 @@ export interface UserPoints {
 }
 
 export const LEVELS = [
-  { name: "Newcomer", min: 0, icon: "🌱" },
-  { name: "Active Mom", min: 25, icon: "🌿" },
-  { name: "Community Star", min: 100, icon: "⭐" },
-  { name: "Super Mom", min: 250, icon: "💫" },
-  { name: "Legend", min: 500, icon: "👑" },
+  { name: "Newbie Nest", min: 0, icon: "🌸", color: "hsl(340 82% 72%)" },
+  { name: "Baby Steps", min: 50, icon: "🌻", color: "hsl(45 93% 58%)" },
+  { name: "Mommy Mode", min: 150, icon: "💚", color: "hsl(153 42% 30%)" },
+  { name: "Super Mom", min: 350, icon: "💙", color: "hsl(210 80% 55%)" },
+  { name: "Mommy Master", min: 600, icon: "💜", color: "hsl(270 60% 55%)" },
 ];
 
 export const getLevel = (points: number) => {
@@ -76,7 +76,6 @@ export const usePointsStore = create<PointsState>((set) => ({
     if (data) {
       set({ userPoints: { points: data.points, posts_count: data.posts_count, likes_count: data.likes_count, comments_count: data.comments_count }, loading: false });
     } else {
-      // Use atomic upsert to create initial row
       const result = await awardPoints(userId, 0, "posts_count");
       set({ userPoints: result || { points: 0, posts_count: 0, likes_count: 0, comments_count: 0 }, loading: false });
     }
