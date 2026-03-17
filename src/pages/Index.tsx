@@ -84,7 +84,7 @@ const Index = () => {
       case "appointments":
         return <AppointmentsScreen onBack={() => setActiveTab("home")} />;
       default:
-        return <HomeScreen onNavigate={handleNavigate} onMenuOpen={() => setDrawerOpen(true)} />;
+        return <HomeScreen onNavigate={handleNavigate} />;
     }
   };
 
