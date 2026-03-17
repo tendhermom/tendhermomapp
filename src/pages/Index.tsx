@@ -21,6 +21,7 @@ const GamificationScreen = lazy(() => import("@/screens/GamificationScreen"));
 const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
 const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
 const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
+const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
