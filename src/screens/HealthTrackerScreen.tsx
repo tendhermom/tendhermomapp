@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface HealthTrackerScreenProps {
   onNavigate: (screen: string) => void;
@@ -52,6 +54,31 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const [heartRate, setHeartRate] = useState("");
   const [weight, setWeight] = useState("");
   const [entries, setEntries] = useState<HealthEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEntries = useCallback(async () => {
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from("health_metrics" as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("recorded_at", { ascending: false })
+      .limit(20);
+    if (data && !error) {
+      setEntries((data as any[]).map((d) => ({
+        id: d.id,
+        date: new Date(d.recorded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+        systolic: d.systolic ?? undefined,
+        diastolic: d.diastolic ?? undefined,
+        heartRate: d.heart_rate ?? undefined,
+        weight: d.weight ? parseFloat(d.weight) : undefined,
+        notes: d.notes ?? undefined,
+      })));
+    }
+    setLoading(false);
+  }, [user?.id]);
+
+  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const currentMilestone = BABY_MILESTONES.reduce((prev, curr) =>
     currentWeek >= curr.week ? curr : prev, BABY_MILESTONES[0]
@@ -59,23 +86,29 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
 
   const nextMilestone = BABY_MILESTONES.find((m) => m.week > currentWeek);
 
-  const handleSaveEntry = () => {
+  const handleSaveEntry = async () => {
     if (!systolic && !diastolic && !heartRate && !weight) return;
-    const entry: HealthEntry = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
-      systolic: systolic ? parseInt(systolic) : undefined,
-      diastolic: diastolic ? parseInt(diastolic) : undefined,
-      heartRate: heartRate ? parseInt(heartRate) : undefined,
-      weight: weight ? parseFloat(weight) : undefined,
-    };
-    setEntries([entry, ...entries]);
+    if (!user?.id) return;
+
+    const payload: any = { user_id: user.id };
+    if (systolic) payload.systolic = parseInt(systolic);
+    if (diastolic) payload.diastolic = parseInt(diastolic);
+    if (heartRate) payload.heart_rate = parseInt(heartRate);
+    if (weight) payload.weight = parseFloat(weight);
+
+    const { error } = await supabase.from("health_metrics" as any).insert(payload);
+    if (error) {
+      toast.error("Failed to save entry");
+      return;
+    }
+
+    toast.success("Health metrics saved!");
     setSystolic(""); setDiastolic(""); setHeartRate(""); setWeight("");
     setShowInput(false);
+    fetchEntries();
 
-    // Provide guidance based on values
-    if (entry.systolic && entry.systolic > 140) {
-      // High BP warning would show here
+    if (systolic && parseInt(systolic) > 140) {
+      toast.warning("Your blood pressure is elevated — please consult your doctor.");
     }
   };
 

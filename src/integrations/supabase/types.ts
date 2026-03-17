@@ -224,6 +224,42 @@ export type Database = {
         }
         Relationships: []
       }
+      health_metrics: {
+        Row: {
+          created_at: string
+          diastolic: number | null
+          heart_rate: number | null
+          id: string
+          notes: string | null
+          recorded_at: string
+          systolic: number | null
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          diastolic?: number | null
+          heart_rate?: number | null
+          id?: string
+          notes?: string | null
+          recorded_at?: string
+          systolic?: number | null
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          diastolic?: number | null
+          heart_rate?: number | null
+          id?: string
+          notes?: string | null
+          recorded_at?: string
+          systolic?: number | null
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
