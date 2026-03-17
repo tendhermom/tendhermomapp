@@ -41,7 +41,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[430px] rounded-t-3xl p-5 pb-8 max-h-[70vh] flex flex-col"
+            className="w-full max-w-[430px] rounded-t-3xl p-5 pb-[max(env(safe-area-inset-bottom,32px),32px)] max-h-[70vh] flex flex-col"
             style={{ background: "hsl(var(--surface))" }}
           >
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "hsl(var(--border-subtle))" }} />
