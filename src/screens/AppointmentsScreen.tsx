@@ -6,6 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hapticSuccess, hapticSelection, localNotification } from "@/lib/despia";
 
+import gynaecologyImg from "@/assets/specialties/gynaecology.jpg";
+import obstetricsImg from "@/assets/specialties/obstetrics.jpg";
+import midwiferyImg from "@/assets/specialties/midwifery.jpg";
+import pediatricsImg from "@/assets/specialties/pediatrics.jpg";
+import nutritionImg from "@/assets/specialties/nutrition.jpg";
+import mentalHealthImg from "@/assets/specialties/mental-health.jpg";
+
 interface AppointmentsScreenProps {
   onBack: () => void;
   onNavigate?: (screen: string) => void;
@@ -37,6 +44,24 @@ interface Appointment {
   created_at: string;
 }
 
+interface SpecialtyCategory {
+  key: string;
+  label: string;
+  icon: string;
+  image: string;
+  matchTerms: string[];
+  description: string;
+}
+
+const SPECIALTY_CATEGORIES: SpecialtyCategory[] = [
+  { key: "gynaecology", label: "Gynaecology", icon: "female-outline", image: gynaecologyImg, matchTerms: ["gynaecol", "gynecol"], description: "Women's reproductive health" },
+  { key: "obstetrics", label: "Obstetrics", icon: "body-outline", image: obstetricsImg, matchTerms: ["obstetric", "obstetrician"], description: "Pregnancy & delivery care" },
+  { key: "midwifery", label: "Midwifery", icon: "heart-outline", image: midwiferyImg, matchTerms: ["midwi"], description: "Birth & postnatal support" },
+  { key: "pediatrics", label: "Pediatrics", icon: "happy-outline", image: pediatricsImg, matchTerms: ["pediatr", "paediatr", "neonat"], description: "Newborn & child health" },
+  { key: "nutrition", label: "Nutrition", icon: "nutrition-outline", image: nutritionImg, matchTerms: ["nutri", "diet"], description: "Maternal & baby nutrition" },
+  { key: "mental-health", label: "Mental Health", icon: "leaf-outline", image: mentalHealthImg, matchTerms: ["mental", "psych", "therap", "counsel"], description: "Emotional wellbeing" },
+];
+
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
@@ -55,29 +80,35 @@ const formatDate = (d: string) => {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-
   if (date.getTime() === today.getTime()) return "Today";
   if (date.getTime() === tomorrow.getTime()) return "Tomorrow";
   return date.toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric" });
 };
 
+const matchCategory = (specialty: string): string => {
+  const lower = specialty.toLowerCase();
+  for (const cat of SPECIALTY_CATEGORIES) {
+    if (cat.matchTerms.some((t) => lower.includes(t))) return cat.key;
+  }
+  return "other";
+};
+
 const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const isPremium = user?.plan_type === "premium";
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [myAppointments, setMyAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [step, setStep] = useState<"list" | "pick-date" | "pick-slot" | "confirm" | "success">("list");
+  const [step, setStep] = useState<"categories" | "category-doctors" | "pick-date" | "pick-slot" | "confirm" | "success">("categories");
+  const [selectedCategory, setSelectedCategory] = useState<SpecialtyCategory | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [notes, setNotes] = useState("");
   const [booking, setBooking] = useState(false);
 
-  // Fetch data
   useEffect(() => {
     if (!user) return;
     const load = async () => {
@@ -92,7 +123,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
     load();
   }, [user]);
 
-  // Load slots when doctor selected
   useEffect(() => {
     if (!selectedDoctor) return;
     const loadSlots = async () => {
@@ -110,7 +140,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
     loadSlots();
   }, [selectedDoctor]);
 
-  // Group slots by date
   const slotsByDate = useMemo(() => {
     const map: Record<string, Slot[]> = {};
     slots.forEach((s) => {
@@ -121,6 +150,33 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
   }, [slots]);
 
   const availableDates = Object.keys(slotsByDate);
+
+  // Group doctors by category
+  const doctorsByCategory = useMemo(() => {
+    const map: Record<string, Doctor[]> = {};
+    doctors.forEach((d) => {
+      const cat = matchCategory(d.specialty);
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(d);
+    });
+    return map;
+  }, [doctors]);
+
+  // Categories that actually have doctors
+  const activeCategories = useMemo(() => {
+    return SPECIALTY_CATEGORIES.filter((c) => (doctorsByCategory[c.key]?.length ?? 0) > 0);
+  }, [doctorsByCategory]);
+
+  // Also include an "other" bucket if needed
+  const otherDoctors = doctorsByCategory["other"] || [];
+
+  const categoryDoctors = selectedCategory ? (doctorsByCategory[selectedCategory.key] || []) : [];
+
+  const handleSelectCategory = (cat: SpecialtyCategory) => {
+    hapticSelection();
+    setSelectedCategory(cat);
+    setStep("category-doctors");
+  };
 
   const handleSelectDoctor = (doc: Doctor) => {
     hapticSelection();
@@ -146,14 +202,12 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
     if (!user || !selectedDoctor || !selectedSlot) return;
     setBooking(true);
     try {
-      // Book the slot
       const { error: slotErr } = await supabase
         .from("doctor_slots")
         .update({ is_booked: true })
         .eq("id", selectedSlot.id);
       if (slotErr) throw slotErr;
 
-      // Create appointment
       const { error: apptErr } = await supabase.from("appointments").insert({
         user_id: user.id,
         doctor_id: selectedDoctor.id,
@@ -164,7 +218,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
       });
       if (apptErr) throw apptErr;
 
-      // Create reminder notification
       await supabase.from("notifications").insert({
         user_id: user.id,
         title: "Appointment Confirmed",
@@ -172,7 +225,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
         type: "appointment",
       });
 
-      // Schedule local push reminder 1 hour before appointment
       const apptDateTime = new Date(`${selectedSlot.slot_date}T${selectedSlot.slot_time}`);
       const reminderTime = new Date(apptDateTime.getTime() - 60 * 60 * 1000);
       const delayMs = reminderTime.getTime() - Date.now();
@@ -185,7 +237,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
         });
       }
 
-      // Also schedule a 15-min reminder
       const reminder15 = new Date(apptDateTime.getTime() - 15 * 60 * 1000);
       const delay15 = reminder15.getTime() - Date.now();
       if (delay15 > 0) {
@@ -200,7 +251,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
       hapticSuccess();
       setStep("success");
 
-      // Refresh appointments
       const { data } = await supabase
         .from("appointments")
         .select("*")
@@ -219,7 +269,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
     const { error } = await supabase.from("appointments").update({ status: "cancelled" }).eq("id", apptId);
     if (!error) {
       await supabase.from("doctor_slots").update({ is_booked: false }).eq("id", slotId);
-      // Cancel local push reminders
       localNotification.cancel(`appt-reminder-${slotId}`);
       localNotification.cancel(`appt-reminder-15-${slotId}`);
       setMyAppointments((prev) => prev.map((a) => (a.id === apptId ? { ...a, status: "cancelled" } : a)));
@@ -228,7 +277,8 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
   };
 
   const resetFlow = () => {
-    setStep("list");
+    setStep("categories");
+    setSelectedCategory(null);
     setSelectedDoctor(null);
     setSelectedDate(null);
     setSelectedSlot(null);
@@ -238,7 +288,24 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
   const initials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Premium gate removed for testing — all users can book
+  const goBack = () => {
+    if (step === "categories") onBack();
+    else if (step === "category-doctors") { setStep("categories"); setSelectedCategory(null); }
+    else if (step === "pick-date") { setStep("category-doctors"); setSelectedDoctor(null); }
+    else if (step === "pick-slot") setStep("pick-date");
+    else if (step === "confirm") setStep("pick-slot");
+  };
+
+  const stepTitle = () => {
+    switch (step) {
+      case "categories": return "Book a Doctor";
+      case "category-doctors": return selectedCategory?.label || "Doctors";
+      case "pick-date": return "Select Date";
+      case "pick-slot": return "Select Time";
+      case "confirm": return "Confirm Booking";
+      default: return "Appointments";
+    }
+  };
 
   // Success state
   if (step === "success") {
@@ -256,15 +323,11 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
             <IonIcon name="checkmark-circle" size={40} style={{ color: "hsl(var(--green))" }} />
           </motion.div>
           <h2 className="text-[20px] font-serif mb-2" style={{ color: "hsl(var(--dark))" }}>Appointment Booked!</h2>
-          <p className="text-[14px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            {selectedDoctor?.full_name}
-          </p>
+          <p className="text-[14px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{selectedDoctor?.full_name}</p>
           <p className="text-[13px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
             {selectedSlot && `${formatDate(selectedSlot.slot_date)} · ${formatTime(selectedSlot.slot_time)}`}
           </p>
-          <p className="text-[11px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
-            15-minute session · You'll receive a reminder
-          </p>
+          <p className="text-[11px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>15-minute session · You'll receive a reminder</p>
           <motion.button whileTap={{ scale: 0.97 }} onClick={resetFlow}
             className="mt-8 w-full py-3.5 rounded-[14px] text-[15px] font-sans font-semibold ios-press"
             style={{ background: "hsl(var(--green))", color: "white", boxShadow: "0 4px 16px hsla(153,42%,30%,0.3)" }}>
@@ -279,16 +342,10 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
     <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.07 } } }}>
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center gap-3">
-        <button onClick={step === "list" ? onBack : () => {
-          if (step === "pick-date") resetFlow();
-          else if (step === "pick-slot") setStep("pick-date");
-          else if (step === "confirm") setStep("pick-slot");
-        }} className="ios-press">
+        <button onClick={goBack} className="ios-press">
           <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
         </button>
-        <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>
-          {step === "list" ? "Appointments" : step === "pick-date" ? "Select Date" : step === "pick-slot" ? "Select Time" : "Confirm Booking"}
-        </h1>
+        <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>{stepTitle()}</h1>
       </motion.div>
 
       {/* Info bar */}
@@ -305,9 +362,9 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
         </div>
       ) : (
         <AnimatePresence mode="wait">
-          {/* STEP: Doctor list + upcoming appointments */}
-          {step === "list" && (
-            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
+          {/* STEP: Category Carousel */}
+          {step === "categories" && (
+            <motion.div key="categories" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
               {/* Upcoming Appointments */}
               {myAppointments.filter((a) => a.status === "confirmed" && a.appointment_date >= new Date().toISOString().split("T")[0]).length > 0 && (
                 <div>
@@ -325,9 +382,7 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
                               {doc ? initials(doc.full_name) : "?"}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[14px] font-sans font-semibold truncate" style={{ color: "hsl(var(--dark))" }}>
-                                {doc?.full_name}
-                              </p>
+                              <p className="text-[14px] font-sans font-semibold truncate" style={{ color: "hsl(var(--dark))" }}>{doc?.full_name}</p>
                               <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
                                 {formatDate(appt.appointment_date)} · {formatTime(appt.appointment_time)}
                               </p>
@@ -344,30 +399,140 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
                 </div>
               )}
 
-              {/* Doctors */}
+              {/* Specialty Categories Carousel */}
               <div>
-                <p className="label-caps text-text-muted mb-2">AVAILABLE DOCTORS</p>
-                <div className="space-y-2">
-                  {doctors.map((doc) => (
-                    <motion.button key={doc.id} whileTap={{ scale: 0.98 }}
-                      onClick={() => handleSelectDoctor(doc)}
-                      className="w-full tend-card p-4 flex items-center gap-3 ios-press text-left">
-                      <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center text-[16px] font-serif text-white flex-shrink-0"
-                        style={{ background: "hsl(var(--green))" }}>
-                        {initials(doc.full_name)}
+                <p className="label-caps text-text-muted mb-3">CHOOSE A SPECIALTY</p>
+                <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar -mx-1 px-1">
+                  {activeCategories.map((cat, i) => (
+                    <motion.button
+                      key={cat.key}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0, transition: { delay: i * 0.06 } }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => handleSelectCategory(cat)}
+                      className="flex-shrink-0 w-[148px] rounded-[16px] overflow-hidden ios-press"
+                      style={{ background: "hsl(var(--surface))", boxShadow: "0 2px 12px hsla(0,0%,0%,0.06)" }}
+                    >
+                      <div className="relative h-[120px] overflow-hidden">
+                        <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" loading="lazy" />
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsla(0,0%,0%,0.5) 0%, transparent 60%)" }} />
+                        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                          <p className="text-[13px] font-sans font-semibold text-white leading-tight">{cat.label}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{doc.full_name}</p>
-                        <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{doc.specialty}</p>
-                        {doc.bio && (
-                          <p className="text-[11px] font-sans mt-0.5 line-clamp-1" style={{ color: "hsl(var(--text-muted))" }}>{doc.bio}</p>
-                        )}
+                      <div className="px-3 py-2.5 flex items-center justify-between">
+                        <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                          {doctorsByCategory[cat.key]?.length || 0} doctor{(doctorsByCategory[cat.key]?.length || 0) !== 1 ? "s" : ""}
+                        </p>
+                        <IonIcon name="chevron-forward" size={12} style={{ color: "hsl(var(--border))" }} />
                       </div>
-                      <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
+                    </motion.button>
+                  ))}
+
+                  {/* "All Categories" if there are others not matched */}
+                  {SPECIALTY_CATEGORIES.filter((c) => !(doctorsByCategory[c.key]?.length)).map((cat, i) => (
+                    <motion.button
+                      key={cat.key}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0, transition: { delay: (activeCategories.length + i) * 0.06 } }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => handleSelectCategory(cat)}
+                      className="flex-shrink-0 w-[148px] rounded-[16px] overflow-hidden ios-press"
+                      style={{ background: "hsl(var(--surface))", boxShadow: "0 2px 12px hsla(0,0%,0%,0.06)" }}
+                    >
+                      <div className="relative h-[120px] overflow-hidden">
+                        <img src={cat.image} alt={cat.label} className="w-full h-full object-cover opacity-60" loading="lazy" />
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsla(0,0%,0%,0.5) 0%, transparent 60%)" }} />
+                        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                          <p className="text-[13px] font-sans font-semibold text-white leading-tight">{cat.label}</p>
+                        </div>
+                      </div>
+                      <div className="px-3 py-2.5 flex items-center justify-between">
+                        <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Coming soon</p>
+                        <IonIcon name="chevron-forward" size={12} style={{ color: "hsl(var(--border))" }} />
+                      </div>
                     </motion.button>
                   ))}
                 </div>
               </div>
+
+              {/* Other / uncategorized doctors */}
+              {otherDoctors.length > 0 && (
+                <div>
+                  <p className="label-caps text-text-muted mb-2">OTHER SPECIALISTS</p>
+                  <div className="space-y-2">
+                    {otherDoctors.map((doc) => (
+                      <motion.button key={doc.id} whileTap={{ scale: 0.98 }}
+                        onClick={() => handleSelectDoctor(doc)}
+                        className="w-full tend-card p-4 flex items-center gap-3 ios-press text-left">
+                        <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center text-[16px] font-serif text-white flex-shrink-0"
+                          style={{ background: "hsl(var(--green))" }}>
+                          {initials(doc.full_name)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{doc.full_name}</p>
+                          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{doc.specialty}</p>
+                        </div>
+                        <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* STEP: Doctors within a category */}
+          {step === "category-doctors" && selectedCategory && (
+            <motion.div key="category-doctors" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="space-y-4">
+              {/* Category banner */}
+              <div className="rounded-[16px] overflow-hidden relative" style={{ height: 140 }}>
+                <img src={selectedCategory.image} alt={selectedCategory.label} className="w-full h-full object-cover" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsla(0,0%,0%,0.65) 0%, hsla(0,0%,0%,0.1) 100%)" }} />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-[18px] font-serif font-semibold text-white">{selectedCategory.label}</p>
+                  <p className="text-[12px] font-sans text-white/80 mt-0.5">{selectedCategory.description}</p>
+                </div>
+              </div>
+
+              {categoryDoctors.length === 0 ? (
+                <div className="tend-card p-8 text-center">
+                  <IonIcon name="person-outline" size={32} style={{ color: "hsl(var(--border))" }} />
+                  <p className="text-[13px] font-sans mt-2" style={{ color: "hsl(var(--text-muted))" }}>
+                    No doctors available in this category yet.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="label-caps text-text-muted mb-2">
+                    {categoryDoctors.length} DOCTOR{categoryDoctors.length !== 1 ? "S" : ""} AVAILABLE
+                  </p>
+                  <div className="space-y-2">
+                    {categoryDoctors.map((doc, i) => (
+                      <motion.button key={doc.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleSelectDoctor(doc)}
+                        className="w-full tend-card p-4 flex items-center gap-3 ios-press text-left">
+                        <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center text-[16px] font-serif text-white flex-shrink-0"
+                          style={{ background: "hsl(var(--green))" }}>
+                          {initials(doc.full_name)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{doc.full_name}</p>
+                          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{doc.specialty}</p>
+                          {doc.bio && (
+                            <p className="text-[11px] font-sans mt-0.5 line-clamp-1" style={{ color: "hsl(var(--text-muted))" }}>{doc.bio}</p>
+                          )}
+                        </div>
+                        <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -397,9 +562,7 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
                     <motion.button key={date} whileTap={{ scale: 0.96 }}
                       onClick={() => handleSelectDate(date)}
                       className="tend-card p-4 text-center ios-press">
-                      <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                        {formatDate(date)}
-                      </p>
+                      <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{formatDate(date)}</p>
                       <p className="text-[11px] font-sans mt-0.5" style={{ color: "hsl(var(--green))" }}>
                         {slotsByDate[date].length} slot{slotsByDate[date].length !== 1 ? "s" : ""}
                       </p>
@@ -431,9 +594,7 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
                   <motion.button key={slot.id} whileTap={{ scale: 0.95 }}
                     onClick={() => handleSelectSlot(slot)}
                     className="tend-card py-3 text-center ios-press">
-                    <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                      {formatTime(slot.slot_time)}
-                    </p>
+                    <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{formatTime(slot.slot_time)}</p>
                     <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>15 min</p>
                   </motion.button>
                 ))}
@@ -473,7 +634,6 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
                 </div>
               </div>
 
-              {/* Notes */}
               <div>
                 <p className="label-caps text-text-muted mb-2">NOTES FOR DOCTOR (OPTIONAL)</p>
                 <textarea
