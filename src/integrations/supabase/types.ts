@@ -157,6 +157,36 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_users: {
+        Row: {
+          banned_at: string
+          banned_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_at?: string
+          banned_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_at?: string
+          banned_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_memberships: {
         Row: {
           community: string
@@ -219,6 +249,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          is_hidden: boolean
           likes_count: number
           updated_at: string
           user_id: string
@@ -230,6 +261,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_hidden?: boolean
           likes_count?: number
           updated_at?: string
           user_id: string
@@ -241,6 +273,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_hidden?: boolean
           likes_count?: number
           updated_at?: string
           user_id?: string
@@ -660,6 +693,47 @@ export type Database = {
         }
         Relationships: []
       }
+      reported_posts: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reported_posts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       triage_sessions: {
         Row: {
           answers: Json
@@ -743,6 +817,7 @@ export type Database = {
       }
       increment_comments: { Args: { p_post_id: string }; Returns: undefined }
       increment_likes: { Args: { p_post_id: string }; Returns: undefined }
+      is_user_banned: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
