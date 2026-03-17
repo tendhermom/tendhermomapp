@@ -76,10 +76,10 @@ const Index = () => {
     }
   }, [activeTab]);
 
-  const handleNavigate = (screen: string) => {
+  const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
     setActiveTab(screen);
-  };
+  }, []);
 
   const renderScreen = () => {
     switch (activeTab) {
