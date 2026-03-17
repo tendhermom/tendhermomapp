@@ -219,6 +219,9 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
     const { error } = await supabase.from("appointments").update({ status: "cancelled" }).eq("id", apptId);
     if (!error) {
       await supabase.from("doctor_slots").update({ is_booked: false }).eq("id", slotId);
+      // Cancel local push reminders
+      localNotification.cancel(`appt-reminder-${slotId}`);
+      localNotification.cancel(`appt-reminder-15-${slotId}`);
       setMyAppointments((prev) => prev.map((a) => (a.id === apptId ? { ...a, status: "cancelled" } : a)));
       toast.success("Appointment cancelled");
     }
