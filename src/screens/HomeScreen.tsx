@@ -96,7 +96,6 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
       {/* Top Bar */}
       <motion.div variants={fadeUp}>
         <TopBar
-          onMenuPress={onMenuOpen}
           onAIChatPress={() => onNavigate("ai-chat")}
           onNotificationsPress={() => onNavigate("notifications")}
         />
