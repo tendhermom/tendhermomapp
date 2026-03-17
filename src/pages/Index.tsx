@@ -22,6 +22,8 @@ const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
 const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
 const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
 const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
+const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
+const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
