@@ -91,7 +91,7 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[430px] rounded-t-3xl p-5 pb-8"
+            className="w-full max-w-[430px] rounded-t-3xl p-5 pb-[max(env(safe-area-inset-bottom,32px),32px)]"
             style={{ background: "hsl(var(--surface))" }}
           >
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
