@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hapticLight } from "@/lib/despia";
 
@@ -17,6 +16,7 @@ interface Reminder {
   week: number;
   type: "checkup" | "test" | "vaccine" | "milestone";
   completed: boolean;
+  isCustom?: boolean;
 }
 
 interface CustomItem {
@@ -26,14 +26,12 @@ interface CustomItem {
   type: "checkup" | "test" | "vaccine" | "milestone";
 }
 
-const ANTENATAL_SCHEDULE: Omit<Reminder, "id" | "completed">[] = [
-  // First Trimester
+const ANTENATAL_SCHEDULE: Omit<Reminder, "id" | "completed" | "isCustom">[] = [
   { week: 4, title: "Confirm Pregnancy", description: "Blood test (hCG) & urine test to confirm pregnancy", type: "test" },
   { week: 6, title: "First Prenatal Visit", description: "Medical history, physical exam, blood type & Rh factor", type: "checkup" },
   { week: 8, title: "Dating Scan", description: "Ultrasound to confirm gestational age & due date", type: "test" },
   { week: 10, title: "Blood Work Panel", description: "CBC, HIV, Hepatitis B & C, sickle cell, blood sugar", type: "test" },
   { week: 12, title: "Nuchal Translucency Scan", description: "Screen for Down syndrome & chromosomal conditions", type: "test" },
-  // Second Trimester
   { week: 14, title: "Second Trimester Begins", description: "Review first trimester results with your doctor", type: "checkup" },
   { week: 16, title: "Routine Checkup", description: "Blood pressure, weight, fundal height, fetal heartbeat", type: "checkup" },
   { week: 18, title: "Anatomy Scan", description: "Detailed ultrasound to check baby's organs & growth", type: "test" },
@@ -41,7 +39,6 @@ const ANTENATAL_SCHEDULE: Omit<Reminder, "id" | "completed">[] = [
   { week: 22, title: "Glucose Screen Prep", description: "Discuss upcoming gestational diabetes test", type: "checkup" },
   { week: 24, title: "Glucose Tolerance Test", description: "1-hour glucose challenge to screen for gestational diabetes", type: "test" },
   { week: 26, title: "Rhogam Injection", description: "For Rh-negative mothers — prevents Rh incompatibility", type: "vaccine" },
-  // Third Trimester
   { week: 28, title: "Third Trimester Begins", description: "Bi-weekly visits start. CBC repeat, antibody screen", type: "checkup" },
   { week: 30, title: "Growth Scan", description: "Ultrasound to monitor baby's growth & amniotic fluid", type: "test" },
   { week: 32, title: "Fetal Position Check", description: "Confirm baby's position — head down is ideal", type: "checkup" },
@@ -55,26 +52,146 @@ const ANTENATAL_SCHEDULE: Omit<Reminder, "id" | "completed">[] = [
 
 const TYPE_CONFIG = {
   checkup: { icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))", label: "Checkup" },
-  test: { icon: "flask-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))", label: "Test" },
-  vaccine: { icon: "shield-checkmark-outline", color: "hsl(210 80% 55%)", bg: "hsl(210 80% 92%)", label: "Vaccine" },
+  test: { icon: "flask-outline", color: "hsl(210 80% 55%)", bg: "hsl(210 80% 92%)", label: "Test" },
+  vaccine: { icon: "shield-checkmark-outline", color: "hsl(270 60% 55%)", bg: "hsl(270 60% 92%)", label: "Vaccine" },
   milestone: { icon: "star-outline", color: "hsl(45 93% 48%)", bg: "hsl(45 93% 92%)", label: "Milestone" },
 };
 
+/* ─── Swipeable Timeline Item ─── */
+const SwipeableItem = ({
+  item,
+  config,
+  isPast,
+  isCurrent,
+  isLast,
+  onToggle,
+  onDelete,
+}: {
+  item: Reminder;
+  config: typeof TYPE_CONFIG.checkup;
+  isPast: boolean;
+  isCurrent: boolean;
+  isLast: boolean;
+  onToggle: () => void;
+  onDelete?: () => void;
+}) => {
+  const [swiped, setSwiped] = useState(false);
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    if (item.isCustom && info.offset.x < -60) {
+      setSwiped(true);
+    } else {
+      setSwiped(false);
+    }
+  };
+
+  return (
+    <div className="flex gap-3 relative">
+      {/* Timeline dot + line */}
+      <div className="flex flex-col items-center w-[28px] flex-shrink-0">
+        <div
+          className="w-[28px] h-[28px] rounded-full flex items-center justify-center z-10"
+          style={{
+            background: item.completed ? "hsl(var(--green))" : isCurrent ? "hsl(var(--green))" : "hsl(var(--surface))",
+            border: item.completed || isCurrent ? "none" : "2px solid hsl(var(--border-subtle))",
+          }}
+        >
+          {item.completed ? (
+            <IonIcon name="checkmark" size={14} style={{ color: "white" }} />
+          ) : (
+            <span className="text-[10px] font-sans font-bold" style={{ color: isCurrent ? "white" : "hsl(var(--text-muted))" }}>
+              {item.week}
+            </span>
+          )}
+        </div>
+        {!isLast && (
+          <div className="w-[2px] flex-1 min-h-[20px]" style={{ background: item.completed ? "hsl(var(--green))" : "hsl(var(--border-subtle))" }} />
+        )}
+      </div>
+
+      {/* Swipeable content area */}
+      <div className="flex-1 mb-2 relative overflow-hidden rounded-2xl">
+        {/* Delete background */}
+        {item.isCustom && (
+          <div className="absolute inset-0 flex items-center justify-end pr-5 rounded-2xl" style={{ background: "hsl(var(--destructive))" }}>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => { hapticLight(); onDelete?.(); }}
+              className="flex items-center gap-1.5 text-white"
+            >
+              <IonIcon name="trash-outline" size={18} style={{ color: "white" }} />
+              <span className="text-[12px] font-sans font-semibold">Delete</span>
+            </motion.button>
+          </div>
+        )}
+
+        {/* Card content */}
+        <motion.div
+          drag={item.isCustom ? "x" : false}
+          dragConstraints={{ left: -100, right: 0 }}
+          dragElastic={0.1}
+          onDragEnd={handleDragEnd}
+          animate={{ x: swiped ? -100 : 0 }}
+          transition={{ type: "spring", damping: 24, stiffness: 260 }}
+          className="tend-card p-3.5 relative z-10"
+          style={{ opacity: item.completed ? 0.6 : 1, cursor: item.isCustom ? "grab" : "pointer" }}
+          onClick={() => { if (!swiped) onToggle(); else setSwiped(false); }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: config.bg }}
+            >
+              <IonIcon name={config.icon} size={18} style={{ color: config.color }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p
+                  className="text-[14px] font-sans font-semibold"
+                  style={{ color: "hsl(var(--dark))", textDecoration: item.completed ? "line-through" : "none" }}
+                >
+                  {item.title}
+                </p>
+                <span
+                  className="text-[9px] font-sans font-semibold uppercase px-2 py-[2px] rounded-full"
+                  style={{ background: config.bg, color: config.color }}
+                >
+                  {config.label}
+                </span>
+                {item.isCustom && (
+                  <span className="text-[8px] font-sans font-bold uppercase px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--surface))", color: "hsl(var(--text-muted))" }}>
+                    Custom
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
+                {item.description}
+              </p>
+              <p className="text-[10px] font-sans mt-1 font-medium" style={{ color: isPast ? "hsl(var(--text-muted))" : "hsl(var(--green))" }}>
+                Week {item.week} {isPast && !item.completed ? "• Overdue" : ""}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Main Screen ─── */
 const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<"all" | "upcoming" | "completed">("all");
-  const [customItems, setCustomItems] = useState<Omit<Reminder, "id" | "completed">[]>([]);
+  const [customItems, setCustomItems] = useState<Omit<Reminder, "id" | "completed" | "isCustom">[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItem, setNewItem] = useState<CustomItem>({ title: "", description: "", week: currentWeek, type: "checkup" });
 
-  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`antenatal_completed_${user?.id}`);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Migrate old number-based sets to string IDs
       setCompletedItems(new Set(parsed.map((v: number | string) => String(v))));
     }
     const savedCustom = localStorage.getItem(`antenatal_custom_${user?.id}`);
@@ -103,12 +220,29 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
     toast.success("Item added!");
   };
 
+  const deleteCustomItem = (customIndex: number) => {
+    hapticLight();
+    const updated = customItems.filter((_, i) => i !== customIndex);
+    setCustomItems(updated);
+    localStorage.setItem(`antenatal_custom_${user?.id}`, JSON.stringify(updated));
+    // Also remove completion state
+    const id = `custom-${ANTENATAL_SCHEDULE.length + customIndex}`;
+    setCompletedItems((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      localStorage.setItem(`antenatal_completed_${user?.id}`, JSON.stringify([...next]));
+      return next;
+    });
+    toast.success("Item removed");
+  };
+
   const allItems = [...ANTENATAL_SCHEDULE, ...customItems];
-  const schedule = allItems
+  const schedule: Reminder[] = allItems
     .sort((a, b) => a.week - b.week)
     .map((item, i) => {
-      const id = i < ANTENATAL_SCHEDULE.length ? `week-${item.week}` : `custom-${i}`;
-      return { ...item, id, completed: completedItems.has(id) };
+      const isCustom = i >= ANTENATAL_SCHEDULE.length;
+      const id = isCustom ? `custom-${i}` : `week-${item.week}`;
+      return { ...item, id, completed: completedItems.has(id), isCustom };
     });
 
   const filtered = schedule.filter((item) => {
@@ -119,16 +253,18 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
 
   const completedCount = schedule.filter((r) => r.completed).length;
   const progressPercent = Math.round((completedCount / schedule.length) * 100);
-
-  // Find next upcoming
   const nextUp = schedule.find((r) => !r.completed && r.week >= currentWeek);
 
+  // Stats
+  const totalByType = {
+    checkup: schedule.filter((s) => s.type === "checkup").length,
+    test: schedule.filter((s) => s.type === "test").length,
+    vaccine: schedule.filter((s) => s.type === "vaccine").length,
+    milestone: schedule.filter((s) => s.type === "milestone").length,
+  };
+
   return (
-    <motion.div
-      className="space-y-5 pb-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+    <motion.div className="space-y-5 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {/* Header */}
       <div className="flex items-center gap-3">
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate("home")} className="p-1">
@@ -137,34 +273,89 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
         <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>Antenatal Care</h1>
       </div>
 
-      {/* Progress Card */}
+      {/* Premium Hero — Current Week Card */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="hero-card p-5"
+        className="rounded-2xl p-5 relative overflow-hidden"
+        style={{ background: "linear-gradient(145deg, hsl(var(--green)), hsl(160 40% 22%))" }}
       >
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-white/50 text-[11px] font-sans uppercase tracking-wider">Your Progress</p>
-            <p className="text-white text-[28px] font-serif mt-0.5">{completedCount}/{schedule.length}</p>
+        {/* Decorative circle */}
+        <div className="absolute -left-6 -bottom-6 w-[120px] h-[120px] rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
+        <div className="absolute right-4 top-4 w-[60px] h-[60px] rounded-full" style={{ background: "rgba(255,255,255,0.04)" }} />
+
+        <div className="flex items-center gap-4 relative z-10">
+          {/* Week circle */}
+          <div
+            className="w-[60px] h-[60px] rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.12)", border: "2px solid rgba(255,255,255,0.2)" }}
+          >
+            <span className="text-white text-[24px] font-serif font-bold">{currentWeek}</span>
           </div>
-          <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.12)" }}>
-            <span className="text-white text-[18px] font-sans font-bold">{progressPercent}%</span>
+
+          <div className="flex-1">
+            <p className="text-[10px] font-sans font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>
+              You are at
+            </p>
+            <p className="text-white text-[22px] font-serif font-bold mt-0.5">Week {currentWeek}</p>
+            <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--coral))" }}>
+              {nextUp?.title || "Your journey continues"}
+            </p>
+          </div>
+
+          {/* View button → opens Insights */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => { hapticLight(); onNavigate("insights"); }}
+            className="px-4 py-2 rounded-xl text-[12px] font-sans font-semibold"
+            style={{ background: "rgba(255,255,255,0.15)", color: "white", backdropFilter: "blur(8px)" }}
+          >
+            View →
+          </motion.button>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mt-4 relative z-10">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Progress
+            </p>
+            <p className="text-[12px] font-sans font-bold" style={{ color: "rgba(255,255,255,0.8)" }}>
+              {completedCount}/{schedule.length}
+            </p>
+          </div>
+          <div className="h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full rounded-full"
+              style={{ background: "linear-gradient(90deg, hsl(45 93% 58%), hsl(var(--coral)))" }}
+            />
           </div>
         </div>
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progressPercent}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="h-full rounded-full"
-            style={{ background: "hsl(var(--coral))" }}
-          />
-        </div>
-        <p className="text-[11px] font-sans mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Currently at <span className="font-semibold" style={{ color: "hsl(var(--coral))" }}>Week {currentWeek}</span>
-        </p>
       </motion.div>
+
+      {/* Type Stats Row */}
+      <div className="flex gap-2">
+        {(Object.entries(totalByType) as [keyof typeof TYPE_CONFIG, number][]).map(([type, count]) => {
+          const c = TYPE_CONFIG[type];
+          return (
+            <motion.div
+              key={type}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 tend-card p-3 flex flex-col items-center gap-1"
+            >
+              <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center" style={{ background: c.bg }}>
+                <IonIcon name={c.icon} size={14} style={{ color: c.color }} />
+              </div>
+              <p className="text-[16px] font-sans font-bold" style={{ color: "hsl(var(--dark))" }}>{count}</p>
+              <p className="text-[9px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>{c.label}s</p>
+            </motion.div>
+          );
+        })}
+      </div>
 
       {/* Next Upcoming */}
       {nextUp && (
@@ -174,7 +365,9 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
           transition={{ delay: 0.1 }}
           className="tend-card p-4"
         >
-          <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--green))" }}>Coming Up — Week {nextUp.week}</p>
+          <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--green))" }}>
+            Coming Up — Week {nextUp.week}
+          </p>
           <p className="text-[15px] font-sans font-semibold mt-1" style={{ color: "hsl(var(--dark))" }}>{nextUp.title}</p>
           <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{nextUp.description}</p>
           <motion.button
@@ -214,6 +407,7 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
             const config = TYPE_CONFIG[item.type];
             const isPast = item.week < currentWeek;
             const isCurrent = item.week === currentWeek || (item.week > currentWeek && item.week === nextUp?.week);
+            const customIndex = item.isCustom ? allItems.indexOf(allItems.find((a) => a.title === item.title && a.week === item.week && a.type === item.type)!) - ANTENATAL_SCHEDULE.length : -1;
 
             return (
               <motion.div
@@ -223,71 +417,16 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
                 transition={{ delay: i * 0.03 }}
-                className="flex gap-3 relative"
               >
-                {/* Timeline line */}
-                <div className="flex flex-col items-center w-[28px] flex-shrink-0">
-                  <div
-                    className="w-[28px] h-[28px] rounded-full flex items-center justify-center z-10"
-                    style={{
-                      background: item.completed ? "hsl(var(--green))" : isCurrent ? "hsl(var(--green))" : "hsl(var(--surface))",
-                      border: item.completed || isCurrent ? "none" : "2px solid hsl(var(--border-subtle))",
-                    }}
-                  >
-                    {item.completed ? (
-                      <IonIcon name="checkmark" size={14} style={{ color: "white" }} />
-                    ) : (
-                      <span className="text-[10px] font-sans font-bold" style={{ color: isCurrent ? "white" : "hsl(var(--text-muted))" }}>
-                        {item.week}
-                      </span>
-                    )}
-                  </div>
-                  {i < filtered.length - 1 && (
-                    <div className="w-[2px] flex-1 min-h-[20px]" style={{ background: item.completed ? "hsl(var(--green))" : "hsl(var(--border-subtle))" }} />
-                  )}
-                </div>
-
-                {/* Content */}
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => toggleComplete(item.id)}
-                  className="flex-1 tend-card p-3.5 mb-2 text-left"
-                  style={{ opacity: item.completed ? 0.6 : 1 }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center flex-shrink-0"
-                      style={{ background: config.bg }}
-                    >
-                      <IonIcon name={config.icon} size={18} style={{ color: config.color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p
-                          className="text-[14px] font-sans font-semibold"
-                          style={{
-                            color: "hsl(var(--dark))",
-                            textDecoration: item.completed ? "line-through" : "none",
-                          }}
-                        >
-                          {item.title}
-                        </p>
-                        <span
-                          className="text-[9px] font-sans font-semibold uppercase px-2 py-[2px] rounded-full"
-                          style={{ background: config.bg, color: config.color }}
-                        >
-                          {config.label}
-                        </span>
-                      </div>
-                      <p className="text-[11px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
-                        {item.description}
-                      </p>
-                      <p className="text-[10px] font-sans mt-1 font-medium" style={{ color: isPast ? "hsl(var(--text-muted))" : "hsl(var(--green))" }}>
-                        Week {item.week} {isPast && !item.completed ? "• Overdue" : ""}
-                      </p>
-                    </div>
-                  </div>
-                </motion.button>
+                <SwipeableItem
+                  item={item}
+                  config={config}
+                  isPast={isPast}
+                  isCurrent={isCurrent}
+                  isLast={i === filtered.length - 1}
+                  onToggle={() => toggleComplete(item.id)}
+                  onDelete={item.isCustom ? () => deleteCustomItem(customIndex) : undefined}
+                />
               </motion.div>
             );
           })}
@@ -330,8 +469,8 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="w-full max-w-[480px] rounded-t-3xl p-6 pb-[max(env(safe-area-inset-bottom,24px),24px)] space-y-4 max-h-[85vh] overflow-y-auto"
-              style={{ background: "hsl(var(--card))" }}
+              className="w-full max-w-[480px] rounded-t-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto"
+              style={{ background: "hsl(var(--card))", paddingBottom: "max(env(safe-area-inset-bottom, 100px), 100px)" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
