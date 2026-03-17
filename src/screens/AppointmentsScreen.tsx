@@ -4,7 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { hapticSuccess, hapticSelection } from "@/lib/despia";
+import { hapticSuccess, hapticSelection, localNotification } from "@/lib/despia";
 
 interface AppointmentsScreenProps {
   onBack: () => void;
