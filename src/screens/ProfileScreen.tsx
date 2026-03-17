@@ -209,14 +209,16 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.12 + si * 0.08 }}
           className="tend-card overflow-hidden"
         >
-          {section.items.map((item, i) => (
+          {section.items
+            .filter((item) => !(item as any).adminOnly || isAdmin)
+            .map((item, i, filtered) => (
             <motion.button
               key={item.label}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleMenuPress(item.route)}
               className="flex items-center gap-3.5 w-full px-[18px] py-[15px] text-left"
               style={{
-                borderBottom: i < section.items.length - 1
+                borderBottom: i < filtered.length - 1
                   ? "0.5px solid hsl(var(--border))"
                   : "none",
               }}
