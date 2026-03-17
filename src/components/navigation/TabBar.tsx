@@ -97,6 +97,8 @@ const TabBar = memo(({ activeTab, onTabChange }: TabBarProps) => {
       </div>
     </div>
   );
-};
+});
+
+TabBar.displayName = "TabBar";
 
 export default TabBar;
