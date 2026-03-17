@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { hapticSelection } from "@/lib/despia";
