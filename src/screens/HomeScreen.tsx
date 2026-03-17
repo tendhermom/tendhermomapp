@@ -8,7 +8,6 @@ import { useEffect } from "react";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
-  onMenuOpen: () => void;
 }
 
 const staggerContainer = {
@@ -47,10 +46,10 @@ const getGamificationLevel = (points: number) => {
 };
 
 const QUICK_ACTIONS = [
-  { id: "health-tracker", label: "Health", icon: "heart-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
-  { id: "triage", label: "Triage", icon: "fitness-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "sos", label: "SOS", icon: "shield-checkmark-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
-  { id: "community", label: "Community", icon: "chatbubbles-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "triage", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "appointments", label: "Appointment", icon: "calendar-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "health-tracker", label: "Health", icon: "heart-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "ai-chat", label: "Insights", icon: "bulb-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
 ];
 
 const WEEKLY_HIGHLIGHTS = [
@@ -59,7 +58,7 @@ const WEEKLY_HIGHLIGHTS = [
   { id: "gamification", label: "Your Level", desc: "Earn points & climb ranks", icon: "trophy-outline", color: "green" },
 ];
 
-const HomeScreen = ({ onNavigate, onMenuOpen }: HomeScreenProps) => {
+const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
   const daysLeft = useAuthStore((s) => s.getDaysRemaining());
@@ -97,7 +96,6 @@ const HomeScreen = ({ onNavigate, onMenuOpen }: HomeScreenProps) => {
       {/* Top Bar */}
       <motion.div variants={fadeUp}>
         <TopBar
-          onMenuPress={onMenuOpen}
           onAIChatPress={() => onNavigate("ai-chat")}
           onNotificationsPress={() => onNavigate("notifications")}
         />

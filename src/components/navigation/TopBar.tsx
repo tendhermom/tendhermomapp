@@ -4,28 +4,15 @@ import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 
 interface TopBarProps {
   onNotificationsPress?: () => void;
-  onMenuPress?: () => void;
   onAIChatPress?: () => void;
 }
 
-const TopBar = ({ onNotificationsPress, onMenuPress, onAIChatPress }: TopBarProps) => {
+const TopBar = ({ onNotificationsPress, onAIChatPress }: TopBarProps) => {
   const unreadCount = useUnreadNotifications();
 
   return (
     <div className="flex items-center justify-between mb-5">
-      {/* Left - Hamburger menu */}
-      <div className="flex items-center">
-        {onMenuPress && (
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={onMenuPress}
-            className="w-[40px] h-[40px] rounded-full flex items-center justify-center ios-press"
-            style={{ background: "hsl(var(--light-green))" }}
-          >
-            <IonIcon name="menu-outline" size={20} style={{ color: "hsl(var(--green))" }} />
-          </motion.button>
-        )}
-      </div>
+      <div />
 
       {/* Right - AI Chat + Notifications */}
       <div className="flex items-center gap-2">
