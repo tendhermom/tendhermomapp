@@ -83,7 +83,7 @@ const Index = () => {
       case "gamification":
         return <GamificationScreen onBack={() => setActiveTab("home")} />;
       case "appointments":
-        return <AppointmentsScreen onBack={() => setActiveTab("home")} />;
+        return <AppointmentsScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "premium":
         return <PremiumScreen onBack={() => setActiveTab("profile")} />;
       default:
