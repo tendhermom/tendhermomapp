@@ -14,12 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      baby_shower_gifts: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          message: string | null
+          post_id: string
+          sender_email: string | null
+          sender_name: string
+          status: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          message?: string | null
+          post_id: string
+          sender_email?: string | null
+          sender_name: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          message?: string | null
+          post_id?: string
+          sender_email?: string | null
+          sender_name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_shower_gifts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "baby_shower_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       baby_shower_posts: {
         Row: {
           baby_name: string
           birth_date: string | null
           created_at: string
           gender: string
+          gift_enabled: boolean
+          gift_total: number
           id: string
           image_url: string | null
           month_label: string
@@ -32,6 +78,8 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           gender: string
+          gift_enabled?: boolean
+          gift_total?: number
           id?: string
           image_url?: string | null
           month_label: string
@@ -44,6 +92,8 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           gender?: string
+          gift_enabled?: boolean
+          gift_total?: number
           id?: string
           image_url?: string | null
           month_label?: string
