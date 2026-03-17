@@ -38,7 +38,8 @@ const emptyContact: Omit<EmergencyContact, "id"> = {
 
 const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const maxContacts = 5;
+  const isFree = user?.plan_type === "free";
+  const maxContacts = isFree ? 1 : 5;
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
