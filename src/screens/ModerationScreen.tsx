@@ -67,7 +67,7 @@ const ModerationScreen = ({ onBack }: ModerationScreenProps) => {
 
       // Enrich reports with post content
       if (reportsRes.data) {
-        const postIds = [...new Set(reportsRes.data.map((r: any) => r.post_id))];
+        const postIds = [...new Set(reportsRes.data.map((r: any) => r.post_id))] as string[];
         const { data: posts } = await supabase
           .from("community_posts")
           .select("id, content, user_id")
