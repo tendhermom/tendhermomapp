@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
@@ -62,99 +62,69 @@ const WEEKLY_TIPS: WeeklyTip[] = [
 ];
 
 const TRIMESTERS = [
-  { id: "first", label: "1st Trimester", weeks: "Week 1-12", range: [1, 12], color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
-  { id: "second", label: "2nd Trimester", weeks: "Week 13-27", range: [13, 27], color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "third", label: "3rd Trimester", weeks: "Week 28-40", range: [28, 40], color: "hsl(210 80% 55%)", bg: "hsl(210 80% 92%)" },
+  { id: "first", label: "1st Trimester", subtitle: "Weeks 1–12", description: "Foundation of life — organs form, heart beats, and your journey begins.", icon: "leaf-outline", range: [1, 12] as [number, number] },
+  { id: "second", label: "2nd Trimester", subtitle: "Weeks 13–27", description: "The golden period — baby grows, kicks, and you glow.", icon: "sunny-outline", range: [13, 27] as [number, number] },
+  { id: "third", label: "3rd Trimester", subtitle: "Weeks 28–40", description: "The final stretch — baby matures and prepares for arrival.", icon: "moon-outline", range: [28, 40] as [number, number] },
+];
+
+const SECTIONS = [
+  { key: "babyDev" as const, icon: "happy-outline", label: "Baby's Development", color: "hsl(var(--coral))" },
+  { key: "motherTip" as const, icon: "heart-outline", label: "Mum's Tip", color: "hsl(var(--green))" },
+  { key: "nutrition" as const, icon: "nutrition-outline", label: "Nutrition", color: "hsl(45 93% 48%)" },
+  { key: "warning" as const, icon: "warning-outline", label: "Watch Out", color: "hsl(var(--destructive))" },
+  { key: "fact" as const, icon: "stats-chart-outline", label: "Did You Know?", color: "hsl(210 80% 55%)" },
 ];
 
 const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
-  const [activeTrimester, setActiveTrimester] = useState(() => {
-    if (currentWeek <= 12) return 0;
-    if (currentWeek <= 27) return 1;
-    return 2;
-  });
-  const [expandedWeek, setExpandedWeek] = useState<number | null>(currentWeek);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [selectedTrimester, setSelectedTrimester] = useState<number | null>(null);
+  const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
 
-  const trimester = TRIMESTERS[activeTrimester];
-  const tips = WEEKLY_TIPS.filter((t) => t.week >= trimester.range[0] && t.week <= trimester.range[1]);
+  // Determine which trimester the user is in
+  const currentTrimesterIndex = currentWeek <= 12 ? 0 : currentWeek <= 27 ? 1 : 2;
 
-  const SECTIONS = [
-    { key: "babyDev" as const, icon: "happy-outline", label: "Baby's Development", color: "hsl(var(--coral))" },
-    { key: "motherTip" as const, icon: "heart-outline", label: "Mum's Tip", color: "hsl(var(--green))" },
-    { key: "nutrition" as const, icon: "nutrition-outline", label: "Nutrition", color: "hsl(45 93% 48%)" },
-    { key: "warning" as const, icon: "warning-outline", label: "Watch Out", color: "hsl(var(--destructive))" },
-    { key: "fact" as const, icon: "stats-chart-outline", label: "Did You Know?", color: "hsl(210 80% 55%)" },
-  ];
+  const handleSelectTrimester = (index: number) => {
+    hapticLight();
+    setSelectedTrimester(index);
+    setExpandedWeek(null);
+  };
 
-  return (
-    <motion.div
-      className="space-y-5 pb-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
-          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <div>
-          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>Health Insights</h1>
-          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Week-by-week pregnancy guide</p>
-        </div>
-      </div>
+  const handleBackToCategories = () => {
+    hapticLight();
+    setSelectedTrimester(null);
+    setExpandedWeek(null);
+  };
 
-      {/* Current Week Badge */}
+  // Weekly content view
+  if (selectedTrimester !== null) {
+    const trimester = TRIMESTERS[selectedTrimester];
+    const tips = WEEKLY_TIPS.filter((t) => t.week >= trimester.range[0] && t.week <= trimester.range[1]);
+
+    return (
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="hero-card p-4 flex items-center gap-4"
+        className="space-y-5 pb-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
       >
-        <div className="w-[52px] h-[52px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
-          <span className="text-white text-[20px] font-serif font-bold">{currentWeek}</span>
-        </div>
-        <div>
-          <p className="text-white/50 text-[10px] font-sans uppercase tracking-wider">You are at</p>
-          <p className="text-white text-[18px] font-serif">Week {currentWeek}</p>
-          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--coral))" }}>
-            {WEEKLY_TIPS.find((t) => t.week === currentWeek)?.title || "Your journey continues"}
-          </p>
-        </div>
-      </motion.div>
-
-      {/* Trimester Carousel */}
-      <div ref={scrollRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        {TRIMESTERS.map((tri, i) => (
-          <motion.button
-            key={tri.id}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => { hapticLight(); setActiveTrimester(i); setExpandedWeek(null); }}
-            className="flex-shrink-0 px-5 py-3 rounded-2xl"
-            style={{
-              background: activeTrimester === i ? tri.color : "hsl(var(--surface))",
-              color: activeTrimester === i ? "white" : "hsl(var(--dark))",
-              boxShadow: activeTrimester === i ? `0 4px 16px ${tri.color}40` : "0 1px 3px hsla(0,0%,0%,0.06)",
-              minWidth: "140px",
-            }}
-          >
-            <p className="text-[14px] font-sans font-bold">{tri.label}</p>
-            <p className="text-[11px] font-sans mt-0.5" style={{ opacity: 0.7 }}>{tri.weeks}</p>
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={handleBackToCategories} className="p-1">
+            <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
           </motion.button>
-        ))}
-      </div>
+          <div>
+            <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>{trimester.label}</h1>
+            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{trimester.subtitle} • {tips.length} weeks of insights</p>
+          </div>
+        </div>
 
-      {/* Weekly Tips List */}
-      <AnimatePresence mode="wait">
+        {/* Weekly Tips */}
         <motion.div
-          key={activeTrimester}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.25 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
           className="space-y-2"
         >
-          {tips.map((tip) => {
+          {tips.map((tip, i) => {
             const isExpanded = expandedWeek === tip.week;
             const isCurrent = tip.week === currentWeek;
 
@@ -162,10 +132,10 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
               <motion.div
                 key={tip.week}
                 layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.025 }}
                 className="tend-card overflow-hidden"
-                style={{
-                  borderLeft: isCurrent ? `3px solid ${trimester.color}` : "none",
-                }}
               >
                 <motion.button
                   whileTap={{ scale: 0.98 }}
@@ -174,19 +144,33 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
                 >
                   <div
                     className="w-[38px] h-[38px] rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: isCurrent ? trimester.color : trimester.bg }}
+                    style={{
+                      background: isCurrent
+                        ? "linear-gradient(135deg, hsl(var(--green)), hsl(var(--coral)))"
+                        : "hsl(var(--surface))",
+                    }}
                   >
                     <span
                       className="text-[13px] font-sans font-bold"
-                      style={{ color: isCurrent ? "white" : trimester.color }}
+                      style={{ color: isCurrent ? "white" : "hsl(var(--text-muted))" }}
                     >
                       {tip.week}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                      {tip.title}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                        {tip.title}
+                      </p>
+                      {isCurrent && (
+                        <span
+                          className="text-[9px] font-sans font-bold uppercase px-2 py-[2px] rounded-full"
+                          style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+                        >
+                          You're here
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] font-sans truncate" style={{ color: "hsl(var(--text-muted))" }}>
                       {tip.babyDev}
                     </p>
@@ -235,7 +219,218 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
             );
           })}
         </motion.div>
-      </AnimatePresence>
+      </motion.div>
+    );
+  }
+
+  // Category carousel view
+  return (
+    <motion.div
+      className="space-y-5 pb-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
+          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
+        </motion.button>
+        <div>
+          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>Health Insights</h1>
+          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Week-by-week pregnancy guide</p>
+        </div>
+      </div>
+
+      {/* Current Week Hero */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="hero-card p-5 flex items-center gap-4"
+      >
+        <div className="w-[56px] h-[56px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
+          <span className="text-white text-[22px] font-serif font-bold">{currentWeek}</span>
+        </div>
+        <div className="flex-1">
+          <p className="text-white/50 text-[10px] font-sans uppercase tracking-wider">You are at</p>
+          <p className="text-white text-[20px] font-serif">Week {currentWeek}</p>
+          <p className="text-[11px] font-sans mt-0.5" style={{ color: "hsl(var(--coral))" }}>
+            {WEEKLY_TIPS.find((t) => t.week === currentWeek)?.title || "Your journey continues"}
+          </p>
+        </div>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => handleSelectTrimester(currentTrimesterIndex)}
+          className="px-3 py-1.5 rounded-xl text-[11px] font-sans font-semibold"
+          style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
+        >
+          View →
+        </motion.button>
+      </motion.div>
+
+      {/* Trimester Carousel Cards */}
+      <div>
+        <p className="text-[12px] font-sans font-semibold uppercase tracking-wider mb-3" style={{ color: "hsl(var(--text-muted))" }}>
+          Choose a Trimester
+        </p>
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+          {TRIMESTERS.map((tri, i) => {
+            const isActive = i === currentTrimesterIndex;
+            const weeksInTri = WEEKLY_TIPS.filter((t) => t.week >= tri.range[0] && t.week <= tri.range[1]);
+            const progressWeeks = isActive ? currentWeek - tri.range[0] + 1 : i < currentTrimesterIndex ? weeksInTri.length : 0;
+            const progressPct = Math.round((progressWeeks / weeksInTri.length) * 100);
+
+            return (
+              <motion.button
+                key={tri.id}
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ y: -2 }}
+                onClick={() => handleSelectTrimester(i)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 24 }}
+                className="flex-shrink-0 rounded-2xl p-5 text-left relative overflow-hidden"
+                style={{
+                  width: "200px",
+                  background: isActive
+                    ? "linear-gradient(145deg, hsl(var(--green)), hsl(160 50% 30%))"
+                    : "hsl(var(--surface))",
+                  boxShadow: isActive
+                    ? "0 8px 32px hsla(var(--green) / 0.3)"
+                    : "0 2px 8px hsla(0, 0%, 0%, 0.04)",
+                }}
+              >
+                {/* Background decoration */}
+                <div
+                  className="absolute -right-4 -top-4 w-[80px] h-[80px] rounded-full"
+                  style={{
+                    background: isActive ? "rgba(255,255,255,0.08)" : "hsl(var(--border-subtle))",
+                    opacity: 0.5,
+                  }}
+                />
+
+                <div
+                  className="w-[40px] h-[40px] rounded-xl flex items-center justify-center mb-3"
+                  style={{
+                    background: isActive ? "rgba(255,255,255,0.15)" : "hsl(var(--light-green))",
+                  }}
+                >
+                  <IonIcon
+                    name={tri.icon}
+                    size={20}
+                    style={{ color: isActive ? "white" : "hsl(var(--green))" }}
+                  />
+                </div>
+
+                <p
+                  className="text-[16px] font-serif font-bold"
+                  style={{ color: isActive ? "white" : "hsl(var(--dark))" }}
+                >
+                  {tri.label}
+                </p>
+                <p
+                  className="text-[11px] font-sans mt-0.5"
+                  style={{ color: isActive ? "rgba(255,255,255,0.6)" : "hsl(var(--text-muted))" }}
+                >
+                  {tri.subtitle}
+                </p>
+                <p
+                  className="text-[11px] font-sans mt-2 leading-snug"
+                  style={{ color: isActive ? "rgba(255,255,255,0.7)" : "hsl(var(--text-muted))" }}
+                >
+                  {tri.description}
+                </p>
+
+                {/* Progress bar */}
+                <div className="mt-3">
+                  <div
+                    className="h-1 rounded-full overflow-hidden"
+                    style={{ background: isActive ? "rgba(255,255,255,0.15)" : "hsl(var(--border-subtle))" }}
+                  >
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPct}%` }}
+                      transition={{ duration: 0.8, delay: i * 0.1 + 0.3 }}
+                      className="h-full rounded-full"
+                      style={{ background: isActive ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+                    />
+                  </div>
+                  <p
+                    className="text-[9px] font-sans font-semibold mt-1"
+                    style={{ color: isActive ? "rgba(255,255,255,0.5)" : "hsl(var(--text-muted))" }}
+                  >
+                    {progressPct}% complete
+                  </p>
+                </div>
+
+                {isActive && (
+                  <div
+                    className="absolute top-3 right-3 px-2 py-[2px] rounded-full text-[8px] font-sans font-bold uppercase"
+                    style={{ background: "rgba(255,255,255,0.2)", color: "white" }}
+                  >
+                    Current
+                  </div>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick peek — current week tip */}
+      {(() => {
+        const tip = WEEKLY_TIPS.find((t) => t.week === currentWeek);
+        if (!tip) return null;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <p className="text-[12px] font-sans font-semibold uppercase tracking-wider mb-3" style={{ color: "hsl(var(--text-muted))" }}>
+              This Week's Highlight
+            </p>
+            <div className="tend-card p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-[28px] h-[28px] rounded-full flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, hsl(var(--green)), hsl(var(--coral)))" }}
+                >
+                  <span className="text-white text-[11px] font-sans font-bold">{tip.week}</span>
+                </div>
+                <p className="text-[15px] font-serif font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                  {tip.title}
+                </p>
+              </div>
+              {[SECTIONS[0], SECTIONS[1]].map((section) => (
+                <div key={section.key} className="flex gap-3">
+                  <div
+                    className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${section.color}15` }}
+                  >
+                    <IonIcon name={section.icon} size={14} style={{ color: section.color }} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: section.color }}>
+                      {section.label}
+                    </p>
+                    <p className="text-[12px] font-sans mt-0.5 leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                      {tip[section.key]}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelectTrimester(currentTrimesterIndex)}
+                className="w-full py-2.5 rounded-xl text-[12px] font-sans font-semibold"
+                style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+              >
+                See all Week {currentWeek} insights →
+              </motion.button>
+            </div>
+          </motion.div>
+        );
+      })()}
     </motion.div>
   );
 };
