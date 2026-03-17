@@ -172,6 +172,31 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
         type: "appointment",
       });
 
+      // Schedule local push reminder 1 hour before appointment
+      const apptDateTime = new Date(`${selectedSlot.slot_date}T${selectedSlot.slot_time}`);
+      const reminderTime = new Date(apptDateTime.getTime() - 60 * 60 * 1000);
+      const delayMs = reminderTime.getTime() - Date.now();
+      if (delayMs > 0) {
+        localNotification.schedule({
+          title: "Appointment in 1 hour",
+          body: `Your appointment with ${selectedDoctor.full_name} is at ${formatTime(selectedSlot.slot_time)}`,
+          delaySeconds: Math.floor(delayMs / 1000),
+          id: `appt-reminder-${selectedSlot.id}`,
+        });
+      }
+
+      // Also schedule a 15-min reminder
+      const reminder15 = new Date(apptDateTime.getTime() - 15 * 60 * 1000);
+      const delay15 = reminder15.getTime() - Date.now();
+      if (delay15 > 0) {
+        localNotification.schedule({
+          title: "Appointment starting soon",
+          body: `${selectedDoctor.full_name} in 15 minutes`,
+          delaySeconds: Math.floor(delay15 / 1000),
+          id: `appt-reminder-15-${selectedSlot.id}`,
+        });
+      }
+
       hapticSuccess();
       setStep("success");
 
