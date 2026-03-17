@@ -403,7 +403,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-8 pb-10"
+               className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-8 pb-[max(env(safe-area-inset-bottom,40px),40px)]"
               style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto" }}
             >
               <div className="flex flex-col items-center text-center">
@@ -461,7 +461,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-8 pb-10"
+              className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-8 pb-[max(env(safe-area-inset-bottom,40px),40px)]"
               style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto" }}
             >
               <div className="flex flex-col items-center text-center">

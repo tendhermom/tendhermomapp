@@ -330,7 +330,7 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="w-full max-w-[480px] rounded-t-3xl p-6 space-y-4"
+              className="w-full max-w-[480px] rounded-t-3xl p-6 pb-[max(env(safe-area-inset-bottom,24px),24px)] space-y-4 max-h-[85vh] overflow-y-auto"
               style={{ background: "hsl(var(--card))" }}
               onClick={(e) => e.stopPropagation()}
             >
