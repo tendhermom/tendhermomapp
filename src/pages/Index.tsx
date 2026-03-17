@@ -30,7 +30,7 @@ const Index = () => {
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  
 
   // Show onboarding for new users (no LMP set and hasn't completed onboarding)
   useEffect(() => {
