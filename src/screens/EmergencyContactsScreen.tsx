@@ -386,6 +386,17 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         </div>
       )}
 
+      {/* Plan limit banner */}
+      {isFree && contacts.length >= maxContacts && (
+        <div className="tend-card p-4 flex items-center gap-3" style={{ borderLeft: "3px solid hsl(var(--coral))" }}>
+          <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
+          <div className="flex-1">
+            <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Free plan limit reached</p>
+            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to Premium for up to 5 contacts & unlimited triggers</p>
+          </div>
+        </div>
+      )}
+
       {/* Test alert button */}
       {contacts.length > 0 && (
         <motion.button
