@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { pickNativeContact, isDespiaNative, hapticSuccess } from "@/lib/despia";
 
 interface EmergencyContact {
   id: string;
@@ -300,14 +301,38 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           Emergency Contacts
         </h1>
         {contacts.length < maxContacts && (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setEditingContact({ ...emptyContact })}
-            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--green))" }}
-          >
-            <IonIcon name="add" size={20} style={{ color: "white" }} />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {/* Import from phone contacts */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={async () => {
+                const contact = await pickNativeContact();
+                if (contact) {
+                  hapticSuccess();
+                  setEditingContact({
+                    ...emptyContact,
+                    name: contact.name,
+                    phone: contact.phone.startsWith("+") ? contact.phone : `+234${contact.phone.replace(/^0/, "")}`,
+                  });
+                } else if (!isDespiaNative() && !("contacts" in navigator)) {
+                  toast.info("Contact import is available in the native app");
+                }
+              }}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--light-green))" }}
+            >
+              <IonIcon name="person-circle" size={20} style={{ color: "hsl(var(--green))" }} />
+            </motion.button>
+            {/* Manual add */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setEditingContact({ ...emptyContact })}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--green))" }}
+            >
+              <IonIcon name="add" size={20} style={{ color: "white" }} />
+            </motion.button>
+          </div>
         )}
       </div>
 
@@ -325,14 +350,37 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           <p className="text-[13px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
             Add emergency contacts who will be alerted when you trigger SOS.
           </p>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setEditingContact({ ...emptyContact })}
-            className="px-5 py-2.5 rounded-full text-[14px] font-semibold font-sans text-white"
-            style={{ background: "hsl(var(--green))" }}
-          >
-            Add Your First Contact
-          </motion.button>
+          <div className="flex gap-3">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                const contact = await pickNativeContact();
+                if (contact) {
+                  hapticSuccess();
+                  setEditingContact({
+                    ...emptyContact,
+                    name: contact.name,
+                    phone: contact.phone.startsWith("+") ? contact.phone : `+234${contact.phone.replace(/^0/, "")}`,
+                  });
+                } else if (!isDespiaNative() && !("contacts" in navigator)) {
+                  setEditingContact({ ...emptyContact });
+                }
+              }}
+              className="px-4 py-2.5 rounded-full text-[13px] font-semibold font-sans flex items-center gap-1.5"
+              style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+            >
+              <IonIcon name="person-circle" size={16} style={{ color: "hsl(var(--green))" }} />
+              From Contacts
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setEditingContact({ ...emptyContact })}
+              className="px-5 py-2.5 rounded-full text-[14px] font-semibold font-sans text-white"
+              style={{ background: "hsl(var(--green))" }}
+            >
+              Add Manually
+            </motion.button>
+          </div>
         </div>
       ) : (
         <div className="tend-card overflow-hidden">
