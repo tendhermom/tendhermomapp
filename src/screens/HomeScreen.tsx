@@ -49,7 +49,7 @@ const QUICK_ACTIONS = [
   { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "appointments", label: "Appointment", icon: "calendar-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
   { id: "health-tracker", label: "Health", icon: "heart-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "ai-chat", label: "Insights", icon: "bulb-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "insights", label: "Insights", icon: "bulb-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
 ];
 
 const WEEKLY_HIGHLIGHTS = [
