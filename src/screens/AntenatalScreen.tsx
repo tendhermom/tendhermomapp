@@ -19,6 +19,13 @@ interface Reminder {
   completed: boolean;
 }
 
+interface CustomItem {
+  title: string;
+  description: string;
+  week: number;
+  type: "checkup" | "test" | "vaccine" | "milestone";
+}
+
 const ANTENATAL_SCHEDULE: Omit<Reminder, "id" | "completed">[] = [
   // First Trimester
   { week: 4, title: "Confirm Pregnancy", description: "Blood test (hCG) & urine test to confirm pregnancy", type: "test" },
@@ -56,31 +63,53 @@ const TYPE_CONFIG = {
 const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
-  const [completedItems, setCompletedItems] = useState<Set<number>>(new Set());
+  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<"all" | "upcoming" | "completed">("all");
+  const [customItems, setCustomItems] = useState<Omit<Reminder, "id" | "completed">[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newItem, setNewItem] = useState<CustomItem>({ title: "", description: "", week: currentWeek, type: "checkup" });
 
-  // Load completed items from localStorage
+  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`antenatal_completed_${user?.id}`);
-    if (saved) setCompletedItems(new Set(JSON.parse(saved)));
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Migrate old number-based sets to string IDs
+      setCompletedItems(new Set(parsed.map((v: number | string) => String(v))));
+    }
+    const savedCustom = localStorage.getItem(`antenatal_custom_${user?.id}`);
+    if (savedCustom) setCustomItems(JSON.parse(savedCustom));
   }, [user?.id]);
 
-  const toggleComplete = (week: number) => {
+  const toggleComplete = (id: string) => {
     hapticLight();
     setCompletedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(week)) next.delete(week);
-      else next.add(week);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       localStorage.setItem(`antenatal_completed_${user?.id}`, JSON.stringify([...next]));
       return next;
     });
   };
 
-  const schedule = ANTENATAL_SCHEDULE.map((item) => ({
-    ...item,
-    id: `week-${item.week}`,
-    completed: completedItems.has(item.week),
-  }));
+  const addCustomItem = () => {
+    if (!newItem.title.trim()) { toast.error("Please enter a title"); return; }
+    hapticLight();
+    const updated = [...customItems, { ...newItem, title: newItem.title.trim(), description: newItem.description.trim() }];
+    setCustomItems(updated);
+    localStorage.setItem(`antenatal_custom_${user?.id}`, JSON.stringify(updated));
+    setNewItem({ title: "", description: "", week: currentWeek, type: "checkup" });
+    setShowAddModal(false);
+    toast.success("Item added!");
+  };
+
+  const allItems = [...ANTENATAL_SCHEDULE, ...customItems];
+  const schedule = allItems
+    .sort((a, b) => a.week - b.week)
+    .map((item, i) => {
+      const id = i < ANTENATAL_SCHEDULE.length ? `week-${item.week}` : `custom-${i}`;
+      return { ...item, id, completed: completedItems.has(id) };
+    });
 
   const filtered = schedule.filter((item) => {
     if (filter === "upcoming") return !item.completed && item.week >= currentWeek;
@@ -144,7 +173,6 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="tend-card p-4"
-          style={{ borderLeft: `3px solid ${TYPE_CONFIG[nextUp.type].color}` }}
         >
           <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--coral))" }}>Coming Up — Week {nextUp.week}</p>
           <p className="text-[15px] font-sans font-semibold mt-1" style={{ color: "hsl(var(--dark))" }}>{nextUp.title}</p>
@@ -222,7 +250,7 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
                 {/* Content */}
                 <motion.button
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => toggleComplete(item.week)}
+                  onClick={() => toggleComplete(item.id)}
                   className="flex-1 tend-card p-3.5 mb-2 text-left"
                   style={{ opacity: item.completed ? 0.6 : 1 }}
                 >
@@ -274,6 +302,118 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
           </p>
         </div>
       )}
+
+      {/* Add More Button */}
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={() => { hapticLight(); setShowAddModal(true); }}
+        className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-[13px] font-sans font-semibold"
+        style={{ background: "hsl(var(--surface))", color: "hsl(var(--green))", border: "1.5px dashed hsl(var(--border-subtle))" }}
+      >
+        <IonIcon name="add-circle-outline" size={18} style={{ color: "hsl(var(--green))" }} />
+        Add More
+      </motion.button>
+
+      {/* Add Item Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(0,0,0,0.4)" }}
+            onClick={() => setShowAddModal(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="w-full max-w-[480px] rounded-t-3xl p-6 space-y-4"
+              style={{ background: "hsl(var(--card))" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-[17px] font-serif font-semibold" style={{ color: "hsl(var(--dark))" }}>Add Item</h3>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowAddModal(false)}>
+                  <IonIcon name="close-outline" size={22} style={{ color: "hsl(var(--text-muted))" }} />
+                </motion.button>
+              </div>
+
+              {/* Type Selector */}
+              <div className="flex gap-2">
+                {(["checkup", "test", "vaccine", "milestone"] as const).map((t) => {
+                  const c = TYPE_CONFIG[t];
+                  return (
+                    <motion.button
+                      key={t}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setNewItem((p) => ({ ...p, type: t }))}
+                      className="flex-1 py-2 rounded-xl text-[11px] font-sans font-semibold capitalize"
+                      style={{
+                        background: newItem.type === t ? c.color : c.bg,
+                        color: newItem.type === t ? "white" : c.color,
+                      }}
+                    >
+                      {c.label}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Week */}
+              <div>
+                <label className="text-[11px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Week</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={42}
+                  value={newItem.week}
+                  onChange={(e) => setNewItem((p) => ({ ...p, week: Number(e.target.value) }))}
+                  className="w-full mt-1 px-4 py-2.5 rounded-xl text-[14px] font-sans"
+                  style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", border: "1px solid hsl(var(--border-subtle))" }}
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="text-[11px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Iron supplement check"
+                  value={newItem.title}
+                  onChange={(e) => setNewItem((p) => ({ ...p, title: e.target.value }))}
+                  className="w-full mt-1 px-4 py-2.5 rounded-xl text-[14px] font-sans"
+                  style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", border: "1px solid hsl(var(--border-subtle))" }}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-[11px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Description</label>
+                <textarea
+                  placeholder="Brief description..."
+                  value={newItem.description}
+                  onChange={(e) => setNewItem((p) => ({ ...p, description: e.target.value }))}
+                  rows={2}
+                  className="w-full mt-1 px-4 py-2.5 rounded-xl text-[14px] font-sans resize-none"
+                  style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", border: "1px solid hsl(var(--border-subtle))" }}
+                />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={addCustomItem}
+                className="w-full py-3.5 rounded-2xl text-[14px] font-sans font-semibold text-white"
+                style={{ background: "hsl(var(--green))" }}
+              >
+                Add to Timeline
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
