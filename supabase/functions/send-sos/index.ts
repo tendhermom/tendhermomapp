@@ -57,20 +57,46 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Rate limit: max 3 SOS alerts per 10 minutes
-    const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
-      _user_id: userId,
-      _action: "sos_alert",
-      _max_requests: 3,
-      _window_minutes: 10,
-    });
+    // Get user plan type
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("plan_type")
+      .eq("id", userId)
+      .single();
 
-    if (!allowed) {
-      return new Response(
-        JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const isFree = !profile || profile.plan_type === "free";
+
+    // Rate limit: free = 1/month, premium = unlimited (but max 10/10min as abuse guard)
+    if (isFree) {
+      const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
+        _user_id: userId,
+        _action: "sos_alert_monthly",
+        _max_requests: 1,
+        _window_minutes: 43200, // 30 days
+      });
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: "Free plan allows 1 SOS trigger per month. Upgrade to Premium for unlimited triggers." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
+        _user_id: userId,
+        _action: "sos_alert",
+        _max_requests: 10,
+        _window_minutes: 10,
+      });
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
+
+    // Enforce contact limits: free = 1, premium = 5
+    const maxContacts = isFree ? 1 : 5;
 
     const body: SOSRequest = await req.json();
     const { user_name, latitude, longitude, contacts, is_test } = body;
@@ -81,6 +107,9 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Trim contacts to plan limit
+    const limitedContacts = contacts.slice(0, maxContacts);
 
     const now = new Date();
     const dateStr = now.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
@@ -100,7 +129,7 @@ serve(async (req) => {
     const smsMessage = `${testPrefix}EMERGENCY ALERT — TendherMom\n\n${user_name} needs urgent help. She triggered her emergency alert at ${timeStr} on ${dateStr}.\n\n${locationText}\n\nPlease contact her immediately or call emergency services: 112 (Nigeria).\n\nSent via TendherMom`;
 
     const channelResults: Record<string, any> = {};
-    for (const contact of contacts) {
+    for (const contact of limitedContacts) {
       const contactResult: Record<string, string> = {};
       for (const channel of contact.channels) {
         console.log(`[SOS] ${channel.toUpperCase()} → ${contact.name} (${contact.phone}): ${is_test ? "TEST " : ""}alert`);
@@ -109,10 +138,10 @@ serve(async (req) => {
       channelResults[contact.name] = contactResult;
     }
 
-    console.log(`[SOS] Alert dispatched for ${user_name} to ${contacts.length} contacts`);
+    console.log(`[SOS] Alert dispatched for ${user_name} to ${limitedContacts.length} contacts (plan: ${isFree ? "free" : "premium"})`);
 
     return new Response(
-      JSON.stringify({ success: true, contacts_notified: contacts.length, channel_results: channelResults, is_test }),
+      JSON.stringify({ success: true, contacts_notified: limitedContacts.length, channel_results: channelResults, is_test }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

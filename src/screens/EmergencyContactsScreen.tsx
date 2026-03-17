@@ -38,7 +38,8 @@ const emptyContact: Omit<EmergencyContact, "id"> = {
 
 const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const maxContacts = 5;
+  const isFree = user?.plan_type === "free";
+  const maxContacts = isFree ? 1 : 5;
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -382,6 +383,17 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
               </div>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Plan limit banner */}
+      {isFree && contacts.length >= maxContacts && (
+        <div className="tend-card p-4 flex items-center gap-3" style={{ borderLeft: "3px solid hsl(var(--coral))" }}>
+          <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
+          <div className="flex-1">
+            <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Free plan limit reached</p>
+            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to Premium for up to 5 contacts & unlimited triggers</p>
+          </div>
         </div>
       )}
 

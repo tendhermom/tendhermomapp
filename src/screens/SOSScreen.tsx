@@ -248,10 +248,10 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           <IonIcon name="diamond" size={22} style={{ color: "hsl(var(--coral))" }} />
           <div className="flex-1">
             <h4 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-              Free Plan · 1 Contact Only
+              Free Plan · 1 Contact · 1 Trigger/Month
             </h4>
             <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              Upgrade to add up to 5 emergency contacts
+              Upgrade for 5 contacts & unlimited triggers
             </p>
           </div>
           <motion.button
