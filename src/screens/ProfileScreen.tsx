@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
@@ -33,6 +33,7 @@ const menuSections = [
       { icon: "diamond-outline", label: "Premium Plan", route: "premium" },
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
       { icon: "notifications-outline", label: "Notifications", route: "notifications" },
+      { icon: "shield-outline", label: "Moderation", route: "moderation", adminOnly: true },
       { icon: "share-social-outline", label: "Share TendherMom", route: "share-app" },
     ],
   },
@@ -49,9 +50,17 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const user = useAuthStore((s) => s.user);
   const { logout, getCurrentWeek } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
+      setIsAdmin(!!data);
+    });
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -200,14 +209,16 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.12 + si * 0.08 }}
           className="tend-card overflow-hidden"
         >
-          {section.items.map((item, i) => (
+          {section.items
+            .filter((item) => !(item as any).adminOnly || isAdmin)
+            .map((item, i, filtered) => (
             <motion.button
               key={item.label}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleMenuPress(item.route)}
               className="flex items-center gap-3.5 w-full px-[18px] py-[15px] text-left"
               style={{
-                borderBottom: i < section.items.length - 1
+                borderBottom: i < filtered.length - 1
                   ? "0.5px solid hsl(var(--border))"
                   : "none",
               }}

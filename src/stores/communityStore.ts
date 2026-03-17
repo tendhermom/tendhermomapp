@@ -64,6 +64,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       .from("community_posts")
       .select("*")
       .eq("channel", channel)
+      .eq("is_hidden", false)
       .order("created_at", { ascending: false })
       .limit(PAGE_SIZE);
 

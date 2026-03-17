@@ -20,6 +20,7 @@ const AIChatScreen = lazy(() => import("@/screens/AIChatScreen"));
 const GamificationScreen = lazy(() => import("@/screens/GamificationScreen"));
 const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
 const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
+const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
@@ -86,6 +87,8 @@ const Index = () => {
         return <AppointmentsScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "premium":
         return <PremiumScreen onBack={() => setActiveTab("profile")} />;
+      case "moderation":
+        return <ModerationScreen onBack={() => setActiveTab("profile")} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
