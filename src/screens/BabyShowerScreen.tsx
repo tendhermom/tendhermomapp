@@ -543,8 +543,8 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
         ) : (
           <div
             ref={scrollRef}
-            className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide"
-            style={{ scrollSnapType: "x mandatory" }}
+            className="flex gap-3.5 overflow-x-auto pb-2 no-scrollbar"
+            style={{ scrollSnapType: "x mandatory", msOverflowStyle: "none", scrollbarWidth: "none" }}
           >
             {MONTH_CARDS.map((month, i) => {
               const isCurrent = month.label === currentMonthLabel;
