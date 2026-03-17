@@ -237,38 +237,6 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Plan banner for free users */}
-      {isFree && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="tend-card p-4 flex items-center gap-3"
-        >
-          <div
-            className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-            style={{ background: "hsl(var(--light-coral))" }}
-          >
-            <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-              Free Plan · 1 Contact · 1 Trigger/Month
-            </h4>
-            <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              Upgrade for 5 contacts & unlimited triggers
-            </p>
-          </div>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onNavigate?.("premium")}
-            className="px-4 py-2 rounded-full text-[12px] font-semibold font-sans text-white"
-            style={{ background: "hsl(var(--green))" }}
-          >
-            Upgrade
-          </motion.button>
-        </motion.div>
-      )}
-
       {/* Emergency Contacts Card */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -376,32 +344,47 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         </div>
       </div>
 
-      {/* Warning signs */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <IonIcon name="alert-circle" size={20} style={{ color: "hsl(var(--coral))" }} />
-          <h2 className="font-serif text-[20px]" style={{ color: "hsl(var(--dark))" }}>Warning Signs</h2>
-        </div>
+      {/* How SOS Works */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>
+          How SOS Works
+        </h2>
         <div className="tend-card overflow-hidden">
           {[
-            "Heavy vaginal bleeding",
-            "Severe headache or blurred vision",
-            "Sudden swelling of face or hands",
-            "Baby not moving as usual",
-            "Severe abdominal pain",
-            "High fever (above 38°C)",
-          ].map((sign, i, arr) => (
+            { icon: "finger-print", title: "Tap the SOS button", desc: "Press the button above when you need immediate help" },
+            { icon: "location", title: "We capture your location", desc: "Your GPS coordinates are shared with your contacts" },
+            { icon: "notifications", title: "Contacts are alerted", desc: "SMS, WhatsApp & voice calls sent simultaneously" },
+          ].map((step, i, arr) => (
             <div
               key={i}
-              className="flex items-center gap-3 px-[18px] py-[14px]"
+              className="flex items-center gap-3.5 px-[18px] py-[16px]"
               style={{ borderBottom: i < arr.length - 1 ? "0.5px solid hsl(var(--border))" : "none" }}
             >
-              <span className="w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: "hsl(var(--coral))" }} />
-              <span className="text-[14px] font-sans" style={{ color: "hsl(var(--dark))" }}>{sign}</span>
+              <div
+                className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(var(--light-green))" }}
+              >
+                <IonIcon name={step.icon} size={18} style={{ color: "hsl(var(--green))" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-[14px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
+                  {step.title}
+                </h4>
+                <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
+                  {step.desc}
+                </p>
+              </div>
+              <span className="text-[13px] font-bold font-sans flex-shrink-0" style={{ color: "hsl(var(--border))" }}>
+                {i + 1}
+              </span>
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Confirm Bottom Sheet */}
       <AnimatePresence>
