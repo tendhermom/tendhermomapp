@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 
@@ -25,6 +25,21 @@ const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
 const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
 const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
 
+// Prefetch tab screens after initial paint for instant navigation
+const prefetchScreens = () => {
+  requestIdleCallback?.(() => {
+    import("@/screens/TriageScreen");
+    import("@/screens/SOSScreen");
+    import("@/screens/CommunityScreen");
+    import("@/screens/ProfileScreen");
+  }) ?? setTimeout(() => {
+    import("@/screens/TriageScreen");
+    import("@/screens/SOSScreen");
+    import("@/screens/CommunityScreen");
+    import("@/screens/ProfileScreen");
+  }, 2000);
+};
+
 const ScreenFallback = () => (
   <div className="flex items-center justify-center py-24">
     <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
@@ -35,7 +50,11 @@ const Index = () => {
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
-  
+
+  // Prefetch tab screens after first render
+  useEffect(() => {
+    prefetchScreens();
+  }, []);
 
   // Show onboarding for new users (no LMP set and hasn't completed onboarding)
   useEffect(() => {
@@ -57,10 +76,10 @@ const Index = () => {
     }
   }, [activeTab]);
 
-  const handleNavigate = (screen: string) => {
+  const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
     setActiveTab(screen);
-  };
+  }, []);
 
   const renderScreen = () => {
     switch (activeTab) {
@@ -114,13 +133,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-foreground/5 flex justify-center">
       <div className="app-shell">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
             className="screen-scroll"
           >
             <div className="px-5 pb-8" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 56px)" }}>

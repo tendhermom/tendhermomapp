@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { hapticSelection } from "@/lib/despia";
@@ -15,7 +16,7 @@ const tabs = [
   { id: "profile", label: "Profile", icon: "person-circle-outline", activeIcon: "person-circle" },
 ];
 
-const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {
+const TabBar = memo(({ activeTab, onTabChange }: TabBarProps) => {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-50">
       <div className="nav-glass" style={{ borderTop: "0.5px solid hsl(var(--border))" }}>
@@ -96,6 +97,8 @@ const TabBar = ({ activeTab, onTabChange }: TabBarProps) => {
       </div>
     </div>
   );
-};
+});
+
+TabBar.displayName = "TabBar";
 
 export default TabBar;
