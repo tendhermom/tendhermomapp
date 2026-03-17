@@ -58,7 +58,7 @@ const WEEKLY_HIGHLIGHTS = [
   { id: "gamification", label: "Your Level", desc: "Earn points & climb ranks", icon: "trophy-outline", color: "green" },
 ];
 
-const HomeScreen = ({ onNavigate, onMenuOpen }: HomeScreenProps) => {
+const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const currentWeek = useAuthStore((s) => s.getCurrentWeek());
   const daysLeft = useAuthStore((s) => s.getDaysRemaining());
