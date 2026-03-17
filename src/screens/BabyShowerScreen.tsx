@@ -442,8 +442,8 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
                 onClick={() => !submitting && setShowCreateForm(false)} />
               <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-10"
-                style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "85vh", overflowY: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }} className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-10 no-scrollbar">
+                className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-10 no-scrollbar"
+                style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "85vh", overflowY: "auto" }}>
                 <h3 className="font-serif text-[20px] mb-5" style={{ color: "hsl(var(--dark))" }}>Celebrate Your Baby 🎉</h3>
                 <div className="space-y-4">
                   <div>
