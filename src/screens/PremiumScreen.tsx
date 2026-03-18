@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
@@ -83,6 +84,7 @@ const PLANS = [
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
+  const [selectedPlan, setSelectedPlan] = useState("yearly");
 
   return (
     <motion.div
@@ -151,19 +153,23 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       {!isPremium && (
         <motion.div variants={fadeUp} className="space-y-3">
           {PLANS.map((plan) => {
-            const isHighlighted = plan.id === "yearly";
+            const isSelected = selectedPlan === plan.id;
             return (
               <motion.button
                 key={plan.id}
                 whileTap={{ scale: 0.98 }}
-                className="relative w-full tend-card flex items-center justify-between px-5 py-5"
+                onClick={() => setSelectedPlan(plan.id)}
+                className="relative w-full tend-card flex items-center justify-between px-5 py-5 transition-all duration-200"
                 style={{
-                  border: isHighlighted
+                  border: isSelected
                     ? "2px solid hsl(var(--green))"
                     : "1.5px solid hsl(var(--border))",
-                  ...(isHighlighted
-                    ? { boxShadow: "0 4px 24px -4px hsla(153, 42%, 30%, 0.18)" }
-                    : {}),
+                  background: isSelected
+                    ? "hsla(153, 42%, 30%, 0.06)"
+                    : undefined,
+                  boxShadow: isSelected
+                    ? "0 4px 24px -4px hsla(153, 42%, 30%, 0.18)"
+                    : "none",
                 }}
               >
                 {/* Tag badge */}
@@ -176,13 +182,30 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                   </span>
                 )}
 
-                {/* Left: label */}
-                <p
-                  className="text-[13px] font-sans font-semibold uppercase tracking-wider"
-                  style={{ color: "hsl(var(--text-muted))" }}
-                >
-                  {plan.label}
-                </p>
+                {/* Left: radio + label */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors duration-200"
+                    style={{
+                      borderColor: isSelected ? "hsl(var(--green))" : "hsl(var(--border))",
+                    }}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-[10px] h-[10px] rounded-full"
+                        style={{ background: "hsl(var(--green))" }}
+                      />
+                    )}
+                  </div>
+                  <p
+                    className="text-[13px] font-sans font-semibold uppercase tracking-wider transition-colors duration-200"
+                    style={{ color: isSelected ? "hsl(var(--green))" : "hsl(var(--text-muted))" }}
+                  >
+                    {plan.label}
+                  </p>
+                </div>
 
                 {/* Right: price */}
                 <div className="flex items-baseline gap-1">
