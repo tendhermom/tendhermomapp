@@ -83,6 +83,7 @@ const PLANS = [
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
+  const [selectedPlan, setSelectedPlan] = useState("yearly");
 
   return (
     <motion.div
