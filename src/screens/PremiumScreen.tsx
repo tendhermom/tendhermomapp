@@ -58,18 +58,25 @@ const FEATURES = [
 
 const PLANS = [
   {
+    id: "weekly",
+    label: "Weekly",
+    price: "₦700",
+    period: "/week",
+    tag: null,
+  },
+  {
     id: "monthly",
     label: "Monthly",
     price: "₦2,500",
     period: "/month",
-    tag: null,
+    tag: "Popular",
   },
   {
     id: "yearly",
     label: "Yearly",
-    price: "₦20,000",
+    price: "₦25,000",
     period: "/year",
-    tag: "Save 33%",
+    tag: "Save 52%",
   },
 ];
 
