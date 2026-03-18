@@ -23,7 +23,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
 };
 
-const GOAL = 10;
+const GOAL = 5;
 
 const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
   const user = useAuthStore((s) => s.user);
@@ -138,11 +138,11 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
       <motion.div variants={fadeUp} className="hero-card p-5 text-center">
         <div className="text-[40px] mb-1">{premiumUnlocked ? "🎉" : "🎁"}</div>
         <h2 className="text-white text-[20px] font-serif">
-          {premiumUnlocked ? "Premium Unlocked!" : "Invite 10 Friends, Get Premium Free"}
+          {premiumUnlocked ? "Premium Unlocked!" : "Invite 5 Friends, Get 60 Days Premium"}
         </h2>
         <p className="text-white/60 text-[12px] font-sans mt-1">
           {premiumUnlocked
-            ? "Congratulations! You've earned free Premium access."
+            ? "Congratulations! You've earned 60 days of free Premium access."
             : `${completedCount} of ${GOAL} friends joined • ${GOAL - completedCount} more to go`}
         </p>
         <div className="mt-4 px-4">
@@ -229,7 +229,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         <p className="label-caps text-text-muted mb-2">REWARDS</p>
         <div className="tend-card overflow-hidden">
           {[
-            { icon: "diamond-outline", label: "10 referrals = Free Premium", desc: "Unlimited AI, SOS & more", color: "coral" },
+            { icon: "diamond-outline", label: "5 referrals = 60 days Premium", desc: "Unlimited AI, SOS & more", color: "coral" },
             { icon: "trophy-outline", label: "+25 points per referral", desc: "Climb the leaderboard", color: "green" },
             { icon: "star-outline", label: "+50 bonus for premium referral", desc: "When they upgrade", color: "coral" },
           ].map((item, i, arr) => (

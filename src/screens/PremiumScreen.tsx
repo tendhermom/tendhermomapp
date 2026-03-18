@@ -58,18 +58,25 @@ const FEATURES = [
 
 const PLANS = [
   {
+    id: "weekly",
+    label: "Weekly",
+    price: "₦700",
+    period: "/week",
+    tag: null,
+  },
+  {
     id: "monthly",
     label: "Monthly",
     price: "₦2,500",
     period: "/month",
-    tag: null,
+    tag: "Popular",
   },
   {
     id: "yearly",
     label: "Yearly",
-    price: "₦20,000",
+    price: "₦25,000",
     period: "/year",
-    tag: "Save 33%",
+    tag: "Save 52%",
   },
 ];
 
@@ -142,7 +149,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
       {/* Plan selection (only for non-premium) */}
       {!isPremium && (
-        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+        <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
           {PLANS.map((plan) => (
             <motion.button
               key={plan.id}
