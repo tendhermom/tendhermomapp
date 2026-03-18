@@ -229,7 +229,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         <p className="label-caps text-text-muted mb-2">REWARDS</p>
         <div className="tend-card overflow-hidden">
           {[
-            { icon: "diamond-outline", label: "10 referrals = Free Premium", desc: "Unlimited AI, SOS & more", color: "coral" },
+            { icon: "diamond-outline", label: "5 referrals = 60 days Premium", desc: "Unlimited AI, SOS & more", color: "coral" },
             { icon: "trophy-outline", label: "+25 points per referral", desc: "Climb the leaderboard", color: "green" },
             { icon: "star-outline", label: "+50 bonus for premium referral", desc: "When they upgrade", color: "coral" },
           ].map((item, i, arr) => (

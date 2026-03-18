@@ -149,7 +149,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
       {/* Plan selection (only for non-premium) */}
       {!isPremium && (
-        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+        <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
           {PLANS.map((plan) => (
             <motion.button
               key={plan.id}

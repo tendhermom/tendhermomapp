@@ -233,7 +233,7 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
       toast.success("Baby post created! 🎉");
       setShowCreateForm(false);
       setBabyName(""); setParentNames(""); setGender("boy"); setImageFile(null); setImagePreview(null);
-      fetchPosts();
+      await fetchPosts();
     } catch (err) { console.error(err); toast.error("Failed to create post"); }
     finally { setSubmitting(false); }
   };
