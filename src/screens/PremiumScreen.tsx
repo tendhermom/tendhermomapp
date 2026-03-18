@@ -149,37 +149,59 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
       {/* Plan selection (only for non-premium) */}
       {!isPremium && (
-        <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
-          {PLANS.map((plan) => (
-            <motion.button
-              key={plan.id}
-              whileTap={{ scale: 0.97 }}
-              className="relative tend-card p-4 text-left"
-              style={{
-                border: plan.id === "yearly" ? "2px solid hsl(var(--green))" : "2px solid transparent",
-              }}
-            >
-              {plan.tag && (
-                <span
-                  className="absolute -top-2.5 right-3 text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                  style={{ background: "hsl(var(--green))", color: "white" }}
+        <motion.div variants={fadeUp} className="space-y-3">
+          {PLANS.map((plan) => {
+            const isHighlighted = plan.id === "yearly";
+            return (
+              <motion.button
+                key={plan.id}
+                whileTap={{ scale: 0.98 }}
+                className="relative w-full tend-card flex items-center justify-between px-5 py-5"
+                style={{
+                  border: isHighlighted
+                    ? "2px solid hsl(var(--green))"
+                    : "1.5px solid hsl(var(--border))",
+                  ...(isHighlighted
+                    ? { boxShadow: "0 4px 24px -4px hsla(153, 42%, 30%, 0.18)" }
+                    : {}),
+                }}
+              >
+                {/* Tag badge */}
+                {plan.tag && (
+                  <span
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-sans font-bold uppercase tracking-wider px-3 py-[3px] rounded-full whitespace-nowrap"
+                    style={{ background: "hsl(var(--green))", color: "white" }}
+                  >
+                    {plan.tag}
+                  </span>
+                )}
+
+                {/* Left: label */}
+                <p
+                  className="text-[13px] font-sans font-semibold uppercase tracking-wider"
+                  style={{ color: "hsl(var(--text-muted))" }}
                 >
-                  {plan.tag}
-                </span>
-              )}
-              <p className="text-[12px] font-sans font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>
-                {plan.label}
-              </p>
-              <div className="flex items-baseline gap-0.5 mt-1">
-                <span className="text-[24px] font-serif font-bold" style={{ color: "hsl(var(--dark))" }}>
-                  {plan.price}
-                </span>
-                <span className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                  {plan.period}
-                </span>
-              </div>
-            </motion.button>
-          ))}
+                  {plan.label}
+                </p>
+
+                {/* Right: price */}
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className="text-[26px] font-serif font-bold leading-none"
+                    style={{ color: "hsl(var(--dark))" }}
+                  >
+                    {plan.price}
+                  </span>
+                  <span
+                    className="text-[13px] font-sans"
+                    style={{ color: "hsl(var(--text-muted))" }}
+                  >
+                    {plan.period}
+                  </span>
+                </div>
+              </motion.button>
+            );
+          })}
         </motion.div>
       )}
 
