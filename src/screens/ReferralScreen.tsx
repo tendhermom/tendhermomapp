@@ -138,11 +138,11 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
       <motion.div variants={fadeUp} className="hero-card p-5 text-center">
         <div className="text-[40px] mb-1">{premiumUnlocked ? "🎉" : "🎁"}</div>
         <h2 className="text-white text-[20px] font-serif">
-          {premiumUnlocked ? "Premium Unlocked!" : "Invite 10 Friends, Get Premium Free"}
+          {premiumUnlocked ? "Premium Unlocked!" : "Invite 5 Friends, Get 60 Days Premium"}
         </h2>
         <p className="text-white/60 text-[12px] font-sans mt-1">
           {premiumUnlocked
-            ? "Congratulations! You've earned free Premium access."
+            ? "Congratulations! You've earned 60 days of free Premium access."
             : `${completedCount} of ${GOAL} friends joined • ${GOAL - completedCount} more to go`}
         </p>
         <div className="mt-4 px-4">
