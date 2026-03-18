@@ -23,7 +23,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
 };
 
-const GOAL = 10;
+const GOAL = 5;
 
 const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
   const user = useAuthStore((s) => s.user);
