@@ -24,6 +24,8 @@ const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
 const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
 const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
 const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
+const ExpertDashboardScreen = lazy(() => import("@/screens/ExpertDashboardScreen"));
+const ExpertOnboardingScreen = lazy(() => import("@/screens/ExpertOnboardingScreen"));
 
 // Prefetch tab screens after initial paint for instant navigation
 const prefetchScreens = () => {
