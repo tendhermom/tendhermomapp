@@ -96,6 +96,7 @@ const matchCategory = (specialty: string): string => {
 
 const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => {
   const user = useAuthStore((s) => s.user);
+  const isPremium = user?.plan_type === "premium";
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
