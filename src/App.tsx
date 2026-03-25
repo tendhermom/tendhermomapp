@@ -73,7 +73,7 @@ const AuthListener = () => {
   return null;
 };
 
-const AppContent = ({ initialRoute }: { initialRoute?: string }) => {
+const AppContent = () => {
   const isLoading = useAuthStore((s) => s.isLoading);
 
   if (isLoading) return <LoadingSpinner />;
@@ -96,8 +96,7 @@ const AppContent = ({ initialRoute }: { initialRoute?: string }) => {
           </ProtectedRoute>
         }
       />
-      {initialRoute && <Route path="*" element={<Navigate to={initialRoute} replace />} />}
-      {!initialRoute && <Route path="*" element={<NotFound />} />}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
@@ -107,12 +106,8 @@ const IntroScreen = lazy(() => import("./screens/IntroScreen"));
 const App = () => {
   const [splashDone, setSplashDone] = useState(false);
   const [introDone, setIntroDone] = useState(() => localStorage.getItem("intro_completed") === "true");
-  const [freshIntro, setFreshIntro] = useState(false);
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
-  const handleIntroComplete = useCallback(() => {
-    setIntroDone(true);
-    setFreshIntro(true);
-  }, []);
+  const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
   return (
     <QueryClientProvider client={queryClient}>
