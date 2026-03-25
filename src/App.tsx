@@ -72,7 +72,7 @@ const AuthListener = () => {
   return null;
 };
 
-const AppContent = () => {
+const AppContent = ({ initialRoute }: { initialRoute?: string }) => {
   const isLoading = useAuthStore((s) => s.isLoading);
 
   if (isLoading) return <LoadingSpinner />;
@@ -95,7 +95,8 @@ const AppContent = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<NotFound />} />
+      {initialRoute && <Route path="*" element={<Navigate to={initialRoute} replace />} />}
+      {!initialRoute && <Route path="*" element={<NotFound />} />}
     </Routes>
   );
 };
