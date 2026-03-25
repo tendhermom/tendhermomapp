@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hapticSuccess, hapticSelection, localNotification } from "@/lib/despia";
+import PremiumGate from "@/components/PremiumGate";
 
 import gynaecologyImg from "@/assets/specialties/gynaecology.jpg";
 import obstetricsImg from "@/assets/specialties/obstetrics.jpg";
