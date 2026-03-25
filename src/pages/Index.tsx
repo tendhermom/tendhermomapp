@@ -92,7 +92,7 @@ const Index = () => {
       case "community":
         return <CommunityScreen onNavigate={handleNavigate} />;
       case "baby-shower":
-        return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
+        return <BabyShowerScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "notifications":
@@ -102,7 +102,7 @@ const Index = () => {
       case "health-tracker":
         return <HealthTrackerScreen onNavigate={handleNavigate} />;
       case "ai-chat":
-        return <AIChatScreen onBack={() => setActiveTab("home")} />;
+        return <AIChatScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "gamification":
         return <GamificationScreen onBack={() => setActiveTab("home")} />;
       case "appointments":

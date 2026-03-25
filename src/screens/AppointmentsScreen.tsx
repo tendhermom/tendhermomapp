@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hapticSuccess, hapticSelection, localNotification } from "@/lib/despia";
+import PremiumGate from "@/components/PremiumGate";
 
 import gynaecologyImg from "@/assets/specialties/gynaecology.jpg";
 import obstetricsImg from "@/assets/specialties/obstetrics.jpg";
@@ -95,6 +96,7 @@ const matchCategory = (specialty: string): string => {
 
 const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => {
   const user = useAuthStore((s) => s.user);
+  const isPremium = user?.plan_type === "premium";
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -334,6 +336,24 @@ const AppointmentsScreen = ({ onBack, onNavigate }: AppointmentsScreenProps) => 
             View My Appointments
           </motion.button>
         </motion.div>
+      </motion.div>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.07 } } }}>
+        <motion.div variants={fadeUp} className="flex items-center gap-3">
+          <button onClick={onBack} className="ios-press">
+            <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
+          </button>
+          <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>Book a Doctor</h1>
+        </motion.div>
+        <PremiumGate
+          feature="Book a Doctor"
+          description="Schedule 15-minute sessions with certified gynaecologists, obstetricians, and more."
+          onUpgrade={() => onNavigate?.("premium")}
+        />
       </motion.div>
     );
   }

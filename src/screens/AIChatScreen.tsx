@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AIChatScreenProps {
   onBack: () => void;
+  onNavigate?: (screen: string) => void;
 }
 
 interface Message {
@@ -17,7 +18,7 @@ interface Message {
 const WEEKLY_LIMIT_FREE = 2;
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
 
-const AIChatScreen = ({ onBack }: AIChatScreenProps) => {
+const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
   const [messages, setMessages] = useState<Message[]>([]);
@@ -185,6 +186,24 @@ const AIChatScreen = ({ onBack }: AIChatScreenProps) => {
         )}
       </div>
 
+      {/* Upgrade banner when limit reached */}
+      {!canAsk && !isPremium && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-[14px] px-4 py-3 flex items-center gap-3 mb-1"
+          style={{ background: "hsl(var(--light-green))" }}>
+          <IonIcon name="diamond-outline" size={18} style={{ color: "hsl(var(--green))" }} />
+          <div className="flex-1">
+            <p className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Weekly limit reached</p>
+            <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade for unlimited AI conversations</p>
+          </div>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => onNavigate?.("premium")}
+            className="px-3 py-1.5 rounded-full text-[11px] font-sans font-semibold"
+            style={{ background: "hsl(var(--green))", color: "white" }}>
+            Upgrade
+          </motion.button>
+        </motion.div>
+      )}
+
       {/* Input */}
       <div className="flex items-end gap-2 pt-2" style={{ borderTop: "1px solid hsl(var(--border-subtle))" }}>
         <div className="flex-1 rounded-[14px] px-4 py-2.5" style={{ background: "hsl(var(--surface))", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
@@ -192,7 +211,7 @@ const AIChatScreen = ({ onBack }: AIChatScreenProps) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder={canAsk ? "Ask about your pregnancy..." : "Upgrade to Premium for more questions"}
+            placeholder={canAsk ? "Ask about your pregnancy..." : "Weekly limit reached"}
             disabled={!canAsk}
             rows={1}
             className="w-full text-[14px] font-sans resize-none outline-none bg-transparent"

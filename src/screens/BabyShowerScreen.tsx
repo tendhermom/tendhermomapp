@@ -5,6 +5,7 @@ import BabyShowerCard from "@/components/cards/BabyShowerCard";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import PremiumGate from "@/components/PremiumGate";
 
 interface BabyShowerPost {
   id: string;
@@ -30,6 +31,7 @@ interface Gift {
 
 interface BabyShowerScreenProps {
   onBack: () => void;
+  onNavigate?: (screen: string) => void;
 }
 
 const fadeUp = {
@@ -66,7 +68,7 @@ const MONTH_IMAGES = [
   "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=400&h=500&fit=crop",
 ];
 
-const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
+const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
 
@@ -518,6 +520,26 @@ const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
     acc[p.month_label] = (acc[p.month_label] || 0) + 1;
     return acc;
   }, {});
+
+  if (!isPremium) {
+    return (
+      <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}>
+        <motion.div variants={fadeUp} className="flex items-center gap-3">
+          <motion.button whileTap={{ scale: 0.88 }} onClick={onBack}>
+            <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
+          </motion.button>
+          <div className="flex-1">
+            <h1 className="font-serif text-[26px]" style={{ color: "hsl(var(--dark))" }}>Baby Shower 🎉</h1>
+          </div>
+        </motion.div>
+        <PremiumGate
+          feature="Baby Shower"
+          description="Celebrate your baby's arrival, share milestones, and receive gifts from loved ones."
+          onUpgrade={() => onNavigate?.("premium")}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}>
