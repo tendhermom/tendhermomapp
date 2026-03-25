@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AIChatScreenProps {
   onBack: () => void;
+  onNavigate?: (screen: string) => void;
 }
 
 interface Message {
@@ -17,7 +18,7 @@ interface Message {
 const WEEKLY_LIMIT_FREE = 2;
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
 
-const AIChatScreen = ({ onBack }: AIChatScreenProps) => {
+const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
   const [messages, setMessages] = useState<Message[]>([]);
@@ -192,7 +193,7 @@ const AIChatScreen = ({ onBack }: AIChatScreenProps) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder={canAsk ? "Ask about your pregnancy..." : "Upgrade to Premium for more questions"}
+            placeholder={canAsk ? "Ask about your pregnancy..." : "Weekly limit reached"}
             disabled={!canAsk}
             rows={1}
             className="w-full text-[14px] font-sans resize-none outline-none bg-transparent"
