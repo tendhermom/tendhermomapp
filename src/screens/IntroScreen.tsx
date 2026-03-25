@@ -139,8 +139,16 @@ const IntroScreen = ({ onComplete }: IntroScreenProps) => {
             {/* Floating illustration */}
             <motion.div
               initial={{ y: 30, opacity: 0, scale: 0.85 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 22, delay: 0.1 }}
+              animate={{
+                y: [0, -8, 0],
+                opacity: 1,
+                scale: 1,
+              }}
+              transition={{
+                y: { duration: 3.5, repeat: Infinity, ease: "easeInOut" },
+                opacity: { duration: 0.4, delay: 0.1 },
+                scale: { type: "spring", stiffness: 200, damping: 22, delay: 0.1 },
+              }}
               className="relative mb-6"
             >
               {/* Soft glow behind image */}
