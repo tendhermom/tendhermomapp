@@ -13,25 +13,23 @@ interface IntroScreenProps {
 const SLIDES = [
   {
     image: introDashboard,
-    title: "Your Pregnancy Dashboard,",
-    titleAccent: "Tailored for You",
+    title: "Your Health,",
+    titleAccent: "Your Way",
     subtitle: "Monitor your health & connect with doctors for trusted support",
     features: [
       { icon: "pulse-outline", label: "Personalized health updates" },
       { icon: "grid-outline", label: "Quick access to vital features" },
-      { icon: "flag-outline", label: "Designed for mothers in Nigeria" },
     ],
     accentColor: "hsl(var(--green))",
   },
   {
     image: introCommunity,
     title: "Join Supportive",
-    titleAccent: "Pregnancy Communities",
+    titleAccent: "Communities",
     subtitle: "Connect with other mothers through every stage",
     features: [
       { icon: "chatbubbles-outline", label: "Find reassuring advice" },
       { icon: "people-outline", label: "Share experiences & tips" },
-      { icon: "flag-outline", label: "Made for mothers in Nigeria" },
     ],
     accentColor: "hsl(var(--green))",
   },
@@ -43,7 +41,6 @@ const SLIDES = [
     features: [
       { icon: "alert-circle-outline", label: "Fast SOS alert" },
       { icon: "chatbox-ellipses-outline", label: "Instant contact messages" },
-      { icon: "flag-outline", label: "Made for mothers in Nigeria" },
     ],
     accentColor: "hsl(var(--coral))",
   },
