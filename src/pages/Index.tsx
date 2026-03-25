@@ -52,18 +52,24 @@ const Index = () => {
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const isExpert = user?.user_type === "expert";
 
   // Prefetch tab screens after first render
   useEffect(() => {
     prefetchScreens();
   }, []);
 
-  // Show onboarding for new users (no LMP set and hasn't completed onboarding)
+  // Show onboarding for new users
   useEffect(() => {
-    if (user && !user.lmp_date && !user.due_date && !localStorage.getItem("onboarding_completed")) {
+    if (!user || localStorage.getItem("onboarding_completed")) return;
+    if (isExpert) {
+      // Expert onboarding: always show if not completed
+      setShowOnboarding(true);
+    } else if (!user.lmp_date && !user.due_date) {
+      // Mum onboarding: show if no LMP set
       setShowOnboarding(true);
     }
-  }, [user]);
+  }, [user, isExpert]);
 
   // Theme status bar based on active screen
   useEffect(() => {
