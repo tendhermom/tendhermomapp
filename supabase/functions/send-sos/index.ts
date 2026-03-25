@@ -7,6 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const TERMII_API_URL = "https://v3.api.termii.com/api/sms/send";
+const SMS_SENDER_ID = "TendherMom";
+
 interface Contact {
   name: string;
   phone: string;
@@ -24,6 +27,64 @@ interface SOSRequest {
   is_test: boolean;
 }
 
+async function sendTermiiSMS(phone: string, message: string, apiKey: string): Promise<{ success: boolean; response?: any; error?: string }> {
+  try {
+    const response = await fetch(TERMII_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: phone,
+        from: SMS_SENDER_ID,
+        sms: message,
+        type: "plain",
+        channel: "dnd",
+        api_key: apiKey,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error(`[SOS] Termii SMS failed for ${phone}:`, data);
+      return { success: false, error: `HTTP ${response.status}`, response: data };
+    }
+    console.log(`[SOS] Termii SMS sent to ${phone}:`, data);
+    return { success: true, response: data };
+  } catch (err) {
+    console.error(`[SOS] Termii SMS error for ${phone}:`, err);
+    return { success: false, error: String(err) };
+  }
+}
+
+async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string): Promise<{ success: boolean; response?: any; error?: string }> {
+  // WhatsApp requires a configured device on Termii dashboard
+  // When the device is set up, this will use the whatsapp channel
+  try {
+    const response = await fetch(TERMII_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: phone,
+        from: SMS_SENDER_ID,
+        sms: message,
+        type: "plain",
+        channel: "whatsapp",
+        api_key: apiKey,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error(`[SOS] Termii WhatsApp failed for ${phone}:`, data);
+      return { success: false, error: `HTTP ${response.status}`, response: data };
+    }
+    console.log(`[SOS] Termii WhatsApp sent to ${phone}:`, data);
+    return { success: true, response: data };
+  } catch (err) {
+    console.error(`[SOS] Termii WhatsApp error for ${phone}:`, err);
+    return { success: false, error: String(err) };
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -38,6 +99,15 @@ serve(async (req) => {
       });
     }
 
+    const termiiApiKey = Deno.env.get("TERMII_API_KEY");
+    if (!termiiApiKey) {
+      console.error("[SOS] TERMII_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: "SMS service not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const serviceClient = createClient(supabaseUrl, serviceKey);
@@ -46,7 +116,6 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Verify the user via getUser instead of getClaims
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -72,7 +141,7 @@ serve(async (req) => {
         _user_id: userId,
         _action: "sos_alert_monthly",
         _max_requests: 1,
-        _window_minutes: 43200, // 30 days
+        _window_minutes: 43200,
       });
       if (!allowed) {
         return new Response(
@@ -108,7 +177,6 @@ serve(async (req) => {
       });
     }
 
-    // Trim contacts to plan limit
     const limitedContacts = contacts.slice(0, maxContacts);
 
     const now = new Date();
@@ -128,17 +196,53 @@ serve(async (req) => {
     const testPrefix = is_test ? "[TEST ALERT] " : "";
     const smsMessage = `${testPrefix}EMERGENCY ALERT — TendherMom\n\n${user_name} needs urgent help. She triggered her emergency alert at ${timeStr} on ${dateStr}.\n\n${locationText}\n\nPlease contact her immediately or call emergency services: 112 (Nigeria).\n\nSent via TendherMom`;
 
-    const channelResults: Record<string, any> = {};
+    // Dispatch messages in parallel to all contacts across all channels
+    const channelResults: Record<string, Record<string, string>> = {};
+    const dispatchPromises: Promise<void>[] = [];
+
     for (const contact of limitedContacts) {
-      const contactResult: Record<string, string> = {};
+      channelResults[contact.name] = {};
+
       for (const channel of contact.channels) {
-        console.log(`[SOS] ${channel.toUpperCase()} → ${contact.name} (${contact.phone}): ${is_test ? "TEST " : ""}alert`);
-        contactResult[channel] = "queued";
+        if (channel === "sms") {
+          dispatchPromises.push(
+            sendTermiiSMS(contact.phone, smsMessage, termiiApiKey).then((result) => {
+              channelResults[contact.name]["sms"] = result.success ? "sent" : `failed: ${result.error}`;
+            })
+          );
+        } else if (channel === "whatsapp") {
+          const whatsappNumber = contact.whatsapp || contact.phone;
+          dispatchPromises.push(
+            sendTermiiWhatsApp(whatsappNumber, smsMessage, termiiApiKey).then((result) => {
+              channelResults[contact.name]["whatsapp"] = result.success ? "sent" : `failed: ${result.error}`;
+            })
+          );
+        } else if (channel === "voice") {
+          // Voice calls not yet implemented — log and mark as unsupported
+          console.log(`[SOS] Voice call to ${contact.name} (${contact.phone}) — not yet implemented`);
+          channelResults[contact.name]["voice"] = "unsupported";
+        }
       }
-      channelResults[contact.name] = contactResult;
     }
 
-    console.log(`[SOS] Alert dispatched for ${user_name} to ${limitedContacts.length} contacts (plan: ${isFree ? "free" : "premium"})`);
+    // Wait for all dispatches to complete
+    await Promise.allSettled(dispatchPromises);
+
+    // Log the alert to the database
+    await serviceClient.from("emergency_alerts").insert({
+      user_id: userId,
+      latitude,
+      longitude,
+      contacts_notified: limitedContacts.length,
+      channel_success: channelResults,
+      is_test,
+    });
+
+    const successCount = Object.values(channelResults).reduce((acc, channels) => {
+      return acc + Object.values(channels).filter((s) => s === "sent").length;
+    }, 0);
+
+    console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s) (plan: ${isFree ? "free" : "premium"})`);
 
     return new Response(
       JSON.stringify({ success: true, contacts_notified: limitedContacts.length, channel_results: channelResults, is_test }),
