@@ -32,7 +32,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace />;
+    // First-time users (just completed intro, never logged in) go to signup
+    const hasLoggedInBefore = localStorage.getItem("has_logged_in") === "true";
+    return <Navigate to={hasLoggedInBefore ? "/login" : "/signup"} replace />;
   }
 
   return <>{children}</>;

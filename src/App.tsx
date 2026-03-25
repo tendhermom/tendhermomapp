@@ -44,6 +44,7 @@ const AuthListener = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
+          localStorage.setItem("has_logged_in", "true");
           fetchProfile(session.user.id);
           import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
             setOneSignalExternalUserId(session.user.id);
