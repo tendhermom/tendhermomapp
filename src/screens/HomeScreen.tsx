@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TopBar from "@/components/navigation/TopBar";
 import { useAuthStore } from "@/stores/authStore";
 import { usePointsStore } from "@/stores/pointsStore";
 import IonIcon from "@/components/IonIcon";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface HomeScreenProps {
   onNavigate: (tab: string) => void;
