@@ -102,7 +102,7 @@ const Index = () => {
       case "health-tracker":
         return <HealthTrackerScreen onNavigate={handleNavigate} />;
       case "ai-chat":
-        return <AIChatScreen onBack={() => setActiveTab("home")} />;
+        return <AIChatScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "gamification":
         return <GamificationScreen onBack={() => setActiveTab("home")} />;
       case "appointments":
