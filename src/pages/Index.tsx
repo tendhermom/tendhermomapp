@@ -133,8 +133,29 @@ const Index = () => {
   if (showOnboarding) {
     return (
       <Suspense fallback={<ScreenFallback />}>
-        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+        {isExpert ? (
+          <ExpertOnboardingScreen onComplete={() => setShowOnboarding(false)} />
+        ) : (
+          <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+        )}
       </Suspense>
+    );
+  }
+
+  // Expert users get their own dashboard
+  if (isExpert) {
+    return (
+      <div className="min-h-screen bg-foreground/5 flex justify-center">
+        <div className="app-shell">
+          <div className="screen-scroll">
+            <div className="px-5 pb-8" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 56px)" }}>
+              <Suspense fallback={<ScreenFallback />}>
+                <ExpertDashboardScreen onNavigate={handleNavigate} />
+              </Suspense>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
