@@ -105,8 +105,12 @@ const IntroScreen = lazy(() => import("./screens/IntroScreen"));
 const App = () => {
   const [splashDone, setSplashDone] = useState(false);
   const [introDone, setIntroDone] = useState(() => localStorage.getItem("intro_completed") === "true");
+  const [freshIntro, setFreshIntro] = useState(false);
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
-  const handleIntroComplete = useCallback(() => setIntroDone(true), []);
+  const handleIntroComplete = useCallback(() => {
+    setIntroDone(true);
+    setFreshIntro(true);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -122,7 +126,7 @@ const App = () => {
         <BiometricLock />
         <BrowserRouter>
           <AuthListener />
-          <AppContent />
+          <AppContent initialRoute={freshIntro ? "/signup" : undefined} />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
