@@ -100,9 +100,13 @@ const AppContent = () => {
   );
 };
 
+const IntroScreen = lazy(() => import("./screens/IntroScreen"));
+
 const App = () => {
   const [splashDone, setSplashDone] = useState(false);
+  const [introDone, setIntroDone] = useState(() => localStorage.getItem("intro_completed") === "true");
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
+  const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -110,6 +114,11 @@ const App = () => {
         <Toaster />
         <Sonner />
         {!splashDone && <SplashScreen onFinish={handleSplashFinish} />}
+        {splashDone && !introDone && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <IntroScreen onComplete={handleIntroComplete} />
+          </Suspense>
+        )}
         <BiometricLock />
         <BrowserRouter>
           <AuthListener />
