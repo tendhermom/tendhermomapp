@@ -123,7 +123,7 @@ const App = () => {
         <BiometricLock />
         <BrowserRouter>
           <AuthListener />
-          <AppContent initialRoute={freshIntro ? "/signup" : undefined} />
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
