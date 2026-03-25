@@ -30,6 +30,7 @@ interface Gift {
 
 interface BabyShowerScreenProps {
   onBack: () => void;
+  onNavigate?: (screen: string) => void;
 }
 
 const fadeUp = {
@@ -66,7 +67,7 @@ const MONTH_IMAGES = [
   "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=400&h=500&fit=crop",
 ];
 
-const BabyShowerScreen = ({ onBack }: BabyShowerScreenProps) => {
+const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
 
