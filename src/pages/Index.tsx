@@ -92,7 +92,7 @@ const Index = () => {
       case "community":
         return <CommunityScreen onNavigate={handleNavigate} />;
       case "baby-shower":
-        return <BabyShowerScreen onBack={() => setActiveTab("home")} />;
+        return <BabyShowerScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "notifications":
