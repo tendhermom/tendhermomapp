@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light only;
     --background: 30 14% 96%;
     --foreground: 0 0% 10%;
 
@@ -66,6 +67,11 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html, body {
+    color-scheme: light only !important;
+    background-color: hsl(30 14% 96%) !important;
   }
 
   body {
