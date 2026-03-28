@@ -69,6 +69,11 @@
     @apply border-border;
   }
 
+  html, body {
+    color-scheme: light only !important;
+    background-color: hsl(30 14% 96%) !important;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
