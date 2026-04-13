@@ -46,13 +46,13 @@ const getGamificationLevel = (points: number) => {
 
 const QUICK_ACTIONS = [
   { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "appointments", label: "Appointment", icon: "calendar-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "health-hubs", label: "Health Hubs", icon: "location-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
   { id: "health-tracker", label: "Health", icon: "heart-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "insights", label: "Insights", icon: "bulb-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
 ];
 
 const WEEKLY_HIGHLIGHTS = [
-  { id: "appointments", label: "Book a Doctor", desc: "Premium: 15-min sessions", icon: "calendar-outline", color: "green" },
+  { id: "health-hubs", label: "Health Hubs", desc: "Find nearby health centers", icon: "location-outline", color: "green" },
   { id: "baby-shower", label: "Baby Shower", desc: "Share & celebrate milestones", icon: "gift-outline", color: "coral" },
   { id: "gamification", label: "Your Level", desc: "Earn points & climb ranks", icon: "trophy-outline", color: "green" },
 ];

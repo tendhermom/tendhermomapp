@@ -31,7 +31,7 @@ const getGamificationLevel = (points: number) => {
 
 const menuItems = [
   { icon: "heart-outline", label: "Health Tracker", screen: "health-tracker", accent: "coral" },
-  { icon: "calendar-outline", label: "Book Appointment", screen: "appointments", accent: "green", premium: true },
+  { icon: "location-outline", label: "Health Hubs", screen: "health-hubs", accent: "green" },
   { icon: "trophy-outline", label: "Levels & Rewards", screen: "gamification", accent: "green" },
   { icon: "gift-outline", label: "Baby Shower", screen: "baby-shower", accent: "coral" },
   { icon: "alert-circle-outline", label: "Emergency Contacts", screen: "emergency-contacts", accent: "coral" },
