@@ -150,14 +150,6 @@ const DrawerMenu = ({ isOpen, onClose, onNavigate }: DrawerMenuProps) => {
                   <span className="text-[14px] font-sans font-medium flex-1" style={{ color: "hsl(var(--dark))" }}>
                     {item.label}
                   </span>
-                  {item.premium && !isPremium && (
-                    <span
-                      className="text-[8px] font-bold font-sans uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                      style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}
-                    >
-                      PRO
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
