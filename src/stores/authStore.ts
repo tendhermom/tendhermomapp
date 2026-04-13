@@ -14,7 +14,7 @@ interface UserProfile {
   phone: string | null;
   can_post: boolean;
   avatar_url: string | null;
-  user_type: "mother" | "expert";
+  user_type: "mother";
 }
 
 interface AuthState {
@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           phone: data.phone,
           can_post: data.can_post,
           avatar_url: data.avatar_url,
-          user_type: (data as any).user_type || "mother",
+          user_type: "mother",
         },
         isAuthenticated: true,
         isLoading: false,

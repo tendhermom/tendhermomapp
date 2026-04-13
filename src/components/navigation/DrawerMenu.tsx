@@ -31,7 +31,7 @@ const getGamificationLevel = (points: number) => {
 
 const menuItems = [
   { icon: "heart-outline", label: "Health Tracker", screen: "health-tracker", accent: "coral" },
-  { icon: "calendar-outline", label: "Book Appointment", screen: "appointments", accent: "green", premium: true },
+  { icon: "location-outline", label: "Health Hubs", screen: "health-hubs", accent: "green" },
   { icon: "trophy-outline", label: "Levels & Rewards", screen: "gamification", accent: "green" },
   { icon: "gift-outline", label: "Baby Shower", screen: "baby-shower", accent: "coral" },
   { icon: "alert-circle-outline", label: "Emergency Contacts", screen: "emergency-contacts", accent: "coral" },
@@ -150,14 +150,6 @@ const DrawerMenu = ({ isOpen, onClose, onNavigate }: DrawerMenuProps) => {
                   <span className="text-[14px] font-sans font-medium flex-1" style={{ color: "hsl(var(--dark))" }}>
                     {item.label}
                   </span>
-                  {item.premium && !isPremium && (
-                    <span
-                      className="text-[8px] font-bold font-sans uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                      style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}
-                    >
-                      PRO
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
