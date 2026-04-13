@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -18,16 +17,13 @@ const OnboardingScreen = lazy(() => import("@/screens/OnboardingScreen"));
 const HealthTrackerScreen = lazy(() => import("@/screens/HealthTrackerScreen"));
 const AIChatScreen = lazy(() => import("@/screens/AIChatScreen"));
 const GamificationScreen = lazy(() => import("@/screens/GamificationScreen"));
-const AppointmentsScreen = lazy(() => import("@/screens/AppointmentsScreen"));
+const HealthHubsScreen = lazy(() => import("@/screens/HealthHubsScreen"));
 const PremiumScreen = lazy(() => import("@/screens/PremiumScreen"));
 const ModerationScreen = lazy(() => import("@/screens/ModerationScreen"));
 const ReferralScreen = lazy(() => import("@/screens/ReferralScreen"));
 const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
 const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
-const ExpertDashboardScreen = lazy(() => import("@/screens/ExpertDashboardScreen"));
-const ExpertOnboardingScreen = lazy(() => import("@/screens/ExpertOnboardingScreen"));
 
-// Prefetch tab screens after initial paint for instant navigation
 const prefetchScreens = () => {
   requestIdleCallback?.(() => {
     import("@/screens/TriageScreen");
@@ -52,26 +48,16 @@ const Index = () => {
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const isExpert = user?.user_type === "expert";
 
-  // Prefetch tab screens after first render
-  useEffect(() => {
-    prefetchScreens();
-  }, []);
+  useEffect(() => { prefetchScreens(); }, []);
 
-  // Show onboarding for new users
   useEffect(() => {
     if (!user || localStorage.getItem("onboarding_completed")) return;
-    if (isExpert) {
-      // Expert onboarding: always show if not completed
-      setShowOnboarding(true);
-    } else if (!user.lmp_date && !user.due_date) {
-      // Mum onboarding: show if no LMP set
+    if (!user.lmp_date && !user.due_date) {
       setShowOnboarding(true);
     }
-  }, [user, isExpert]);
+  }, [user]);
 
-  // Theme status bar based on active screen
   useEffect(() => {
     const emergencyScreens = ["sos", "emergency-contacts"];
     const lightScreens = ["community", "baby-shower"];
@@ -113,8 +99,8 @@ const Index = () => {
         return <AIChatScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "gamification":
         return <GamificationScreen onBack={() => setActiveTab("home")} />;
-      case "appointments":
-        return <AppointmentsScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
+      case "health-hubs":
+        return <HealthHubsScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
       case "premium":
         return <PremiumScreen onBack={() => setActiveTab("profile")} />;
       case "moderation":
@@ -133,29 +119,8 @@ const Index = () => {
   if (showOnboarding) {
     return (
       <Suspense fallback={<ScreenFallback />}>
-        {isExpert ? (
-          <ExpertOnboardingScreen onComplete={() => setShowOnboarding(false)} />
-        ) : (
-          <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
-        )}
+        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
       </Suspense>
-    );
-  }
-
-  // Expert users get their own dashboard
-  if (isExpert) {
-    return (
-      <div className="min-h-screen bg-foreground/5 flex justify-center">
-        <div className="app-shell">
-          <div className="screen-scroll">
-            <div className="px-5 pb-8" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 56px)" }}>
-              <Suspense fallback={<ScreenFallback />}>
-                <ExpertDashboardScreen onNavigate={handleNavigate} />
-              </Suspense>
-            </div>
-          </div>
-        </div>
-      </div>
     );
   }
 
