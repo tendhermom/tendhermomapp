@@ -28,11 +28,11 @@ const FEATURES = [
     premium: "Unlimited",
   },
   {
-    icon: "calendar",
-    title: "Book Appointments",
-    desc: "Schedule 15-min sessions with health experts",
-    free: "—",
-    premium: "Included",
+    icon: "location",
+    title: "Health Hubs",
+    desc: "Find nearby health centers, pharmacies & specialists",
+    free: "Limited",
+    premium: "Full Access",
   },
   {
     icon: "gift",

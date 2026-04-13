@@ -23,9 +23,9 @@ const FEATURE_PREVIEWS: Record<string, PreviewSlide[]> = {
     { image: babyShower1, title: "Celebrate Your Baby", description: "Share beautiful announcements with the TendherMom community" },
     { image: babyShower2, title: "Receive Digital Gifts", description: "Friends & family can send gifts and congratulations" },
   ],
-  "Book a Doctor": [
-    { image: doctorBooking1, title: "Expert Doctors", description: "Book 15-min sessions with certified specialists" },
-    { image: doctorBooking2, title: "6 Specialties", description: "Gynaecology, Obstetrics, Midwifery, Pediatrics & more" },
+  "Health Hubs": [
+    { image: doctorBooking1, title: "Health Hubs", description: "Find nearby health centers, pharmacies & emergency facilities" },
+    { image: doctorBooking2, title: "Smart Directory", description: "Filter by maternal health, pediatrics, emergency & more" },
   ],
   "Unlimited AI Chat": [
     { image: aiChat1, title: "24/7 Health Assistant", description: "Get instant answers to pregnancy health questions" },
