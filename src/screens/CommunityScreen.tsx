@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import CreatePostModal from "@/components/community/CreatePostModal";
 import CommentsSheet from "@/components/community/CommentsSheet";
 
-import img1st from "@/assets/community-1st-trimester.jpg";
-import img2nd from "@/assets/community-2nd-trimester.jpg";
-import img3rd from "@/assets/community-3rd-trimester.jpg";
-import imgPost from "@/assets/community-postpartum.jpg";
+import img1st from "@/assets/1st_trimester.jpeg";
+import img2nd from "@/assets/2nd_trimester.jpeg";
+import img3rd from "@/assets/3rd_trimester.jpeg";
+import imgPost from "@/assets/postpartum.jpeg";
 
 interface CommunityScreenProps {
   onNavigate: (tab: string) => void;

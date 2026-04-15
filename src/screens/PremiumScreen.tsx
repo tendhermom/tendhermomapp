@@ -16,7 +16,7 @@ const FEATURES = [
   {
     icon: "shield-checkmark",
     title: "5 Emergency Contacts",
-    desc: "Protect your loved ones with more SOS contacts",
+    desc: "Ensure your safety with more SOS contacts",
     free: "1 contact",
     premium: "5 contacts",
   },
