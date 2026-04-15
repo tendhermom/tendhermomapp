@@ -5,10 +5,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { hapticSelection } from "@/lib/despia";
 import { toast } from "sonner";
 
+// Category images
 import imgMaternal from "@/assets/hubs/maternal.jpg";
 import imgPediatric from "@/assets/hubs/pediatric.jpg";
 import imgEmergency from "@/assets/hubs/emergency.jpg";
 import imgDiagnostics from "@/assets/hubs/diagnostics.jpg";
+
+// Service images — Maternal
+import imgAnc from "@/assets/hubs/anc.jpg";
+import imgPnc from "@/assets/hubs/pnc.jpg";
+import imgObstetrics from "@/assets/hubs/obstetrics.jpg";
+import imgMentalHealth from "@/assets/hubs/mental_health.jpg";
+
+// Service images — Pediatric
+import imgGeneralPediatrics from "@/assets/hubs/general_pediatrics.jpg";
+import imgNicu from "@/assets/hubs/nicu.jpg";
+import imgImmunization from "@/assets/hubs/immunization.jpg";
+import imgLactation from "@/assets/hubs/lactation.jpg";
+
+// Service images — Emergency
+import imgAntivenom from "@/assets/hubs/antivenom.jpg";
+import imgBloodBank from "@/assets/hubs/blood_bank.jpg";
+import imgTraumaEr from "@/assets/hubs/trauma_er.jpg";
+import imgSgbv from "@/assets/hubs/sgbv.jpg";
+
+// Service images — Diagnostics
+import imgImaging from "@/assets/hubs/imaging.jpg";
+import imgPharmacy from "@/assets/hubs/pharmacy.jpg";
+import imgLaboratory from "@/assets/hubs/laboratory.jpg";
 
 interface HealthHubsScreenProps {
   onBack: () => void;
@@ -37,10 +61,10 @@ const CATEGORIES = [
     bg: "hsl(var(--light-coral))",
     image: imgMaternal,
     subs: [
-      { key: "antenatal care clinic", label: "ANC", tag: "#ANC", desc: "Routine pregnancy check-ups" },
-      { key: "postnatal care clinic", label: "PNC", tag: "#PNC", desc: "Care for lactating mothers" },
-      { key: "obstetrics hospital c-section", label: "Obstetrics", tag: "#Comprehensive-Obstetrics", desc: "C-sections & emergency deliveries" },
-      { key: "maternal mental health counselor", label: "Mental Health", tag: "#Maternal-Mental-Health", desc: "PPD counseling & support" },
+      { key: "antenatal care clinic", label: "ANC", desc: "Routine pregnancy check-ups", image: imgAnc },
+      { key: "postnatal care clinic", label: "PNC", desc: "Care for lactating mothers", image: imgPnc },
+      { key: "obstetrics hospital c-section", label: "Obstetrics", desc: "C-sections & emergency deliveries", image: imgObstetrics },
+      { key: "maternal mental health counselor", label: "Mental Health", desc: "PPD counseling & support", image: imgMentalHealth },
     ],
   },
   {
@@ -51,10 +75,10 @@ const CATEGORIES = [
     bg: "hsl(var(--light-green))",
     image: imgPediatric,
     subs: [
-      { key: "pediatrics clinic children hospital", label: "General Pediatrics", tag: "#General-Pediatrics", desc: "Common childhood illnesses" },
-      { key: "neonatal ICU NICU hospital", label: "NICU", tag: "#Neonatal-ICU", desc: "Premature & sick newborns" },
-      { key: "immunization vaccination center", label: "Immunization", tag: "#Immunization-Center", desc: "NPI schedule vaccines" },
-      { key: "lactation consultant breastfeeding", label: "Lactation", tag: "#Lactation-Consultant", desc: "Breastfeeding support" },
+      { key: "pediatrics clinic children hospital", label: "General Pediatrics", desc: "Common childhood illnesses", image: imgGeneralPediatrics },
+      { key: "neonatal ICU NICU hospital", label: "NICU", desc: "Premature & sick newborns", image: imgNicu },
+      { key: "immunization vaccination center", label: "Immunization", desc: "NPI schedule vaccines", image: imgImmunization },
+      { key: "lactation consultant breastfeeding", label: "Lactation", desc: "Breastfeeding support", image: imgLactation },
     ],
   },
   {
@@ -65,10 +89,10 @@ const CATEGORIES = [
     bg: "hsla(14, 80%, 58%, 0.1)",
     image: imgEmergency,
     subs: [
-      { key: "anti venom snake bite hospital", label: "Anti-Venom", tag: "#Anti-Venom-Unit", desc: "Snake/scorpion bite treatment" },
-      { key: "blood bank hospital", label: "Blood Bank", tag: "#Blood-Bank", desc: "On-site blood storage" },
-      { key: "trauma emergency room hospital", label: "Trauma ER", tag: "#Trauma-ER", desc: "Accidents & emergencies" },
-      { key: "sexual gender violence response center", label: "SGBV Response", tag: "#SGBV-Response", desc: "PEP & counseling" },
+      { key: "anti venom snake bite hospital", label: "Anti-Venom", desc: "Snake/scorpion bite treatment", image: imgAntivenom },
+      { key: "blood bank hospital", label: "Blood Bank", desc: "On-site blood storage", image: imgBloodBank },
+      { key: "trauma emergency room hospital", label: "Trauma ER", desc: "Accidents & emergencies", image: imgTraumaEr },
+      { key: "sexual gender violence response center", label: "SGBV Response", desc: "PEP & counseling", image: imgSgbv },
     ],
   },
   {
@@ -79,9 +103,9 @@ const CATEGORIES = [
     bg: "hsla(210, 80%, 55%, 0.1)",
     image: imgDiagnostics,
     subs: [
-      { key: "ultrasound imaging x-ray CT scan", label: "Imaging", tag: "#Advanced-Imaging", desc: "3D/4D Ultrasound, X-rays, CT" },
-      { key: "24 hour pharmacy", label: "24/7 Pharmacy", tag: "#24-7-Pharmacy", desc: "Round-the-clock medication" },
-      { key: "medical laboratory blood test", label: "Laboratory", tag: "#Laboratory-Services", desc: "Blood tests & screening" },
+      { key: "ultrasound imaging x-ray CT scan", label: "Imaging", desc: "3D/4D Ultrasound, X-rays, CT", image: imgImaging },
+      { key: "24 hour pharmacy", label: "24/7 Pharmacy", desc: "Round-the-clock medication", image: imgPharmacy },
+      { key: "medical laboratory blood test", label: "Laboratory", desc: "Blood tests & screening", image: imgLaboratory },
     ],
   },
 ];
@@ -162,7 +186,6 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
   if (!selectedCat) {
     return (
       <motion.div className="space-y-6 pb-4 pt-1" initial="hidden" animate="show" variants={stagger}>
-        {/* Header */}
         <motion.div variants={fadeUp} className="flex items-center gap-3">
           <button onClick={onBack} className="ios-press -ml-1">
             <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
@@ -177,7 +200,6 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
           </div>
         </motion.div>
 
-        {/* Category Carousel Grid — 2 columns like Triage */}
         <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
           {CATEGORIES.map((cat, i) => (
             <motion.button
@@ -214,7 +236,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
   }
 
   // ========================
-  // CATEGORY DETAIL (SERVICES)
+  // CATEGORY DETAIL (SERVICES AS CAROUSEL CARDS)
   // ========================
   return (
     <motion.div className="space-y-5 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -239,27 +261,56 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         </div>
       </div>
 
-      {/* Sub-categories as cards */}
+      {/* Services as image-backed carousel cards — 2-column grid */}
       <div className="space-y-2">
         <p className="label-caps" style={{ color: "hsl(var(--text-muted))" }}>SELECT SERVICE</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {category!.subs.map((sub, i) => (
             <motion.button
               key={sub.key}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 + i * 0.05 }}
+              transition={{ delay: 0.05 + i * 0.04, type: "spring", stiffness: 300, damping: 28 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => handleSubSelect(sub.key)}
-              className="tend-card p-3 text-left ios-press"
+              className="relative rounded-[18px] overflow-hidden text-left ios-press"
               style={{
-                borderColor: activeSub === sub.key ? category!.color : "transparent",
-                borderWidth: 2,
+                aspectRatio: "3/4",
+                boxShadow: activeSub === sub.key
+                  ? `0 4px 20px -4px ${category!.color}40, 0 0 0 2px ${category!.color}`
+                  : "0 4px 20px -4px hsla(0,0%,0%,0.12)",
               }}
             >
-              <span className="text-[10px] font-mono font-bold block mb-1" style={{ color: category!.color }}>{sub.tag}</span>
-              <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{sub.label}</p>
-              <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{sub.desc}</p>
+              <img
+                src={sub.image}
+                alt={sub.label}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(0deg, hsla(0,0%,0%,0.72) 0%, hsla(0,0%,0%,0.3) 50%, hsla(0,0%,0%,0.08) 100%)",
+                }}
+              />
+              {/* Selected indicator */}
+              {activeSub === sub.key && (
+                <div
+                  className="absolute top-3 right-3 w-[26px] h-[26px] rounded-full flex items-center justify-center"
+                  style={{ background: category!.color }}
+                >
+                  <IonIcon name="checkmark" size={14} style={{ color: "white" }} />
+                </div>
+              )}
+              <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                <h3 className="text-white text-[14px] font-semibold font-sans leading-tight">
+                  {sub.label}
+                </h3>
+                <p className="text-white/60 text-[10px] font-sans mt-0.5 leading-snug">
+                  {sub.desc}
+                </p>
+              </div>
             </motion.button>
           ))}
         </div>
