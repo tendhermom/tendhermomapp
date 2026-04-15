@@ -10,10 +10,10 @@ interface GamificationScreenProps {
 
 const LEVELS = [
   { name: "Newbie Nest", min: 0, color: "hsl(340 82% 72%)", bg: "hsl(340 82% 95%)", badge: "🌸", tagline: "Welcome to the family!" },
-  { name: "Baby Steps", min: 50, color: "hsl(45 93% 50%)", bg: "hsl(45 93% 92%)", badge: "🌻", tagline: "You're getting the hang of it!" },
-  { name: "Mommy Mode", min: 150, color: "hsl(153 42% 30%)", bg: "hsl(144 28% 93%)", badge: "💚", tagline: "You're crushing it, mama!" },
-  { name: "Super Mom", min: 350, color: "hsl(210 80% 55%)", bg: "hsl(210 80% 93%)", badge: "💙", tagline: "You've got super powers!" },
-  { name: "Mommy Master", min: 600, color: "hsl(270 60% 55%)", bg: "hsl(270 60% 93%)", badge: "💜", tagline: "You're a pro, queen!" },
+  { name: "Baby Steps", min: 100, color: "hsl(45 93% 50%)", bg: "hsl(45 93% 92%)", badge: "🌻", tagline: "You're getting the hang of it!" },
+  { name: "Mommy Mode", min: 500, color: "hsl(153 42% 30%)", bg: "hsl(144 28% 93%)", badge: "💚", tagline: "You're crushing it, mama!" },
+  { name: "Super Mom", min: 2000, color: "hsl(210 80% 55%)", bg: "hsl(210 80% 93%)", badge: "💙", tagline: "You've got super powers!" },
+  { name: "Mommy Master", min: 5000, color: "hsl(270 60% 55%)", bg: "hsl(270 60% 93%)", badge: "💜", tagline: "You're a pro, queen!" },
 ];
 
 const fadeUp = {

@@ -40,7 +40,7 @@ const FEATURE_PREVIEWS: Record<string, PreviewSlide[]> = {
 // Feature benefits shown as chips
 const FEATURE_BENEFITS: Record<string, string[]> = {
   "Baby Shower": ["Create Posts", "Enable Gifts", "Community Love"],
-  "Book a Doctor": ["15-min Sessions", "6 Specialties", "Appointment Reminders"],
+  "Health Hubs": ["Smart Directory", "GPS Location", "All Categories"],
   "Unlimited AI Chat": ["No Weekly Limit", "Nutrition Tips", "Symptom Guidance"],
   "5 Emergency Contacts": ["5 Contacts", "SMS + WhatsApp", "GPS Tracking"],
 };
