@@ -61,23 +61,23 @@ const PLANS = [
   {
     id: "weekly",
     label: "Weekly",
-    price: "₦700",
+    price: "₦300",
     period: "/week",
     tag: null,
   },
   {
     id: "monthly",
     label: "Monthly",
-    price: "₦2,500",
+    price: "₦1,000",
     period: "/month",
     tag: "Popular",
   },
   {
     id: "yearly",
     label: "Yearly",
-    price: "₦25,000",
+    price: "₦10,000",
     period: "/year",
-    tag: "Save 52%",
+    tag: "Save 36%",
   },
 ];
 
@@ -99,7 +99,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
           <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
         </motion.button>
         <h1 className="font-serif text-[24px] flex-1" style={{ color: "hsl(var(--dark))" }}>
-          Premium
+          TendherMom Plus
         </h1>
       </motion.div>
 
@@ -130,11 +130,11 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             )}
           </div>
           <h2 className="text-white font-serif text-[26px] leading-tight tracking-[-0.01em]">
-            {isPremium ? "You're Premium" : "Upgrade to Premium"}
+            {isPremium ? "You're on Plus" : "Upgrade to Plus"}
           </h2>
           <p className="text-white/55 text-[14px] font-sans mt-2 leading-relaxed max-w-[260px]">
             {isPremium
-              ? "You have access to all premium features. Thank you for your support!"
+              ? "You have access to all Plus features. Thank you for your support!"
               : "Unlock the full power of TendherMom for you and your baby's safety."}
           </p>
         </div>
@@ -264,7 +264,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                     className="text-[10px] font-sans font-semibold px-2 py-[2px] rounded-full"
                     style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
                   >
-                    Premium: {f.premium}
+                    Plus: {f.premium}
                   </span>
                 </div>
               </div>
@@ -304,7 +304,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             </div>
             <div className="flex-1">
               <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                Premium Active
+                Plus Active
               </p>
               <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
                 All features unlocked

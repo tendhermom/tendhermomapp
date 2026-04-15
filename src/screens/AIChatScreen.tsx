@@ -194,7 +194,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
           <IonIcon name="diamond-outline" size={18} style={{ color: "hsl(var(--green))" }} />
           <div className="flex-1">
             <p className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Weekly limit reached</p>
-            <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade for unlimited AI conversations</p>
+            <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to Plus for unlimited AI conversations</p>
           </div>
           <motion.button whileTap={{ scale: 0.95 }} onClick={() => onNavigate?.("premium")}
             className="px-3 py-1.5 rounded-full text-[11px] font-sans font-semibold"

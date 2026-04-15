@@ -440,7 +440,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
           <div className="flex-1">
             <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Free plan limit reached</p>
-            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to Premium for up to 5 contacts & unlimited triggers</p>
+            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to TendherMom Plus for up to 5 contacts & unlimited triggers</p>
           </div>
         </div>
       )}

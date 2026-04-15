@@ -155,7 +155,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
 
   const handleToggleGift = async (postId: string) => {
     if (!user || !isPremium) {
-      toast.error("Gift-giving is a premium feature");
+      toast.error("Gift-giving is a Plus feature");
       return;
     }
     const { error } = await supabase
