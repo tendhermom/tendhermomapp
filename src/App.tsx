@@ -110,17 +110,34 @@ const App = () => {
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
   const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
+  // Show splash/intro first for new users before anything else
+  if (!splashDone) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <SplashScreen onFinish={handleSplashFinish} />
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  if (!introDone) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Suspense fallback={<LoadingSpinner />}>
+            <IntroScreen onComplete={handleIntroComplete} />
+          </Suspense>
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        {!splashDone && <SplashScreen onFinish={handleSplashFinish} />}
-        {splashDone && !introDone && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <IntroScreen onComplete={handleIntroComplete} />
-          </Suspense>
-        )}
         <BiometricLock />
         <BrowserRouter>
           <AuthListener />
