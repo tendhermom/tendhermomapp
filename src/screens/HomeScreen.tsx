@@ -34,6 +34,7 @@ const GAMIFICATION_LEVELS = [
   { name: "Mommy Mode", min: 500, color: "hsl(153 42% 30%)", badge: "💚" },
   { name: "Super Mom", min: 2000, color: "hsl(210 80% 55%)", badge: "💙" },
   { name: "Mommy Master", min: 5000, color: "hsl(270 60% 55%)", badge: "💜" },
+  { name: "Legendary Mom", min: 10000, color: "hsl(30 90% 50%)", badge: "👑" },
 ];
 
 const getGamificationLevel = (points: number) => {

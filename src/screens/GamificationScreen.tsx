@@ -14,6 +14,7 @@ const LEVELS = [
   { name: "Mommy Mode", min: 500, color: "hsl(153 42% 30%)", bg: "hsl(144 28% 93%)", badge: "💚", tagline: "You're crushing it, mama!" },
   { name: "Super Mom", min: 2000, color: "hsl(210 80% 55%)", bg: "hsl(210 80% 93%)", badge: "💙", tagline: "You've got super powers!" },
   { name: "Mommy Master", min: 5000, color: "hsl(270 60% 55%)", bg: "hsl(270 60% 93%)", badge: "💜", tagline: "You're a pro, queen!" },
+  { name: "Legendary Mom", min: 10000, color: "hsl(30 90% 50%)", bg: "hsl(30 90% 92%)", badge: "👑", tagline: "You're an absolute legend!" },
 ];
 
 const fadeUp = {
