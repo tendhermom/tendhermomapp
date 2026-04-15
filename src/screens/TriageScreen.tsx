@@ -77,7 +77,7 @@ const SEVERITY_CONFIG: Record<Severity, { bg: string; color: string; icon: strin
     color: "hsl(0, 72%, 50%)",
     icon: "warning",
     glow: "0 8px 32px -8px hsla(0,72%,50%,0.35)",
-    label: "Go to hospital NOW",
+    label: "Go to a hospital NOW!",
   },
 };
 

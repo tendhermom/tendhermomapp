@@ -218,15 +218,15 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={onUpgrade}
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl text-[14px] font-sans font-semibold mx-auto ios-press"
+          className="w-full max-w-[280px] flex items-center justify-center gap-2 px-6 py-[14px] rounded-2xl text-[15px] font-sans font-bold mx-auto ios-press"
           style={{
-            background: "linear-gradient(135deg, hsl(var(--green)), hsl(var(--green-dark)))",
+            background: "linear-gradient(135deg, hsl(var(--coral)), hsl(11 74% 52%))",
             color: "white",
-            boxShadow: "0 6px 24px -6px hsla(var(--green), 0.4)",
+            boxShadow: "0 8px 28px -6px hsla(11, 74%, 56%, 0.5)",
           }}
         >
-          <IonIcon name="diamond-outline" size={16} style={{ color: "white" }} />
-          Upgrade to Premium
+          <IonIcon name="lock-open-outline" size={18} style={{ color: "white" }} />
+          Unlock Premium
         </motion.button>
 
         {/* Price hint */}

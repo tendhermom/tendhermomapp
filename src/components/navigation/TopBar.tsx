@@ -20,10 +20,14 @@ const TopBar = ({ onNotificationsPress, onAIChatPress }: TopBarProps) => {
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={onAIChatPress}
-            className="w-[40px] h-[40px] rounded-full flex items-center justify-center ios-press"
-            style={{ background: "hsl(var(--light-coral))" }}
+            className="relative flex items-center gap-1.5 px-3 py-2 rounded-full ios-press"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--coral)), hsl(11 74% 56%))",
+              boxShadow: "0 4px 16px -4px hsla(11, 74%, 56%, 0.4)",
+            }}
           >
-            <IonIcon name="chatbubble-ellipses-outline" size={18} style={{ color: "hsl(var(--coral))" }} />
+            <IonIcon name="sparkles" size={16} style={{ color: "white" }} />
+            <span className="text-[12px] font-sans font-bold text-white tracking-wide">AI</span>
           </motion.button>
         )}
 

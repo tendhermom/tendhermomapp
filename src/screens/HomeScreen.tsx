@@ -30,10 +30,10 @@ const getGreeting = () => {
 
 const GAMIFICATION_LEVELS = [
   { name: "Newbie Nest", min: 0, color: "hsl(340 82% 72%)", badge: "🌸" },
-  { name: "Baby Steps", min: 50, color: "hsl(45 93% 58%)", badge: "🌻" },
-  { name: "Mommy Mode", min: 150, color: "hsl(153 42% 30%)", badge: "💚" },
-  { name: "Super Mom", min: 350, color: "hsl(210 80% 55%)", badge: "💙" },
-  { name: "Mommy Master", min: 600, color: "hsl(270 60% 55%)", badge: "💜" },
+  { name: "Baby Steps", min: 100, color: "hsl(45 93% 58%)", badge: "🌻" },
+  { name: "Mommy Mode", min: 500, color: "hsl(153 42% 30%)", badge: "💚" },
+  { name: "Super Mom", min: 2000, color: "hsl(210 80% 55%)", badge: "💙" },
+  { name: "Mommy Master", min: 5000, color: "hsl(270 60% 55%)", badge: "💜" },
 ];
 
 const getGamificationLevel = (points: number) => {
@@ -47,7 +47,7 @@ const getGamificationLevel = (points: number) => {
 const QUICK_ACTIONS = [
   { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "health-hubs", label: "Health Hubs", icon: "location-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
-  { id: "health-tracker", label: "Health", icon: "heart-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
+  { id: "health-tracker", label: "Health Tracker", icon: "heart-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "insights", label: "Insights", icon: "bulb-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
 ];
 
