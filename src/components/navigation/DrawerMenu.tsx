@@ -116,7 +116,7 @@ const DrawerMenu = ({ isOpen, onClose, onNavigate }: DrawerMenuProps) => {
                     color: isPremium ? "hsl(var(--coral))" : "rgba(255,255,255,0.6)",
                   }}
                 >
-                  {isPremium ? "Premium" : "Free Plan"}
+                  {isPremium ? "Plus" : "Free Plan"}
                 </span>
                 <span className="text-[10px] font-sans font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {points} pts

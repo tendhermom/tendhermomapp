@@ -155,7 +155,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
 
   const handleToggleGift = async (postId: string) => {
     if (!user || !isPremium) {
-      toast.error("Gift-giving is a premium feature");
+      toast.error("Gift-giving is a Plus feature");
       return;
     }
     const { error } = await supabase
@@ -651,7 +651,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
           <div>
             <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>How it works</p>
             <p className="text-[12px] font-sans mt-0.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-              Each month opens for baby celebrations. Tap the current month to view and post babies born this month. Premium users can enable gift-giving!
+              Each month opens for baby celebrations. Tap the current month to view and post babies born this month. Plus members can enable gift-giving!
             </p>
           </div>
         </div>

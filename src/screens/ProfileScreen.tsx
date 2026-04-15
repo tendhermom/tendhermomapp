@@ -30,7 +30,7 @@ interface ProfileScreenProps {
 const menuSections = [
   {
     items: [
-      { icon: "diamond-outline", label: "Premium Plan", route: "premium" },
+      { icon: "diamond-outline", label: "TendherMom Plus", route: "premium" },
       { icon: "people-outline", label: "Refer & Earn", route: "referrals" },
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
       { icon: "notifications-outline", label: "Notifications", route: "notifications" },

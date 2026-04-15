@@ -88,7 +88,7 @@ const GamificationScreen = ({ onBack }: GamificationScreenProps) => {
             { icon: "heart-outline", label: "Like a post", pts: "+2", color: "coral" },
             { icon: "chatbubble-outline", label: "Comment on a post", pts: "+5", color: "green" },
             { icon: "people-outline", label: "Refer a friend", pts: "+25", color: "coral" },
-            { icon: "star-outline", label: "Refer premium user", pts: "+50", color: "green" },
+            { icon: "star-outline", label: "Refer Plus user", pts: "+50", color: "green" },
           ].map((item, i, arr) => (
             <div key={item.label} className="flex items-center px-4 py-3 gap-3" style={{ borderBottom: i < arr.length - 1 ? "1px solid hsl(var(--border-subtle))" : "none" }}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"

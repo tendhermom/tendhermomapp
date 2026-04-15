@@ -156,7 +156,7 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
                 }}
               >
                 <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
-                PREMIUM
+                PLUS
               </div>
             </div>
           </div>
@@ -213,7 +213,7 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
           Unlock {feature}
         </h3>
         <p className="text-[12px] font-sans max-w-[260px] mx-auto mb-4" style={{ color: "hsl(var(--text-muted))" }}>
-          {description || `${feature} is available for Premium members. Upgrade to get full access.`}
+          {description || `${feature} is available for TendherMom Plus members. Upgrade to get full access.`}
         </p>
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -226,12 +226,12 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
           }}
         >
           <IonIcon name="lock-open-outline" size={18} style={{ color: "white" }} />
-          Unlock Premium
+          Unlock Plus
         </motion.button>
 
         {/* Price hint */}
         <p className="text-[10px] font-sans mt-3" style={{ color: "hsl(var(--text-muted))" }}>
-          Starting from <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>₦700/week</span>
+          Starting from <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>₦300/week</span>
         </p>
       </motion.div>
     </motion.div>
