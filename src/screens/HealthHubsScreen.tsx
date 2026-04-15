@@ -5,6 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { hapticSelection } from "@/lib/despia";
 import { toast } from "sonner";
 
+import imgMaternal from "@/assets/hubs/maternal.jpg";
+import imgPediatric from "@/assets/hubs/pediatric.jpg";
+import imgEmergency from "@/assets/hubs/emergency.jpg";
+import imgDiagnostics from "@/assets/hubs/diagnostics.jpg";
+
 interface HealthHubsScreenProps {
   onBack: () => void;
   onNavigate?: (screen: string) => void;
@@ -30,6 +35,7 @@ const CATEGORIES = [
     icon: "female-outline",
     color: "hsl(var(--coral))",
     bg: "hsl(var(--light-coral))",
+    image: imgMaternal,
     subs: [
       { key: "antenatal care clinic", label: "ANC", tag: "#ANC", desc: "Routine pregnancy check-ups" },
       { key: "postnatal care clinic", label: "PNC", tag: "#PNC", desc: "Care for lactating mothers" },
@@ -43,6 +49,7 @@ const CATEGORIES = [
     icon: "happy-outline",
     color: "hsl(var(--green))",
     bg: "hsl(var(--light-green))",
+    image: imgPediatric,
     subs: [
       { key: "pediatrics clinic children hospital", label: "General Pediatrics", tag: "#General-Pediatrics", desc: "Common childhood illnesses" },
       { key: "neonatal ICU NICU hospital", label: "NICU", tag: "#Neonatal-ICU", desc: "Premature & sick newborns" },
@@ -56,6 +63,7 @@ const CATEGORIES = [
     icon: "alert-circle-outline",
     color: "hsl(14 80% 58%)",
     bg: "hsla(14, 80%, 58%, 0.1)",
+    image: imgEmergency,
     subs: [
       { key: "anti venom snake bite hospital", label: "Anti-Venom", tag: "#Anti-Venom-Unit", desc: "Snake/scorpion bite treatment" },
       { key: "blood bank hospital", label: "Blood Bank", tag: "#Blood-Bank", desc: "On-site blood storage" },
@@ -69,6 +77,7 @@ const CATEGORIES = [
     icon: "flask-outline",
     color: "hsl(210 80% 55%)",
     bg: "hsla(210, 80%, 55%, 0.1)",
+    image: imgDiagnostics,
     subs: [
       { key: "ultrasound imaging x-ray CT scan", label: "Imaging", tag: "#Advanced-Imaging", desc: "3D/4D Ultrasound, X-rays, CT" },
       { key: "24 hour pharmacy", label: "24/7 Pharmacy", tag: "#24-7-Pharmacy", desc: "Round-the-clock medication" },
@@ -77,16 +86,25 @@ const CATEGORIES = [
   },
 ];
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
+};
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+};
+
 const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
-  const [activeCat, setActiveCat] = useState(CATEGORIES[0].key);
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  // Get user location
   useEffect(() => {
     if (!navigator.geolocation) {
       toast.error("Geolocation not supported");
@@ -98,16 +116,13 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocationLoading(false);
       },
-      (err) => {
-        console.error("Geolocation error:", err);
+      () => {
         toast.error("Please enable location access to find nearby health centers");
         setLocationLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }, []);
-
-  const category = CATEGORIES.find((c) => c.key === activeCat)!;
 
   const searchPlaces = useCallback(async (keyword: string) => {
     if (!location) {
@@ -122,8 +137,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
       });
       if (error) throw error;
       setPlaces(data?.results || []);
-    } catch (err: any) {
-      console.error(err);
+    } catch {
       toast.error("Failed to search health centers");
     } finally {
       setSearching(false);
@@ -136,79 +150,116 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
     searchPlaces(subKey);
   };
 
-  const handleCatChange = (key: string) => {
-    hapticSelection();
-    setActiveCat(key);
-    setActiveSub(null);
-    setPlaces([]);
-    setSearched(false);
-  };
-
   const openDirections = (place: Place) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&destination_place_id=${place.place_id}`;
-    window.open(url, "_blank");
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&destination_place_id=${place.place_id}`, "_blank");
   };
 
-  return (
-    <div className="space-y-4 pb-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={onBack} className="ios-press">
-          <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <div className="flex-1">
-          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>Health Hubs</h1>
-          <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            {location ? "📍 Location detected" : locationLoading ? "📍 Detecting location…" : "📍 Location unavailable"}
+  const category = selectedCat ? CATEGORIES.find((c) => c.key === selectedCat) : null;
+
+  // ========================
+  // CATEGORY CAROUSEL (HOME)
+  // ========================
+  if (!selectedCat) {
+    return (
+      <motion.div className="space-y-6 pb-4 pt-1" initial="hidden" animate="show" variants={stagger}>
+        {/* Header */}
+        <motion.div variants={fadeUp} className="flex items-center gap-3">
+          <button onClick={onBack} className="ios-press -ml-1">
+            <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
+          </button>
+          <div className="flex-1">
+            <h1 className="font-serif text-[26px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
+              Health Hubs
+            </h1>
+            <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
+              {location ? "📍 Location detected" : locationLoading ? "📍 Detecting location…" : "📍 Location unavailable"}
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Category Carousel Grid — 2 columns like Triage */}
+        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+          {CATEGORIES.map((cat, i) => (
+            <motion.button
+              key={cat.key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 + i * 0.04, type: "spring", stiffness: 300, damping: 28 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => { hapticSelection(); setSelectedCat(cat.key); }}
+              className="relative rounded-[18px] overflow-hidden text-left ios-press"
+              style={{ aspectRatio: "3/4", boxShadow: "0 4px 20px -4px hsla(0,0%,0%,0.12)" }}
+            >
+              <img src={cat.image} alt={cat.label} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, hsla(0,0%,0%,0.7) 0%, hsla(0,0%,0%,0.25) 50%, hsla(0,0%,0%,0.05) 100%)" }} />
+              <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                <h3 className="text-white text-[14px] font-semibold font-sans leading-tight">{cat.label}</h3>
+                <p className="text-white/60 text-[11px] font-sans mt-0.5">{cat.subs.length} services</p>
+              </div>
+              <div className="absolute top-3 right-3 w-[28px] h-[28px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}>
+                <IonIcon name="chevron-forward" size={14} style={{ color: "white" }} />
+              </div>
+            </motion.button>
+          ))}
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="flex items-start gap-2.5 pt-1">
+          <IonIcon name="location" size={14} style={{ color: "hsl(var(--green))" }} />
+          <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+            Health Hubs uses your location to find nearby facilities using Google Maps. Your location data is not stored.
           </p>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
+  // ========================
+  // CATEGORY DETAIL (SERVICES)
+  // ========================
+  return (
+    <motion.div className="space-y-5 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {/* Banner with image */}
+      <div className="relative rounded-[20px] overflow-hidden" style={{ marginTop: 4 }}>
+        <img src={category!.image} alt={category!.label} className="w-full h-[160px] object-cover" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, hsla(0,0%,0%,0.65) 0%, hsla(0,0%,0%,0.2) 60%, hsla(0,0%,0%,0.1) 100%)" }} />
+        <div className="absolute top-3 left-2">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => { setSelectedCat(null); setActiveSub(null); setPlaces([]); setSearched(false); }}
+            className="flex items-center gap-0.5 ios-press px-2 py-1 rounded-full"
+            style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
+          >
+            <IonIcon name="chevron-back" size={18} style={{ color: "white" }} />
+            <span className="text-[13px] font-sans font-medium text-white">Back</span>
+          </motion.button>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <h1 className="font-serif text-[26px] text-white leading-tight">{category!.label}</h1>
+          <p className="text-white/60 text-[12px] font-sans mt-1">{category!.subs.length} services available</p>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => handleCatChange(cat.key)}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full transition-all ios-press"
-            style={{
-              background: activeCat === cat.key ? cat.color : cat.bg,
-              color: activeCat === cat.key ? "white" : cat.color,
-            }}
-          >
-            <IonIcon name={cat.icon} size={14} />
-            <span className="text-[11px] font-sans font-semibold whitespace-nowrap">{cat.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Sub-categories */}
+      {/* Sub-categories as cards */}
       <div className="space-y-2">
         <p className="label-caps" style={{ color: "hsl(var(--text-muted))" }}>SELECT SERVICE</p>
         <div className="grid grid-cols-2 gap-2">
-          {category.subs.map((sub) => (
+          {category!.subs.map((sub, i) => (
             <motion.button
               key={sub.key}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 + i * 0.05 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => handleSubSelect(sub.key)}
               className="tend-card p-3 text-left ios-press"
               style={{
-                borderColor: activeSub === sub.key ? category.color : "transparent",
+                borderColor: activeSub === sub.key ? category!.color : "transparent",
                 borderWidth: 2,
               }}
             >
-              <span
-                className="text-[10px] font-mono font-bold block mb-1"
-                style={{ color: category.color }}
-              >
-                {sub.tag}
-              </span>
-              <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                {sub.label}
-              </p>
-              <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
-                {sub.desc}
-              </p>
+              <span className="text-[10px] font-mono font-bold block mb-1" style={{ color: category!.color }}>{sub.tag}</span>
+              <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{sub.label}</p>
+              <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{sub.desc}</p>
             </motion.button>
           ))}
         </div>
@@ -217,50 +268,23 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
       {/* Results */}
       <AnimatePresence mode="wait">
         {searching && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-12 gap-3"
-          >
-            <div
-              className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: category.color, borderTopColor: "transparent" }}
-            />
-            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              Searching nearby health centers…
-            </p>
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-12 gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: category!.color, borderTopColor: "transparent" }} />
+            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Searching nearby health centers…</p>
           </motion.div>
         )}
 
         {!searching && searched && places.length === 0 && (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
-          >
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
             <IonIcon name="location-outline" size={40} style={{ color: "hsl(var(--text-muted))" }} />
-            <p className="text-[14px] font-sans font-semibold mt-3" style={{ color: "hsl(var(--dark))" }}>
-              No results found nearby
-            </p>
-            <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
-              Try a different service category or expand your search area
-            </p>
+            <p className="text-[14px] font-sans font-semibold mt-3" style={{ color: "hsl(var(--dark))" }}>No results found nearby</p>
+            <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>Try a different service category</p>
           </motion.div>
         )}
 
         {!searching && places.length > 0 && (
-          <motion.div
-            key="results"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-2"
-          >
-            <p className="label-caps" style={{ color: "hsl(var(--text-muted))" }}>
-              {places.length} CENTER{places.length !== 1 ? "S" : ""} FOUND NEAR YOU
-            </p>
+          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+            <p className="label-caps" style={{ color: "hsl(var(--text-muted))" }}>{places.length} CENTER{places.length !== 1 ? "S" : ""} FOUND NEAR YOU</p>
             {places.map((place, i) => (
               <motion.div
                 key={place.place_id}
@@ -270,19 +294,12 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
                 className="tend-card p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div
-                    className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-                    style={{ background: category.bg }}
-                  >
-                    <IonIcon name="medkit" size={20} style={{ color: category.color }} />
+                  <div className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: category!.bg }}>
+                    <IonIcon name="medkit" size={20} style={{ color: category!.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-sans font-semibold truncate" style={{ color: "hsl(var(--dark))" }}>
-                      {place.name}
-                    </p>
-                    <p className="text-[11px] font-sans mt-0.5 truncate" style={{ color: "hsl(var(--text-muted))" }}>
-                      {place.address}
-                    </p>
+                    <p className="text-[14px] font-sans font-semibold truncate" style={{ color: "hsl(var(--dark))" }}>{place.name}</p>
+                    <p className="text-[11px] font-sans mt-0.5 truncate" style={{ color: "hsl(var(--text-muted))" }}>{place.address}</p>
                     <div className="flex items-center gap-3 mt-2">
                       {place.rating && (
                         <span className="flex items-center gap-0.5 text-[11px] font-sans font-medium" style={{ color: "hsl(45 93% 45%)" }}>
@@ -307,21 +324,17 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
                   whileTap={{ scale: 0.97 }}
                   onClick={() => openDirections(place)}
                   className="w-full mt-3 py-2.5 rounded-xl flex items-center justify-center gap-2 ios-press"
-                  style={{
-                    background: category.bg,
-                  }}
+                  style={{ background: category!.bg }}
                 >
-                  <IonIcon name="navigate-outline" size={16} style={{ color: category.color }} />
-                  <span className="text-[12px] font-sans font-semibold" style={{ color: category.color }}>
-                    Get Directions
-                  </span>
+                  <IonIcon name="navigate-outline" size={16} style={{ color: category!.color }} />
+                  <span className="text-[12px] font-sans font-semibold" style={{ color: category!.color }}>Get Directions</span>
                 </motion.button>
               </motion.div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

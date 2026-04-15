@@ -91,8 +91,24 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const currentQuestion = selectedPathway?.questions.find((q) => q.id === currentQuestionId) || null;
-  const questionIndex = selectedPathway?.questions.findIndex((q) => q.id === currentQuestionId) ?? -1;
-  const totalQuestions = selectedPathway?.questions.length ?? 0;
+  // Use sequential step count based on answers given, not array index
+  const stepNumber = answers.length + 1;
+  // Calculate max depth for current path by traversing from current question
+  const getMaxDepth = useCallback((qId: string | null, pathway: TriagePathway | null, depth: number): number => {
+    if (!qId || !pathway) return depth;
+    const q = pathway.questions.find((x) => x.id === qId);
+    if (!q) return depth;
+    let maxD = depth;
+    for (const opt of q.options) {
+      if (opt.outcome) {
+        maxD = Math.max(maxD, depth);
+      } else if (opt.next) {
+        maxD = Math.max(maxD, getMaxDepth(opt.next, pathway, depth + 1));
+      }
+    }
+    return maxD;
+  }, []);
+  const totalStepsEstimate = selectedPathway ? getMaxDepth(selectedPathway.questions[0].id, selectedPathway, 1) : 1;
 
   const groupedPathways = useMemo(() => {
     const groups: Record<string, TriagePathway[]> = {};
@@ -478,13 +494,13 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
           className="text-[11px] font-sans font-semibold px-3 py-1.5 rounded-full"
           style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
         >
-          {questionIndex + 1} of {totalQuestions}
+          Step {stepNumber}
         </span>
       </div>
 
-      {/* Progress bar — segmented */}
+      {/* Progress bar — segmented by steps taken */}
       <div className="flex gap-1">
-        {Array.from({ length: totalQuestions }).map((_, i) => (
+        {Array.from({ length: Math.max(totalStepsEstimate, stepNumber) }).map((_, i) => (
           <div
             key={i}
             className="flex-1 h-[5px] rounded-full overflow-hidden"
@@ -493,12 +509,12 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
             <motion.div
               className="h-full rounded-full"
               style={{
-                background: i <= questionIndex
+                background: i < stepNumber
                   ? "linear-gradient(90deg, hsl(var(--green)), hsl(153 42% 40%))"
                   : "transparent",
               }}
               initial={{ width: 0 }}
-              animate={{ width: i <= questionIndex ? "100%" : "0%" }}
+              animate={{ width: i < stepNumber ? "100%" : "0%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             />
           </div>
@@ -530,7 +546,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
                   className="w-[24px] h-[24px] rounded-full flex items-center justify-center"
                   style={{ background: "rgba(255,255,255,0.15)" }}
                 >
-                  <span className="text-[11px] font-sans font-bold text-white">{questionIndex + 1}</span>
+                  <span className="text-[11px] font-sans font-bold text-white">{stepNumber}</span>
                 </div>
                 <span className="text-[10px] font-sans font-semibold tracking-wider uppercase text-white/40">
                   Question

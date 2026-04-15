@@ -104,8 +104,9 @@ const AppContent = () => {
 const IntroScreen = lazy(() => import("./screens/IntroScreen"));
 
 const App = () => {
-  const [splashDone, setSplashDone] = useState(false);
-  const [introDone, setIntroDone] = useState(() => localStorage.getItem("intro_completed") === "true");
+  const hasLoggedInBefore = localStorage.getItem("has_logged_in") === "true";
+  const [splashDone, setSplashDone] = useState(hasLoggedInBefore);
+  const [introDone, setIntroDone] = useState(() => hasLoggedInBefore || localStorage.getItem("intro_completed") === "true");
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
   const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
