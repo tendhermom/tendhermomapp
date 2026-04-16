@@ -49,10 +49,12 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
     }
 
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    // Append cache-buster to avoid stale cached avatars
+    const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ avatar_url: urlData.publicUrl })
+      .update({ avatar_url: avatarUrl })
       .eq("id", user.id);
 
     if (updateError) {
