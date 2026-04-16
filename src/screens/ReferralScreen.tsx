@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
-import { nativeShare, hapticLight, hapticSuccess } from "@/lib/despia";
+import { hapticLight, hapticSuccess } from "@/lib/despia";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 
@@ -13,7 +13,8 @@ interface ReferralScreenProps {
 
 interface Referral {
   id: string;
-  referred_email: string;
+  referred_email: string | null;
+  referred_phone: string | null;
   status: string;
   created_at: string;
 }
@@ -29,10 +30,8 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [sending, setSending] = useState(false);
-
-  const referralLink = `https://tendhermomapp.lovable.app/signup?ref=${user?.id?.slice(0, 8) || ""}`;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -52,51 +51,52 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
   const progressPercent = Math.min((completedCount / GOAL) * 100, 100);
   const premiumUnlocked = completedCount >= GOAL;
 
-  const handleShareLink = () => {
-    hapticLight();
-    nativeShare({
-      title: "Join TendherMom",
-      text: "Hey mama! Join TendherMom — maternal health support built for Nigerian mothers 💚",
-      url: referralLink,
-    });
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(referralLink);
-      hapticSuccess();
-      toast.success("Link copied to clipboard!");
-    } catch {
-      toast.error("Could not copy link");
+  const formatPhone = (input: string): string => {
+    let cleaned = input.replace(/[^\d+]/g, "");
+    // Auto-prepend +234 if user types a local number starting with 0
+    if (cleaned.startsWith("0") && cleaned.length >= 10) {
+      cleaned = "+234" + cleaned.slice(1);
     }
+    return cleaned;
   };
 
-  const handleInviteByEmail = async () => {
-    if (!email.trim() || !email.includes("@")) {
-      toast.error("Please enter a valid email");
+  const handleInviteByPhone = async () => {
+    const formatted = formatPhone(phone.trim());
+    if (formatted.length < 10) {
+      toast.error("Please enter a valid phone number");
       return;
     }
     if (!user?.id) return;
 
     setSending(true);
     try {
-      const existing = referrals.find((r) => r.referred_email === email.trim().toLowerCase());
+      const existing = referrals.find((r) => r.referred_phone === formatted);
       if (existing) {
-        toast.error("You've already invited this person");
+        toast.error("You've already invited this number");
         setSending(false);
         return;
       }
 
+      // Insert referral record
       const { error } = await supabase.from("referrals").insert({
         referrer_id: user.id,
-        referred_email: email.trim().toLowerCase(),
+        referred_email: "",
+        referred_phone: formatted,
       });
-
       if (error) throw error;
 
+      // Send SMS via edge function
+      const { data: session } = await supabase.auth.getSession();
+      await supabase.functions.invoke("send-referral-sms", {
+        body: { phone: formatted, referrer_name: user.full_name },
+        headers: session?.session
+          ? { Authorization: `Bearer ${session.session.access_token}` }
+          : undefined,
+      });
+
       hapticSuccess();
-      toast.success("Invitation sent!");
-      setEmail("");
+      toast.success("Invitation sent via SMS!");
+      setPhone("");
 
       // Refresh list
       const { data } = await supabase
@@ -115,6 +115,10 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
   const getStatusStyle = (status: string) => {
     if (status === "completed") return { bg: "hsl(var(--light-green))", color: "hsl(var(--green))", label: "Joined" };
     return { bg: "hsl(var(--light-coral))", color: "hsl(var(--coral))", label: "Pending" };
+  };
+
+  const getDisplayName = (ref: Referral) => {
+    return ref.referred_phone || ref.referred_email || "—";
   };
 
   return (
@@ -138,18 +142,15 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
       <motion.div variants={fadeUp} className="hero-card p-5 text-center">
         <div className="text-[40px] mb-1">{premiumUnlocked ? "🎉" : "🎁"}</div>
         <h2 className="text-white text-[20px] font-serif">
-          {premiumUnlocked ? "Premium Unlocked!" : "Invite 5 Friends, Get 60 Days Premium"}
+          {premiumUnlocked ? "TendherMom Plus Unlocked!" : "Invite 5 Friends, Get 60 Days Plus"}
         </h2>
         <p className="text-white/60 text-[12px] font-sans mt-1">
           {premiumUnlocked
-            ? "Congratulations! You've earned 60 days of free Premium access."
+            ? "Congratulations! You've earned 60 days of free TendherMom Plus access."
             : `${completedCount} of ${GOAL} friends joined • ${GOAL - completedCount} more to go`}
         </p>
         <div className="mt-4 px-4">
-          <Progress
-            value={progressPercent}
-            className="h-2.5 bg-white/10"
-          />
+          <Progress value={progressPercent} className="h-2.5 bg-white/10" />
         </div>
         <div className="flex justify-between px-4 mt-1.5">
           <span className="text-[9px] font-sans font-semibold text-white/40 uppercase tracking-wider">
@@ -161,61 +162,34 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Share Actions */}
+      {/* Invite by Phone */}
       <motion.div variants={fadeUp}>
-        <p className="label-caps text-text-muted mb-2">SHARE YOUR LINK</p>
-        <div className="tend-card p-4 space-y-3">
-          {/* Referral link preview */}
-          <div
-            className="flex items-center gap-2 p-3 rounded-xl text-[12px] font-mono truncate"
-            style={{ background: "hsl(var(--muted))", color: "hsl(var(--dark))" }}
-          >
-            <IonIcon name="link-outline" size={16} style={{ color: "hsl(var(--green))" }} />
-            <span className="truncate flex-1">{referralLink}</span>
-          </div>
-
-          <div className="flex gap-2">
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={handleCopyLink}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-sans font-semibold"
-              style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
-            >
-              <IonIcon name="copy-outline" size={16} />
-              Copy Link
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={handleShareLink}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-sans font-semibold text-white"
-              style={{ background: "hsl(var(--green))" }}
-            >
-              <IonIcon name="share-social-outline" size={16} />
-              Share
-            </motion.button>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Invite by Email */}
-      <motion.div variants={fadeUp}>
-        <p className="label-caps text-text-muted mb-2">INVITE BY EMAIL</p>
+        <p className="label-caps text-text-muted mb-2">INVITE BY PHONE</p>
         <div className="tend-card p-4">
+          <p className="text-[12px] font-sans mb-3" style={{ color: "hsl(var(--text-muted))" }}>
+            Enter your friend's phone number and we'll send them a text with the download link.
+          </p>
           <div className="flex gap-2">
-            <input
-              type="email"
-              placeholder="friend@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 px-3 py-2.5 rounded-xl text-[13px] font-sans border-none outline-none"
-              style={{ background: "hsl(var(--muted))", color: "hsl(var(--dark))" }}
-              onKeyDown={(e) => e.key === "Enter" && handleInviteByEmail()}
-            />
+            <div
+              className="flex items-center gap-2 flex-1 px-3 py-2.5 rounded-xl"
+              style={{ background: "hsl(var(--muted))" }}
+            >
+              <IonIcon name="call-outline" size={16} style={{ color: "hsl(var(--green))" }} />
+              <input
+                type="tel"
+                placeholder="+234 801 234 5678"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="flex-1 text-[13px] font-sans border-none outline-none bg-transparent"
+                style={{ color: "hsl(var(--dark))" }}
+                onKeyDown={(e) => e.key === "Enter" && handleInviteByPhone()}
+              />
+            </div>
             <motion.button
               whileTap={{ scale: 0.96 }}
-              onClick={handleInviteByEmail}
+              onClick={handleInviteByPhone}
               disabled={sending}
-              className="px-4 py-2.5 rounded-xl text-[13px] font-sans font-semibold text-white disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-[13px] font-sans font-semibold text-white disabled:opacity-50"
               style={{ background: "hsl(var(--coral))" }}
             >
               {sending ? "…" : "Invite"}
@@ -229,9 +203,9 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         <p className="label-caps text-text-muted mb-2">REWARDS</p>
         <div className="tend-card overflow-hidden">
           {[
-            { icon: "diamond-outline", label: "5 referrals = 60 days Premium", desc: "Unlimited AI, SOS & more", color: "coral" },
+            { icon: "diamond-outline", label: "5 referrals = 60 days Plus", desc: "Unlimited AI, SOS & more", color: "coral" },
             { icon: "trophy-outline", label: "+25 points per referral", desc: "Climb the leaderboard", color: "green" },
-            { icon: "star-outline", label: "+50 bonus for premium referral", desc: "When they upgrade", color: "coral" },
+            { icon: "star-outline", label: "+50 bonus for Plus referral", desc: "When they upgrade", color: "coral" },
           ].map((item, i, arr) => (
             <div
               key={item.label}
@@ -293,7 +267,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
               No referrals yet
             </p>
             <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
-              Share your link and start earning rewards!
+              Invite a friend by phone and start earning rewards!
             </p>
           </div>
         ) : (
@@ -320,7 +294,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-sans font-medium truncate" style={{ color: "hsl(var(--dark))" }}>
-                      {ref.referred_email}
+                      {getDisplayName(ref)}
                     </p>
                     <p className="text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
                       {new Date(ref.created_at).toLocaleDateString("en-NG", {
