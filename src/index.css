@@ -71,7 +71,15 @@
 
   html, body {
     color-scheme: light only !important;
-    background-color: hsl(30 14% 96%) !important;
+    background-color: #FFFFFF !important;
+    color: #1a1a1a !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html, body {
+      background-color: #FFFFFF !important;
+      color: #1a1a1a !important;
+    }
   }
 
   body {
