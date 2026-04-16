@@ -5,8 +5,8 @@ import IonIcon from "@/components/IonIcon";
 // Preview images
 import babyShower1 from "@/assets/previews/baby-shower-1.jpg";
 import babyShower2 from "@/assets/previews/baby-shower-2.jpg";
-import doctorBooking1 from "@/assets/previews/doctor-booking-1.jpg";
-import doctorBooking2 from "@/assets/previews/doctor-booking-2.jpg";
+import healthHubs1 from "@/assets/previews/doctor-booking-1.jpg";
+import healthHubs2 from "@/assets/previews/doctor-booking-2.jpg";
 import aiChat1 from "@/assets/previews/ai-chat-1.jpg";
 import aiChat2 from "@/assets/previews/ai-chat-2.jpg";
 import sosContacts1 from "@/assets/previews/sos-contacts-1.jpg";
