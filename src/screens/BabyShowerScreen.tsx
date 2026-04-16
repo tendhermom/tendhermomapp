@@ -593,12 +593,13 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                     src={MONTH_IMAGES[imgIndex]}
                     alt={month.label}
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ objectPosition: "center 30%" }}
                     loading="lazy"
                   />
-                  {/* Gradient overlay */}
+                  {/* Warm gradient overlay */}
                   <div
                     className="absolute inset-0"
-                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.05) 100%)" }}
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.02) 100%)" }}
                   />
                   {/* Current badge */}
                   {isCurrent && (
