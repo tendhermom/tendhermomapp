@@ -53,7 +53,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center overflow-y-auto" style={{ background: "hsl(var(--bg))" }}>
+    <div className="min-h-screen flex justify-center overflow-y-auto" style={{ background: "#FFFFFF" }}>
       <div className="w-full max-w-[430px] flex flex-col" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 12px)" }}>
 
         {/* ── Premium Illustration Hero ── */}
