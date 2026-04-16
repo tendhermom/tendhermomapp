@@ -24,8 +24,8 @@ const FEATURE_PREVIEWS: Record<string, PreviewSlide[]> = {
     { image: babyShower2, title: "Receive Digital Gifts", description: "Friends & family can send gifts and congratulations" },
   ],
   "Health Hubs": [
-    { image: doctorBooking1, title: "Health Hubs", description: "Find nearby health centers, pharmacies & emergency facilities" },
-    { image: doctorBooking2, title: "Smart Directory", description: "Filter by maternal health, pediatrics, emergency & more" },
+    { image: healthHubs1, title: "Health Hubs", description: "Find nearby health centers, pharmacies & emergency facilities" },
+    { image: healthHubs2, title: "Smart Directory", description: "Filter by maternal health, pediatrics, emergency & more" },
   ],
   "Unlimited AI Chat": [
     { image: aiChat1, title: "24/7 Health Assistant", description: "Get instant answers to pregnancy health questions" },
