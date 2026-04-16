@@ -7,10 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PremiumGate from "@/components/PremiumGate";
 
-import babyShower1 from "@/assets/baby-shower-1.png";
-import babyShower2 from "@/assets/baby-shower-2.png";
-import babyShower3 from "@/assets/baby-shower-3.png";
-import babyShower4 from "@/assets/baby-shower-4.png";
+import babyShower1 from "@/assets/baby-shower-1.jpg";
+import babyShower2 from "@/assets/baby-shower-2.jpg";
+import babyShower3 from "@/assets/baby-shower-3.jpg";
+import babyShower4 from "@/assets/baby-shower-4.jpg";
 
 interface BabyShowerPost {
   id: string;
