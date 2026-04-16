@@ -7,6 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PremiumGate from "@/components/PremiumGate";
 
+import babyShower1 from "@/assets/baby-shower-1.png";
+import babyShower2 from "@/assets/baby-shower-2.png";
+import babyShower3 from "@/assets/baby-shower-3.png";
+import babyShower4 from "@/assets/baby-shower-4.png";
+
 interface BabyShowerPost {
   id: string;
   baby_name: string;
@@ -61,12 +66,7 @@ const generateMonthCards = () => {
 
 const MONTH_CARDS = generateMonthCards();
 
-const MONTH_IMAGES = [
-  "https://images.unsplash.com/photo-1544126592-807ade215a0b?w=400&h=500&fit=crop",
-  "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=500&fit=crop",
-  "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=500&fit=crop",
-  "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=400&h=500&fit=crop",
-];
+const MONTH_IMAGES = [babyShower1, babyShower2, babyShower3, babyShower4];
 
 const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const user = useAuthStore((s) => s.user);
