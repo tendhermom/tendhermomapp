@@ -45,17 +45,7 @@ const Signup = () => {
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else { setOtpSent(true); toast.success("Verification code sent to your email!"); }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length < 6) { toast.error("Please enter the 6-digit code."); return; }
-    setVerifying(true);
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: otp, type: "signup" });
-    setVerifying(false);
-    if (error) toast.error(error.message);
-    else toast.success("Email verified! Welcome to TendherMom");
+    else { setEmailSent(true); toast.success("Verification email sent!"); }
   };
 
   const handleResend = async () => {
@@ -63,7 +53,7 @@ const Signup = () => {
     const { error } = await supabase.auth.resend({ type: "signup", email: email.trim() });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Verification code resent!");
+    else toast.success("Verification email resent!");
   };
 
   // ─── OTP Verification ───
