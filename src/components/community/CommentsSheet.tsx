@@ -14,12 +14,29 @@ interface CommentsSheetProps {
 const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
 
+  // Detect virtual keyboard via visualViewport
+  useEffect(() => {
+    if (!open) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const onResize = () => {
+      const heightDiff = window.innerHeight - vv.height;
+      setKeyboardOpen(heightDiff > 100);
+    };
+
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, [open]);
+
   const handleSubmit = () => {
+    if (!text.trim()) return;
     onAddComment(text);
     setText("");
   };
@@ -41,13 +58,20 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[430px] rounded-t-3xl p-5 pb-[max(env(safe-area-inset-bottom,32px),32px)] max-h-[70vh] flex flex-col"
-            style={{ background: "hsl(var(--surface))" }}
+            className="w-full max-w-[430px] rounded-t-3xl flex flex-col"
+            style={{
+              background: "hsl(var(--surface))",
+              maxHeight: keyboardOpen ? "50vh" : "70vh",
+            }}
           >
-            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "hsl(var(--border-subtle))" }} />
-            <h3 className="font-serif text-[18px] mb-4" style={{ color: "hsl(var(--dark))" }}>Comments</h3>
+            {/* Handle + Title */}
+            <div className="px-5 pt-5 pb-2 shrink-0">
+              <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "hsl(var(--border-subtle))" }} />
+              <h3 className="font-serif text-[18px]" style={{ color: "hsl(var(--dark))" }}>Comments</h3>
+            </div>
 
-            <div className="flex-1 overflow-y-auto space-y-3 mb-4 min-h-0">
+            {/* Scrollable comments list */}
+            <div className="flex-1 overflow-y-auto px-5 space-y-3 min-h-0">
               {loading ? (
                 <div className="flex justify-center py-6">
                   <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
@@ -79,7 +103,14 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
               )}
             </div>
 
-            <div className="flex gap-2">
+            {/* Input bar — always visible at bottom */}
+            <div
+              className="shrink-0 px-5 py-3 flex gap-2 border-t"
+              style={{
+                borderColor: "hsl(var(--border-subtle))",
+                paddingBottom: keyboardOpen ? "12px" : "max(env(safe-area-inset-bottom, 16px), 16px)",
+              }}
+            >
               <input
                 ref={inputRef}
                 value={text}
