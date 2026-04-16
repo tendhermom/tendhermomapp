@@ -4,13 +4,15 @@ import TabBar from "@/components/navigation/TabBar";
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
 import { useAuthStore } from "@/stores/authStore";
 
-// Lazy-load all screens
-const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
-const TriageScreen = lazy(() => import("@/screens/TriageScreen"));
-const SOSScreen = lazy(() => import("@/screens/SOSScreen"));
-const CommunityScreen = lazy(() => import("@/screens/CommunityScreen"));
+// Eagerly load the 5 main tab screens for instant navigation
+import HomeScreen from "@/screens/HomeScreen";
+import TriageScreen from "@/screens/TriageScreen";
+import SOSScreen from "@/screens/SOSScreen";
+import CommunityScreen from "@/screens/CommunityScreen";
+import ProfileScreen from "@/screens/ProfileScreen";
+
+// Lazy-load secondary screens only
 const BabyShowerScreen = lazy(() => import("@/screens/BabyShowerScreen"));
-const ProfileScreen = lazy(() => import("@/screens/ProfileScreen"));
 const NotificationsScreen = lazy(() => import("@/screens/NotificationsScreen"));
 const EmergencyContactsScreen = lazy(() => import("@/screens/EmergencyContactsScreen"));
 const OnboardingScreen = lazy(() => import("@/screens/OnboardingScreen"));
@@ -26,15 +28,15 @@ const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
 
 const prefetchScreens = () => {
   requestIdleCallback?.(() => {
-    import("@/screens/TriageScreen");
-    import("@/screens/SOSScreen");
-    import("@/screens/CommunityScreen");
-    import("@/screens/ProfileScreen");
+    import("@/screens/AIChatScreen");
+    import("@/screens/HealthTrackerScreen");
+    import("@/screens/BabyShowerScreen");
+    import("@/screens/AntenatalScreen");
   }) ?? setTimeout(() => {
-    import("@/screens/TriageScreen");
-    import("@/screens/SOSScreen");
-    import("@/screens/CommunityScreen");
-    import("@/screens/ProfileScreen");
+    import("@/screens/AIChatScreen");
+    import("@/screens/HealthTrackerScreen");
+    import("@/screens/BabyShowerScreen");
+    import("@/screens/AntenatalScreen");
   }, 2000);
 };
 
