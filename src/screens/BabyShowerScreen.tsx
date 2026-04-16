@@ -7,10 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PremiumGate from "@/components/PremiumGate";
 
-import babyShower1 from "@/assets/baby-shower-1.png";
-import babyShower2 from "@/assets/baby-shower-2.png";
-import babyShower3 from "@/assets/baby-shower-3.png";
-import babyShower4 from "@/assets/baby-shower-4.png";
+import babyShower1 from "@/assets/baby-shower-1.jpg";
+import babyShower2 from "@/assets/baby-shower-2.jpg";
+import babyShower3 from "@/assets/baby-shower-3.jpg";
+import babyShower4 from "@/assets/baby-shower-4.jpg";
 
 interface BabyShowerPost {
   id: string;
@@ -593,12 +593,13 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                     src={MONTH_IMAGES[imgIndex]}
                     alt={month.label}
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ objectPosition: "center 30%" }}
                     loading="lazy"
                   />
-                  {/* Gradient overlay */}
+                  {/* Warm gradient overlay */}
                   <div
                     className="absolute inset-0"
-                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.05) 100%)" }}
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.02) 100%)" }}
                   />
                   {/* Current badge */}
                   {isCurrent && (
