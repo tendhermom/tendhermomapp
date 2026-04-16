@@ -376,11 +376,11 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
           <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{nextUp.description}</p>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => onNavigate("appointments")}
+            onClick={() => onNavigate("health-hubs")}
             className="mt-3 px-4 py-2 rounded-xl text-[12px] font-sans font-semibold"
             style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
           >
-            Book Appointment →
+            Find Health Centre →
           </motion.button>
         </motion.div>
       )}
