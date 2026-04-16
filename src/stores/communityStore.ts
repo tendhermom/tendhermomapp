@@ -180,12 +180,21 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     if (!data) return [];
 
     const userIds = [...new Set((data as any[]).map((c: any) => c.user_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .in("id", userIds);
+    const uncachedIds = userIds.filter(id => !queryCache.get(`profile:${id}`));
+    
+    if (uncachedIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", uncachedIds);
+      (profiles || []).forEach((p: any) => {
+        queryCache.set(`profile:${p.id}`, p, 5 * 60_000);
+      });
+    }
 
-    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+    const profileMap = new Map(
+      userIds.map(id => [id, queryCache.get<any>(`profile:${id}`) || { full_name: "Anonymous" }])
+    );
 
     return (data as any[]).map((c: any) => ({
       ...c,
