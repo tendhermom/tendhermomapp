@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { usePointsStore } from "./pointsStore";
+import { queryCache } from "@/lib/queryCache";
 
 export type ChannelId = "first_trimester" | "second_trimester" | "third_trimester" | "postpartum";
 
@@ -76,13 +77,24 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
     if (!postsData) { set({ posts: [], loading: false }); return; }
 
+    // Batch profile lookup with cache
     const userIds = [...new Set(postsData.map((p: any) => p.user_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .in("id", userIds);
+    const uncachedIds = userIds.filter(id => !queryCache.get(`profile:${id}`));
+    
+    if (uncachedIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", uncachedIds);
+      
+      (profiles || []).forEach((p: any) => {
+        queryCache.set(`profile:${p.id}`, p, 5 * 60_000); // Cache 5 min
+      });
+    }
 
-    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+    const profileMap = new Map(
+      userIds.map(id => [id, queryCache.get<any>(`profile:${id}`) || { full_name: "Anonymous" }])
+    );
 
     let likedPostIds = new Set<string>();
     if (user) {
@@ -168,12 +180,21 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     if (!data) return [];
 
     const userIds = [...new Set((data as any[]).map((c: any) => c.user_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .in("id", userIds);
+    const uncachedIds = userIds.filter(id => !queryCache.get(`profile:${id}`));
+    
+    if (uncachedIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", uncachedIds);
+      (profiles || []).forEach((p: any) => {
+        queryCache.set(`profile:${p.id}`, p, 5 * 60_000);
+      });
+    }
 
-    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+    const profileMap = new Map(
+      userIds.map(id => [id, queryCache.get<any>(`profile:${id}`) || { full_name: "Anonymous" }])
+    );
 
     return (data as any[]).map((c: any) => ({
       ...c,
