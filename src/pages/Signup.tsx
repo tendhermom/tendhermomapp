@@ -22,9 +22,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [verifying, setVerifying] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) navigate("/", { replace: true });
@@ -47,17 +45,7 @@ const Signup = () => {
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else { setOtpSent(true); toast.success("Verification code sent to your email!"); }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length < 6) { toast.error("Please enter the 6-digit code."); return; }
-    setVerifying(true);
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: otp, type: "signup" });
-    setVerifying(false);
-    if (error) toast.error(error.message);
-    else toast.success("Email verified! Welcome to TendherMom");
+    else { setEmailSent(true); toast.success("Verification email sent!"); }
   };
 
   const handleResend = async () => {
@@ -65,16 +53,16 @@ const Signup = () => {
     const { error } = await supabase.auth.resend({ type: "signup", email: email.trim() });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Verification code resent!");
+    else toast.success("Verification email resent!");
   };
 
   // ─── OTP Verification ───
-  if (otpSent) {
+  if (emailSent) {
     return (
-      <div className="min-h-screen flex justify-center" style={{ background: "hsl(var(--bg))" }}>
+      <div className="min-h-screen flex justify-center" style={{ background: "#FFFFFF" }}>
         <div className="w-full max-w-[430px] px-6 flex flex-col" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 12px)" }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="flex-1 flex flex-col pt-4">
-            <button onClick={() => setOtpSent(false)} className="mb-6 self-start flex items-center gap-1.5">
+            <button onClick={() => setEmailSent(false)} className="mb-6 self-start flex items-center gap-1.5">
               <IonIcon name="chevron-back" size={22} style={{ color: "hsl(var(--dark))" }} />
               <span className="text-[15px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>Back</span>
             </button>
@@ -87,26 +75,29 @@ const Signup = () => {
               </div>
             </motion.div>
             <div className="text-center mb-8">
-              <h1 className="font-serif text-[26px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>Verify your email</h1>
+              <h1 className="font-serif text-[26px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>Check your email</h1>
               <p className="text-[14px] font-sans mt-2 max-w-[280px] mx-auto" style={{ color: "hsl(var(--text-muted))" }}>
-                We sent a 6-digit code to <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{email}</span>
+                We sent a verification link to <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{email}</span>
               </p>
             </div>
-            <form onSubmit={handleVerifyOtp} className="space-y-5">
-              <input type="text" inputMode="numeric" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} placeholder="000000" autoFocus
-                className="w-full px-4 py-4 rounded-2xl text-[24px] font-sans text-center tracking-[0.6em] outline-none transition-all focus:ring-2"
-                style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", boxShadow: "inset 0 1px 3px hsla(var(--dark), 0.04)", "--tw-ring-color": "hsla(var(--green), 0.3)" } as any} />
-              <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={verifying || otp.length < 6}
-                className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, hsl(var(--green)), hsl(153 42% 22%))", color: "white", opacity: verifying || otp.length < 6 ? 0.5 : 1, boxShadow: "0 6px 24px -6px hsla(153, 42%, 30%, 0.4)" }}>
-                {verifying ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <>Verify Email <IonIcon name="checkmark-circle-outline" size={18} style={{ color: "white" }} /></>}
-              </motion.button>
-            </form>
-            <div className="mt-6 text-center">
+            <div className="rounded-2xl p-5 mb-6" style={{ background: "hsl(var(--surface))", boxShadow: "0 2px 12px -4px hsla(var(--dark), 0.06)" }}>
+              <div className="flex items-start gap-3">
+                <IonIcon name="information-circle-outline" size={20} style={{ color: "hsl(var(--green))", marginTop: 2 }} />
+                <p className="text-[13px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+                  Open the email and tap <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>"Verify Email"</span> to complete your registration. Check your spam folder if you don't see it.
+                </p>
+              </div>
+            </div>
+            <div className="mt-2 text-center">
               <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                Didn't receive the code?{" "}
+                Didn't receive the email?{" "}
                 <button onClick={handleResend} disabled={loading} className="font-semibold" style={{ color: "hsl(var(--green))" }}>{loading ? "Sending…" : "Resend"}</button>
               </p>
+            </div>
+            <div className="mt-6 text-center">
+              <Link to="/login" className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>
+                Go to Sign In
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -119,7 +110,7 @@ const Signup = () => {
   const accentVar = "--green";
 
   return (
-    <div className="min-h-screen flex justify-center overflow-y-auto" style={{ background: "hsl(var(--bg))" }}>
+    <div className="min-h-screen flex justify-center overflow-y-auto" style={{ background: "#FFFFFF" }}>
       <div className="w-full max-w-[430px] flex flex-col" style={{ paddingTop: "calc(var(--safe-area-top, 0px) + 12px)" }}>
         {/* ── Premium Illustration Hero ── */}
         <motion.div

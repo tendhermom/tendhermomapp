@@ -5,7 +5,7 @@
 @layer base {
   :root {
     color-scheme: light only;
-    --background: 30 14% 96%;
+    --background: 0 0% 100%;
     --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
@@ -48,7 +48,7 @@
     --green: 153 42% 30%;
     --sage: 140 24% 55%;
     --coral: 11 74% 63%;
-    --bg: 30 14% 96%;
+    --bg: 0 0% 100%;
     --surface: 0 0% 100%;
     --dark: 0 0% 10%;
     --text-muted: 0 0% 54%;
@@ -71,7 +71,15 @@
 
   html, body {
     color-scheme: light only !important;
-    background-color: hsl(30 14% 96%) !important;
+    background-color: #FFFFFF !important;
+    color: #1a1a1a !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html, body {
+      background-color: #FFFFFF !important;
+      color: #1a1a1a !important;
+    }
   }
 
   body {
