@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/imageCompression";
 
 interface CreatePostModalProps {
   open: boolean;
@@ -19,13 +20,15 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    let file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10MB");
       return;
     }
+    // Compress before preview and upload
+    file = await compressImage(file, { maxDimension: 1200, quality: 0.8, maxSizeKB: 500 });
     setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
