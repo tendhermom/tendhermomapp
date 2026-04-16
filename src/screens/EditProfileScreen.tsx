@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/imageCompression";
 
 interface EditProfileScreenProps {
   onBack: () => void;
@@ -26,13 +27,16 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
     : "?";
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
       return;
     }
+
+    // Compress image before upload
+    file = await compressImage(file, { maxDimension: 400, quality: 0.85, maxSizeKB: 200 });
 
     setUploading(true);
     const ext = file.name.split(".").pop();
