@@ -19,8 +19,11 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192.png", "pwa-512.png"],
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,jpg,jpeg,webp}"],
+        skipWaiting: true,
         runtimeCaching: [
           {
             // Google Fonts stylesheets
