@@ -491,6 +491,10 @@ export type Database = {
           lmp_date: string | null
           phone: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
+          plus_expires_at: string | null
+          plus_original_tx_id: string | null
+          plus_product_id: string | null
+          plus_provider: string | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
@@ -508,6 +512,10 @@ export type Database = {
           lmp_date?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
+          plus_expires_at?: string | null
+          plus_original_tx_id?: string | null
+          plus_product_id?: string | null
+          plus_provider?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
@@ -525,6 +533,10 @@ export type Database = {
           lmp_date?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
+          plus_expires_at?: string | null
+          plus_original_tx_id?: string | null
+          plus_product_id?: string | null
+          plus_provider?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }

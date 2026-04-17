@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  isNativeBillingAvailable,
+  purchase,
+  restorePurchases,
+  type PlusProductId,
+} from "@/lib/native-billing";
+import { hapticSuccess, hapticError, hapticSelection } from "@/lib/despia";
 
 interface PremiumScreenProps {
   onBack: () => void;
@@ -43,9 +51,17 @@ const FEATURES = [
   },
 ];
 
-const PLANS = [
+const PLANS: Array<{
+  id: "weekly" | "monthly" | "yearly";
+  productId: PlusProductId;
+  label: string;
+  price: string;
+  period: string;
+  tag: string | null;
+}> = [
   {
     id: "weekly",
+    productId: "tendhermom_plus_weekly",
     label: "Weekly",
     price: "₦300",
     period: "/week",
@@ -53,6 +69,7 @@ const PLANS = [
   },
   {
     id: "monthly",
+    productId: "tendhermom_plus_monthly",
     label: "Monthly",
     price: "₦1,000",
     period: "/month",
@@ -60,6 +77,7 @@ const PLANS = [
   },
   {
     id: "yearly",
+    productId: "tendhermom_plus_yearly",
     label: "Yearly",
     price: "₦10,000",
     period: "/year",
@@ -69,8 +87,74 @@ const PLANS = [
 
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
+  const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const isPremium = user?.plan_type === "premium";
-  const [selectedPlan, setSelectedPlan] = useState("yearly");
+  const [selectedPlan, setSelectedPlan] = useState<"weekly" | "monthly" | "yearly">("yearly");
+  const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [nativeAvailable, setNativeAvailable] = useState(false);
+
+  useEffect(() => {
+    setNativeAvailable(isNativeBillingAvailable());
+  }, []);
+
+  const handlePurchase = async () => {
+    if (purchasing) return;
+    const plan = PLANS.find((p) => p.id === selectedPlan);
+    if (!plan) return;
+
+    if (!nativeAvailable) {
+      toast.error("Subscriptions are only available in the TendherMom mobile app.");
+      hapticError();
+      return;
+    }
+
+    setPurchasing(true);
+    hapticSelection();
+    try {
+      const result = await purchase(plan.productId);
+      if (result.cancelled) {
+        // Silent — user backed out
+        return;
+      }
+      if (!result.success) {
+        toast.error(result.error || "Purchase failed. Please try again.");
+        hapticError();
+        return;
+      }
+      hapticSuccess();
+      toast.success("Welcome to Plus! ✨");
+      if (user?.id) await fetchProfile(user.id);
+    } catch (e: any) {
+      toast.error(e?.message || "Something went wrong.");
+      hapticError();
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (restoring) return;
+    setRestoring(true);
+    try {
+      const result = await restorePurchases();
+      if (!result.success) {
+        toast.error(result.error || "No previous purchases found.");
+        return;
+      }
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        toast.success("Plus restored ✨");
+        if (user?.id) await fetchProfile(user.id);
+      } else {
+        toast.info("No active subscription to restore.");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Restore failed.");
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   return (
     <motion.div
@@ -264,39 +348,109 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
         <motion.div variants={fadeUp} className="space-y-3">
           <motion.button
             whileTap={{ scale: 0.97 }}
+            onClick={handlePurchase}
+            disabled={purchasing}
             className="w-full py-[16px] rounded-2xl text-white text-[16px] font-semibold font-sans"
             style={{
               background: "linear-gradient(135deg, hsl(153 42% 28%), hsl(153 42% 36%))",
               boxShadow: "0 6px 24px -4px hsla(153, 42%, 28%, 0.4)",
+              opacity: purchasing ? 0.7 : 1,
             }}
           >
-            Upgrade Now
+            {purchasing
+              ? "Processing…"
+              : `Subscribe — ${PLANS.find((p) => p.id === selectedPlan)?.price}${PLANS.find((p) => p.id === selectedPlan)?.period}`}
           </motion.button>
-          <p className="text-center text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            Cancel anytime · Secure payment · Instant activation
+
+          {/* Apple-required legal disclosure */}
+          <p
+            className="text-center text-[11px] font-sans leading-relaxed px-2"
+            style={{ color: "hsl(var(--text-muted))" }}
+          >
+            Auto-renewable subscription. Cancel anytime in your device settings.
+            Payment is charged to your{" "}
+            {/iPad|iPhone|iPod/.test(typeof navigator !== "undefined" ? navigator.userAgent : "")
+              ? "Apple ID"
+              : "Google Play account"}{" "}
+            and renews automatically unless cancelled at least 24 hours before the
+            period ends.
           </p>
+
+          {/* Restore Purchases — Apple compliance requirement */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleRestore}
+            disabled={restoring}
+            className="w-full py-[12px] rounded-2xl text-[13px] font-sans font-semibold"
+            style={{
+              background: "transparent",
+              border: "1.5px solid hsl(var(--border))",
+              color: "hsl(var(--green))",
+              opacity: restoring ? 0.6 : 1,
+            }}
+          >
+            {restoring ? "Restoring…" : "Restore Purchases"}
+          </motion.button>
+
+          <div className="flex items-center justify-center gap-3 pt-1">
+            <button
+              onClick={() => window.open("/terms", "_blank")}
+              className="text-[11px] font-sans underline"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              Terms
+            </button>
+            <span className="text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
+              ·
+            </span>
+            <button
+              onClick={() => window.open("/privacy", "_blank")}
+              className="text-[11px] font-sans underline"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              Privacy
+            </button>
+          </div>
         </motion.div>
       )}
 
       {/* Already premium — manage */}
       {isPremium && (
-        <motion.div variants={fadeUp} className="tend-card p-4">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-              style={{ background: "hsl(var(--light-green))" }}
-            >
-              <IonIcon name="checkmark-circle" size={20} style={{ color: "hsl(var(--green))" }} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                Plus Active
-              </p>
-              <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                All features unlocked
-              </p>
+        <motion.div variants={fadeUp} className="space-y-3">
+          <div className="tend-card p-4">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(var(--light-green))" }}
+              >
+                <IonIcon name="checkmark-circle" size={20} style={{ color: "hsl(var(--green))" }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                  Plus Active
+                </p>
+                <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                  Manage in your device settings
+                </p>
+              </div>
             </div>
           </div>
+
+          {/* Restore Purchases — visible even for premium users (Apple compliance) */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleRestore}
+            disabled={restoring}
+            className="w-full py-[12px] rounded-2xl text-[13px] font-sans font-semibold"
+            style={{
+              background: "transparent",
+              border: "1.5px solid hsl(var(--border))",
+              color: "hsl(var(--green))",
+              opacity: restoring ? 0.6 : 1,
+            }}
+          >
+            {restoring ? "Restoring…" : "Restore Purchases"}
+          </motion.button>
         </motion.div>
       )}
     </motion.div>

@@ -1,1 +1,8 @@
 project_id = "rnxarweuquyftywklsxa"
+
+# Native billing webhooks — receive notifications from Apple/Google without auth
+[functions.apple-iap-webhook]
+verify_jwt = false
+
+[functions.google-iap-webhook]
+verify_jwt = false
