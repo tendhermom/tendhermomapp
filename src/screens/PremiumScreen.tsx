@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  isNativeBillingAvailable,
+  purchase,
+  restorePurchases,
+  type PlusProductId,
+} from "@/lib/native-billing";
+import { hapticSuccess, hapticError, hapticSelection } from "@/lib/despia";
 
 interface PremiumScreenProps {
   onBack: () => void;
@@ -43,9 +51,17 @@ const FEATURES = [
   },
 ];
 
-const PLANS = [
+const PLANS: Array<{
+  id: "weekly" | "monthly" | "yearly";
+  productId: PlusProductId;
+  label: string;
+  price: string;
+  period: string;
+  tag: string | null;
+}> = [
   {
     id: "weekly",
+    productId: "tendhermom_plus_weekly",
     label: "Weekly",
     price: "₦300",
     period: "/week",
@@ -53,6 +69,7 @@ const PLANS = [
   },
   {
     id: "monthly",
+    productId: "tendhermom_plus_monthly",
     label: "Monthly",
     price: "₦1,000",
     period: "/month",
@@ -60,6 +77,7 @@ const PLANS = [
   },
   {
     id: "yearly",
+    productId: "tendhermom_plus_yearly",
     label: "Yearly",
     price: "₦10,000",
     period: "/year",
@@ -69,8 +87,74 @@ const PLANS = [
 
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
   const isPremium = user?.plan_type === "premium";
-  const [selectedPlan, setSelectedPlan] = useState("yearly");
+  const [selectedPlan, setSelectedPlan] = useState<"weekly" | "monthly" | "yearly">("yearly");
+  const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [nativeAvailable, setNativeAvailable] = useState(false);
+
+  useEffect(() => {
+    setNativeAvailable(isNativeBillingAvailable());
+  }, []);
+
+  const handlePurchase = async () => {
+    if (purchasing) return;
+    const plan = PLANS.find((p) => p.id === selectedPlan);
+    if (!plan) return;
+
+    if (!nativeAvailable) {
+      toast.error("Subscriptions are only available in the TendherMom mobile app.");
+      hapticError();
+      return;
+    }
+
+    setPurchasing(true);
+    hapticSelection();
+    try {
+      const result = await purchase(plan.productId);
+      if (result.cancelled) {
+        // Silent — user backed out
+        return;
+      }
+      if (!result.success) {
+        toast.error(result.error || "Purchase failed. Please try again.");
+        hapticError();
+        return;
+      }
+      hapticSuccess();
+      toast.success("Welcome to Plus! ✨");
+      await refreshUser?.();
+    } catch (e: any) {
+      toast.error(e?.message || "Something went wrong.");
+      hapticError();
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (restoring) return;
+    setRestoring(true);
+    try {
+      const result = await restorePurchases();
+      if (!result.success) {
+        toast.error(result.error || "No previous purchases found.");
+        return;
+      }
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        toast.success("Plus restored ✨");
+        await refreshUser?.();
+      } else {
+        toast.info("No active subscription to restore.");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Restore failed.");
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   return (
     <motion.div
