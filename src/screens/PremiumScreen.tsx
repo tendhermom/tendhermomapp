@@ -124,7 +124,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       }
       hapticSuccess();
       toast.success("Welcome to Plus! ✨");
-      await refreshUser?.();
+      if (user?.id) await fetchProfile(user.id);
     } catch (e: any) {
       toast.error(e?.message || "Something went wrong.");
       hapticError();
@@ -145,7 +145,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       if (result.plan_type === "premium") {
         hapticSuccess();
         toast.success("Plus restored ✨");
-        await refreshUser?.();
+        if (user?.id) await fetchProfile(user.id);
       } else {
         toast.info("No active subscription to restore.");
       }
@@ -348,17 +348,69 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
         <motion.div variants={fadeUp} className="space-y-3">
           <motion.button
             whileTap={{ scale: 0.97 }}
+            onClick={handlePurchase}
+            disabled={purchasing}
             className="w-full py-[16px] rounded-2xl text-white text-[16px] font-semibold font-sans"
             style={{
               background: "linear-gradient(135deg, hsl(153 42% 28%), hsl(153 42% 36%))",
               boxShadow: "0 6px 24px -4px hsla(153, 42%, 28%, 0.4)",
+              opacity: purchasing ? 0.7 : 1,
             }}
           >
-            Upgrade Now
+            {purchasing
+              ? "Processing…"
+              : `Subscribe — ${PLANS.find((p) => p.id === selectedPlan)?.price}${PLANS.find((p) => p.id === selectedPlan)?.period}`}
           </motion.button>
-          <p className="text-center text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            Cancel anytime · Secure payment · Instant activation
+
+          {/* Apple-required legal disclosure */}
+          <p
+            className="text-center text-[11px] font-sans leading-relaxed px-2"
+            style={{ color: "hsl(var(--text-muted))" }}
+          >
+            Auto-renewable subscription. Cancel anytime in your device settings.
+            Payment is charged to your{" "}
+            {/iPad|iPhone|iPod/.test(typeof navigator !== "undefined" ? navigator.userAgent : "")
+              ? "Apple ID"
+              : "Google Play account"}{" "}
+            and renews automatically unless cancelled at least 24 hours before the
+            period ends.
           </p>
+
+          {/* Restore Purchases — Apple compliance requirement */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleRestore}
+            disabled={restoring}
+            className="w-full py-[12px] rounded-2xl text-[13px] font-sans font-semibold"
+            style={{
+              background: "transparent",
+              border: "1.5px solid hsl(var(--border))",
+              color: "hsl(var(--green))",
+              opacity: restoring ? 0.6 : 1,
+            }}
+          >
+            {restoring ? "Restoring…" : "Restore Purchases"}
+          </motion.button>
+
+          <div className="flex items-center justify-center gap-3 pt-1">
+            <button
+              onClick={() => window.open("/terms", "_blank")}
+              className="text-[11px] font-sans underline"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              Terms
+            </button>
+            <span className="text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
+              ·
+            </span>
+            <button
+              onClick={() => window.open("/privacy", "_blank")}
+              className="text-[11px] font-sans underline"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              Privacy
+            </button>
+          </div>
         </motion.div>
       )}
 
