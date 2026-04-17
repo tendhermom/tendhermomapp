@@ -150,52 +150,45 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleToggleGift = async (postId: string) => {
-    if (!user || !isPremium) {
-      toast.error("Gift-giving is a Plus feature");
+  const handleSaveAccount = async () => {
+    if (!user || !editAccountPost) return;
+    if (!accountName.trim() || !accountNumber.trim() || !bankName.trim()) {
+      toast.error("Please fill in account name, number and bank");
       return;
     }
+    setSavingAccount(true);
     const { error } = await supabase
       .from("baby_shower_posts")
-      .update({ gift_enabled: true } as any)
-      .eq("id", postId)
+      .update({
+        account_name: accountName.trim(),
+        account_number: accountNumber.trim(),
+        bank_name: bankName.trim(),
+        gift_enabled: true,
+      } as any)
+      .eq("id", editAccountPost.id)
       .eq("user_id", user.id);
-    if (!error) {
-      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, gift_enabled: true } : p)));
-      toast.success("Gifts enabled! Share your post so friends & family can send gifts 🎁");
+    setSavingAccount(false);
+    if (error) {
+      toast.error("Failed to save account details");
+      return;
     }
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === editAccountPost.id
+          ? { ...p, account_name: accountName.trim(), account_number: accountNumber.trim(), bank_name: bankName.trim(), gift_enabled: true }
+          : p
+      )
+    );
+    toast.success("Account details saved — friends can now Give a Gift 🎁");
+    setEditAccountPost(null);
+    setAccountName(""); setAccountNumber(""); setBankName("");
   };
 
-  const handleSendGift = async () => {
-    if (!sendGiftPost || !giftSenderName.trim() || !giftAmount) return;
-    setSendingGift(true);
-    try {
-      const amount = parseFloat(giftAmount);
-      if (isNaN(amount) || amount <= 0) { toast.error("Please enter a valid amount"); return; }
-      const db = supabase as any;
-      const { error } = await db.from("baby_shower_gifts").insert({
-        post_id: sendGiftPost.id,
-        sender_name: giftSenderName.trim(),
-        amount,
-        message: giftMessage.trim() || null,
-        status: "completed",
-      });
-      if (error) throw error;
-      await supabase.from("baby_shower_posts").update({ gift_total: sendGiftPost.gift_total + amount } as any)
-        .eq("id", sendGiftPost.id);
-      setPosts((prev) => prev.map((p) => p.id === sendGiftPost.id ? { ...p, gift_total: p.gift_total + amount } : p));
-      toast.success("Gift sent! 🎉");
-      setSendGiftPost(null);
-      setGiftSenderName(""); setGiftAmount(""); setGiftMessage("");
-    } catch { toast.error("Failed to send gift"); }
-    finally { setSendingGift(false); }
-  };
-
-  const handleViewGifts = async (post: BabyShowerPost) => {
-    setViewGiftsPost(post);
-    const db = supabase as any;
-    const { data } = await db.from("baby_shower_gifts").select("*").eq("post_id", post.id).order("created_at", { ascending: false });
-    if (data) setGifts(data);
+  const openAddAccount = (post: BabyShowerPost) => {
+    setEditAccountPost(post);
+    setAccountName(post.account_name || user?.full_name || "");
+    setAccountNumber(post.account_number || "");
+    setBankName(post.bank_name || "");
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,12 +219,12 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       }
       const { error } = await supabase.from("baby_shower_posts").insert({
         user_id: user.id, baby_name: babyName.trim(), parent_names: parentNames.trim(),
-        gender, month_label: activeMonth, image_url: imageUrl,
-      });
+        gender, birth_type: birthType, month_label: activeMonth, image_url: imageUrl,
+      } as any);
       if (error) throw error;
       toast.success("Baby post created! 🎉");
       setShowCreateForm(false);
-      setBabyName(""); setParentNames(""); setGender("boy"); setImageFile(null); setImagePreview(null);
+      setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFile(null); setImagePreview(null);
       await fetchPosts();
     } catch (err) { console.error(err); toast.error("Failed to create post"); }
     finally { setSubmitting(false); }
