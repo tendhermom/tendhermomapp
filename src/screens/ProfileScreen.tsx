@@ -5,6 +5,7 @@ import IonIcon from "@/components/IonIcon";
 import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
+import HelpSupportScreen from "@/screens/HelpSupportScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,6 +109,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "notifications") {
     return <NotificationsScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "help") {
+    return <HelpSupportScreen onBack={() => setSubScreen(null)} />;
+  }
   if (subScreen === "privacy" || subScreen === "terms") {
     return (
       <div className="space-y-4 pb-4">
@@ -136,7 +140,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       });
       return;
     }
-    if (route === "privacy" || route === "terms") {
+    if (route === "privacy" || route === "terms" || route === "help") {
       setSubScreen(route);
       return;
     }
