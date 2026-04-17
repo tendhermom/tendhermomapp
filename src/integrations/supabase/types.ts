@@ -56,6 +56,13 @@ export type Database = {
             referencedRelation: "baby_shower_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "baby_shower_gifts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "baby_shower_posts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       baby_shower_posts: {
@@ -593,6 +600,13 @@ export type Database = {
             referencedRelation: "baby_shower_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "baby_shower_posts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       referrals: {
@@ -725,7 +739,75 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      baby_shower_posts_public: {
+        Row: {
+          baby_name: string | null
+          birth_date: string | null
+          birth_type: string | null
+          created_at: string | null
+          gender: string | null
+          gift_enabled: boolean | null
+          gift_total: number | null
+          id: string | null
+          image_url: string | null
+          month_label: string | null
+          parent_names: string | null
+          reactions_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          baby_name?: string | null
+          birth_date?: string | null
+          birth_type?: string | null
+          created_at?: string | null
+          gender?: string | null
+          gift_enabled?: boolean | null
+          gift_total?: number | null
+          id?: string | null
+          image_url?: string | null
+          month_label?: string | null
+          parent_names?: string | null
+          reactions_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          baby_name?: string | null
+          birth_date?: string | null
+          birth_type?: string | null
+          created_at?: string | null
+          gender?: string | null
+          gift_enabled?: boolean | null
+          gift_total?: number | null
+          id?: string | null
+          image_url?: string | null
+          month_label?: string | null
+          parent_names?: string | null
+          reactions_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          current_stage: Database["public"]["Enums"]["pregnancy_stage"] | null
+          full_name: string | null
+          id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          current_stage?: Database["public"]["Enums"]["pregnancy_stage"] | null
+          full_name?: string | null
+          id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          current_stage?: Database["public"]["Enums"]["pregnancy_stage"] | null
+          full_name?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       award_community_points: {

@@ -112,11 +112,28 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   }, []);
 
   const fetchPosts = async () => {
-    const { data } = await supabase
-      .from("baby_shower_posts")
+    // Public list uses the safe view (no bank fields). Owner-side bank editing
+    // still queries baby_shower_posts directly via RLS-scoped owner SELECT.
+    const { data: publicData } = await (supabase as any)
+      .from("baby_shower_posts_public")
       .select("*")
       .order("created_at", { ascending: false });
-    if (data) setPosts(data as any);
+
+    let merged: any[] = publicData || [];
+
+    // If signed in, fetch the user's own rows (with bank fields) and merge.
+    if (user) {
+      const { data: ownData } = await supabase
+        .from("baby_shower_posts")
+        .select("*")
+        .eq("user_id", user.id);
+      if (ownData?.length) {
+        const ownMap = new Map(ownData.map((p: any) => [p.id, p]));
+        merged = merged.map((p: any) => ownMap.get(p.id) || p);
+      }
+    }
+
+    setPosts(merged as any);
     setLoading(false);
   };
 
