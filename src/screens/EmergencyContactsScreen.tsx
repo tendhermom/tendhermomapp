@@ -39,8 +39,7 @@ const emptyContact: Omit<EmergencyContact, "id"> = {
 
 const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const isFree = user?.plan_type === "free";
-  const maxContacts = isFree ? 1 : 5;
+  const maxContacts = 5;
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -434,13 +433,13 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         </div>
       )}
 
-      {/* Plan limit banner */}
-      {isFree && contacts.length >= maxContacts && (
-        <div className="tend-card p-4 flex items-center gap-3" style={{ borderLeft: "3px solid hsl(var(--coral))" }}>
-          <IonIcon name="diamond" size={20} style={{ color: "hsl(var(--coral))" }} />
+      {/* Max contacts banner */}
+      {contacts.length >= maxContacts && (
+        <div className="tend-card p-4 flex items-center gap-3" style={{ borderLeft: "3px solid hsl(var(--green))" }}>
+          <IonIcon name="checkmark-circle" size={20} style={{ color: "hsl(var(--green))" }} />
           <div className="flex-1">
-            <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Free plan limit reached</p>
-            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Upgrade to TendherMom Plus for up to 5 contacts & unlimited triggers</p>
+            <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>You've added the maximum of 5 contacts</p>
+            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Remove one to add a different contact</p>
           </div>
         </div>
       )}

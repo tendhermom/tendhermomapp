@@ -18,20 +18,16 @@ interface BabyShowerPost {
   parent_names: string;
   month_label: string;
   gender: string;
+  birth_type: "single" | "twins" | "triplets" | "quadruplets";
   image_url: string | null;
   reactions_count: number;
   user_id: string;
   created_at: string;
   gift_enabled: boolean;
   gift_total: number;
-}
-
-interface Gift {
-  id: string;
-  sender_name: string;
-  amount: number;
-  message: string | null;
-  created_at: string;
+  account_name: string | null;
+  account_number: string | null;
+  bank_name: string | null;
 }
 
 interface BabyShowerScreenProps {
@@ -78,19 +74,20 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [userReactions, setUserReactions] = useState<Record<string, string>>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Gift modals
-  const [sendGiftPost, setSendGiftPost] = useState<BabyShowerPost | null>(null);
-  const [viewGiftsPost, setViewGiftsPost] = useState<BabyShowerPost | null>(null);
-  const [gifts, setGifts] = useState<Gift[]>([]);
-  const [giftSenderName, setGiftSenderName] = useState("");
-  const [giftAmount, setGiftAmount] = useState("");
-  const [giftMessage, setGiftMessage] = useState("");
-  const [sendingGift, setSendingGift] = useState(false);
+  // P2P Give-a-Gift sheet (visitor sees owner's bank account details)
+  const [giveGiftPost, setGiveGiftPost] = useState<BabyShowerPost | null>(null);
+  // Owner — add/edit bank account details sheet
+  const [editAccountPost, setEditAccountPost] = useState<BabyShowerPost | null>(null);
+  const [accountName, setAccountName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [savingAccount, setSavingAccount] = useState(false);
 
   // Create form state
   const [babyName, setBabyName] = useState("");
   const [parentNames, setParentNames] = useState("");
-  const [gender, setGender] = useState<"boy" | "girl">("boy");
+  const [gender, setGender] = useState<"boy" | "girl" | "mixed">("boy");
+  const [birthType, setBirthType] = useState<"single" | "twins" | "triplets" | "quadruplets">("single");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -153,52 +150,45 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleToggleGift = async (postId: string) => {
-    if (!user || !isPremium) {
-      toast.error("Gift-giving is a Plus feature");
+  const handleSaveAccount = async () => {
+    if (!user || !editAccountPost) return;
+    if (!accountName.trim() || !accountNumber.trim() || !bankName.trim()) {
+      toast.error("Please fill in account name, number and bank");
       return;
     }
+    setSavingAccount(true);
     const { error } = await supabase
       .from("baby_shower_posts")
-      .update({ gift_enabled: true } as any)
-      .eq("id", postId)
+      .update({
+        account_name: accountName.trim(),
+        account_number: accountNumber.trim(),
+        bank_name: bankName.trim(),
+        gift_enabled: true,
+      } as any)
+      .eq("id", editAccountPost.id)
       .eq("user_id", user.id);
-    if (!error) {
-      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, gift_enabled: true } : p)));
-      toast.success("Gifts enabled! Share your post so friends & family can send gifts 🎁");
+    setSavingAccount(false);
+    if (error) {
+      toast.error("Failed to save account details");
+      return;
     }
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === editAccountPost.id
+          ? { ...p, account_name: accountName.trim(), account_number: accountNumber.trim(), bank_name: bankName.trim(), gift_enabled: true }
+          : p
+      )
+    );
+    toast.success("Account details saved — friends can now Give a Gift 🎁");
+    setEditAccountPost(null);
+    setAccountName(""); setAccountNumber(""); setBankName("");
   };
 
-  const handleSendGift = async () => {
-    if (!sendGiftPost || !giftSenderName.trim() || !giftAmount) return;
-    setSendingGift(true);
-    try {
-      const amount = parseFloat(giftAmount);
-      if (isNaN(amount) || amount <= 0) { toast.error("Please enter a valid amount"); return; }
-      const db = supabase as any;
-      const { error } = await db.from("baby_shower_gifts").insert({
-        post_id: sendGiftPost.id,
-        sender_name: giftSenderName.trim(),
-        amount,
-        message: giftMessage.trim() || null,
-        status: "completed",
-      });
-      if (error) throw error;
-      await supabase.from("baby_shower_posts").update({ gift_total: sendGiftPost.gift_total + amount } as any)
-        .eq("id", sendGiftPost.id);
-      setPosts((prev) => prev.map((p) => p.id === sendGiftPost.id ? { ...p, gift_total: p.gift_total + amount } : p));
-      toast.success("Gift sent! 🎉");
-      setSendGiftPost(null);
-      setGiftSenderName(""); setGiftAmount(""); setGiftMessage("");
-    } catch { toast.error("Failed to send gift"); }
-    finally { setSendingGift(false); }
-  };
-
-  const handleViewGifts = async (post: BabyShowerPost) => {
-    setViewGiftsPost(post);
-    const db = supabase as any;
-    const { data } = await db.from("baby_shower_gifts").select("*").eq("post_id", post.id).order("created_at", { ascending: false });
-    if (data) setGifts(data);
+  const openAddAccount = (post: BabyShowerPost) => {
+    setEditAccountPost(post);
+    setAccountName(post.account_name || user?.full_name || "");
+    setAccountNumber(post.account_number || "");
+    setBankName(post.bank_name || "");
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,12 +219,12 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       }
       const { error } = await supabase.from("baby_shower_posts").insert({
         user_id: user.id, baby_name: babyName.trim(), parent_names: parentNames.trim(),
-        gender, month_label: activeMonth, image_url: imageUrl,
-      });
+        gender, birth_type: birthType, month_label: activeMonth, image_url: imageUrl,
+      } as any);
       if (error) throw error;
       toast.success("Baby post created! 🎉");
       setShowCreateForm(false);
-      setBabyName(""); setParentNames(""); setGender("boy"); setImageFile(null); setImagePreview(null);
+      setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFile(null); setImagePreview(null);
       await fetchPosts();
     } catch (err) { console.error(err); toast.error("Failed to create post"); }
     finally { setSubmitting(false); }
@@ -310,126 +300,116 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <BabyShowerCard
                   name={post.baby_name} parentName={post.parent_names} date={post.month_label}
                   imageUrl={post.image_url || "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop"}
-                  gender={post.gender as "boy" | "girl"}
+                  gender={post.gender as "boy" | "girl" | "mixed"}
+                  birthType={post.birth_type}
                   reactionsCount={post.reactions_count}
                   userReaction={userReactions[post.id] || null}
                   onReaction={(type) => handleReaction(post.id, type)}
                   giftEnabled={post.gift_enabled}
-                  giftTotal={post.gift_total}
+                  hasAccountDetails={!!(post.account_name && post.account_number && post.bank_name)}
                   isPremium={isPremium}
                   isOwner={user?.id === post.user_id}
-                  onToggleGift={() => handleToggleGift(post.id)}
-                  onSendGift={() => setSendGiftPost(post)}
-                  onViewGifts={() => handleViewGifts(post)}
+                  onAddAccountDetails={() => openAddAccount(post)}
+                  onGiveGift={() => setGiveGiftPost(post)}
                 />
               </motion.div>
             ))}
           </motion.div>
         )}
 
-        {/* Send Gift Sheet */}
+        {/* Give a Gift Sheet — visitor sees owner's bank details to make P2P transfer */}
         <AnimatePresence>
-          {sendGiftPost && (
+          {giveGiftPost && (
             <>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[100]" style={{ background: "rgba(0,0,0,0.5)" }}
-                onClick={() => !sendingGift && setSendGiftPost(null)} />
+                onClick={() => setGiveGiftPost(null)} />
               <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
                 className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-[max(env(safe-area-inset-bottom,40px),40px)] no-scrollbar"
                 style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "85vh", overflowY: "auto" }}>
-                <h3 className="font-serif text-[20px] mb-1" style={{ color: "hsl(var(--dark))" }}>Send a Gift 🎁</h3>
+                <h3 className="font-serif text-[20px] mb-1" style={{ color: "hsl(var(--dark))" }}>Give a Gift 🎁</h3>
                 <p className="text-[13px] font-sans mb-5" style={{ color: "hsl(var(--text-muted))" }}>
-                  Celebrate Baby {sendGiftPost.baby_name} with a gift!
+                  Send your gift directly to {giveGiftPost.parent_names} via bank transfer.
                 </p>
-                <div className="space-y-4">
+                <div className="tend-card p-5 space-y-3">
                   <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Your Name</label>
-                    <input type="text" value={giftSenderName} onChange={(e) => setGiftSenderName(e.target.value)} placeholder="e.g. Auntie Ngozi"
-                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
-                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
+                    <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Account Name</p>
+                    <p className="text-[15px] font-semibold font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{giveGiftPost.account_name}</p>
                   </div>
                   <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Gift Amount (₦)</label>
-                    <input type="number" value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} placeholder="e.g. 5000"
-                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
-                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
-                    <div className="flex gap-2 mt-2">
-                      {[1000, 2000, 5000, 10000].map((amt) => (
-                        <motion.button key={amt} whileTap={{ scale: 0.95 }} onClick={() => setGiftAmount(String(amt))}
-                          className="px-3 py-1.5 rounded-full text-[12px] font-semibold font-sans"
-                          style={{ background: giftAmount === String(amt) ? "hsl(45 93% 92%)" : "hsl(var(--bg))",
-                            color: giftAmount === String(amt) ? "hsl(45 90% 40%)" : "hsl(var(--text-muted))" }}>
-                          ₦{amt.toLocaleString()}
-                        </motion.button>
-                      ))}
+                    <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Account Number</p>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-[18px] font-bold font-sans tracking-wider" style={{ color: "hsl(var(--dark))" }}>{giveGiftPost.account_number}</p>
+                      <motion.button whileTap={{ scale: 0.9 }}
+                        onClick={() => { navigator.clipboard.writeText(giveGiftPost.account_number || ""); toast.success("Account number copied"); }}
+                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold font-sans"
+                        style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>
+                        Copy
+                      </motion.button>
                     </div>
                   </div>
                   <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Message (optional)</label>
-                    <textarea value={giftMessage} onChange={(e) => setGiftMessage(e.target.value)} placeholder="Congratulations! 🎉"
-                      rows={2} className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none resize-none"
-                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
+                    <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Bank</p>
+                    <p className="text-[15px] font-semibold font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{giveGiftPost.bank_name}</p>
                   </div>
-                  <motion.button whileTap={{ scale: 0.97 }} onClick={handleSendGift} disabled={sendingGift}
-                    className="w-full py-[15px] rounded-2xl text-white text-[16px] font-semibold font-sans disabled:opacity-60"
-                    style={{ background: "hsl(45 90% 50%)" }}>
-                    {sendingGift ? "Sending…" : `Send ₦${giftAmount ? parseInt(giftAmount).toLocaleString() : "0"} Gift`}
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => setSendGiftPost(null)} disabled={sendingGift}
-                    className="w-full py-[13px] text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                    Cancel
-                  </motion.button>
                 </div>
+                <p className="text-[11px] font-sans mt-3 text-center" style={{ color: "hsl(var(--text-muted))" }}>
+                  TendherMom does not process this transfer — your gift goes directly to the parent's bank account.
+                </p>
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setGiveGiftPost(null)}
+                  className="w-full py-[13px] mt-3 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                  Close
+                </motion.button>
               </motion.div>
             </>
           )}
         </AnimatePresence>
 
-        {/* View Gifts Sheet */}
+        {/* Owner — Add bank account details */}
         <AnimatePresence>
-          {viewGiftsPost && (
+          {editAccountPost && (
             <>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[100]" style={{ background: "rgba(0,0,0,0.5)" }}
-                onClick={() => setViewGiftsPost(null)} />
+                onClick={() => !savingAccount && setEditAccountPost(null)} />
               <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
                 className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-[max(env(safe-area-inset-bottom,40px),40px)] no-scrollbar"
                 style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "85vh", overflowY: "auto" }}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-serif text-[20px]" style={{ color: "hsl(var(--dark))" }}>Gifts Received 🎁</h3>
-                  <div className="px-3 py-1 rounded-full" style={{ background: "hsl(45 93% 92%)" }}>
-                    <span className="text-[13px] font-bold font-sans" style={{ color: "hsl(45 90% 40%)" }}>₦{viewGiftsPost.gift_total.toLocaleString()}</span>
+                <h3 className="font-serif text-[20px] mb-1" style={{ color: "hsl(var(--dark))" }}>Enable "Give a Gift"</h3>
+                <p className="text-[13px] font-sans mb-5" style={{ color: "hsl(var(--text-muted))" }}>
+                  Add your bank account so friends & family can send P2P gifts directly to you.
+                </p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Account Name</label>
+                    <input type="text" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. Ngozi Okafor"
+                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
+                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
                   </div>
+                  <div>
+                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Account Number</label>
+                    <input type="text" inputMode="numeric" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, ""))} placeholder="10-digit account number" maxLength={10}
+                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
+                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Bank Name</label>
+                    <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. GTBank"
+                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
+                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
+                  </div>
+                  <motion.button whileTap={{ scale: 0.97 }} onClick={handleSaveAccount} disabled={savingAccount}
+                    className="w-full py-[15px] rounded-2xl text-white text-[16px] font-semibold font-sans disabled:opacity-60"
+                    style={{ background: "hsl(var(--green))" }}>
+                    {savingAccount ? "Saving…" : "Save & Enable Gifts"}
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => setEditAccountPost(null)} disabled={savingAccount}
+                    className="w-full py-[13px] text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                    Cancel
+                  </motion.button>
                 </div>
-                {gifts.length === 0 ? (
-                  <div className="text-center py-8">
-                    <IonIcon name="gift-outline" size={40} style={{ color: "hsl(var(--text-muted))" }} />
-                    <p className="text-[13px] font-sans mt-2" style={{ color: "hsl(var(--text-muted))" }}>No gifts yet.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {gifts.map((g) => (
-                      <div key={g.id} className="tend-card p-4 flex items-start gap-3">
-                        <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "hsl(45 93% 92%)" }}>
-                          <IonIcon name="gift" size={18} style={{ color: "hsl(45 90% 40%)" }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>{g.sender_name}</span>
-                            <span className="text-[13px] font-sans font-bold" style={{ color: "hsl(45 90% 40%)" }}>₦{g.amount.toLocaleString()}</span>
-                          </div>
-                          {g.message && <p className="text-[11px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>{g.message}</p>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setViewGiftsPost(null)}
-                  className="w-full py-[13px] mt-4 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                  Close
-                </motion.button>
               </motion.div>
             </>
           )}

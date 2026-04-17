@@ -25,7 +25,7 @@ interface SOSScreenProps {
 
 const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const isFree = user?.plan_type === "free";
+  const MAX_CONTACTS = 5;
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,7 +157,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     }
   };
 
-  const maxContacts = isFree ? 1 : 5;
+  const maxContacts = MAX_CONTACTS;
   const channelBadges = (c: EmergencyContact) => {
     const badges: string[] = [];
     if (c.sms_enabled) badges.push("SMS");
@@ -322,23 +322,6 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                 </div>
               ))}
 
-              {/* Locked slots for free users */}
-              {isFree && contacts.length >= 1 && (
-                <div
-                  className="flex items-center gap-3 px-[18px] py-[14px]"
-                  style={{ borderTop: "0.5px solid hsl(var(--border))", opacity: 0.5 }}
-                >
-                  <div
-                    className="w-[40px] h-[40px] rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: "hsl(var(--border))" }}
-                  >
-                    <IonIcon name="lock-closed" size={16} style={{ color: "hsl(var(--text-muted))" }} />
-                  </div>
-                  <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                    Add up to 4 more with Premium
-                  </span>
-                </div>
-              )}
             </>
           )}
         </div>

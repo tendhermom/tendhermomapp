@@ -380,7 +380,7 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
             className="mt-3 px-4 py-2 rounded-xl text-[12px] font-sans font-semibold"
             style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
           >
-            Find Health Centre →
+            Open Rescue Map →
           </motion.button>
         </motion.div>
       )}

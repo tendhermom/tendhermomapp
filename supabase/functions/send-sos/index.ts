@@ -126,46 +126,22 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Get user plan type
-    const { data: profile } = await serviceClient
-      .from("profiles")
-      .select("plan_type")
-      .eq("id", userId)
-      .single();
-
-    const isFree = !profile || profile.plan_type === "free";
-
-    // Rate limit: free = 1/month, premium = unlimited (but max 10/10min as abuse guard)
-    if (isFree) {
-      const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
-        _user_id: userId,
-        _action: "sos_alert_monthly",
-        _max_requests: 1,
-        _window_minutes: 43200,
-      });
-      if (!allowed) {
-        return new Response(
-          JSON.stringify({ error: "Free plan allows 1 SOS trigger per month. Upgrade to Premium for unlimited triggers." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    } else {
-      const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
-        _user_id: userId,
-        _action: "sos_alert",
-        _max_requests: 10,
-        _window_minutes: 10,
-      });
-      if (!allowed) {
-        return new Response(
-          JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    // SOS is FREE for everyone — only an abuse-guard rate limit (max 10 / 10 min)
+    const { data: allowed } = await serviceClient.rpc("check_rate_limit", {
+      _user_id: userId,
+      _action: "sos_alert",
+      _max_requests: 10,
+      _window_minutes: 10,
+    });
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many SOS alerts. Please wait before trying again." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Enforce contact limits: free = 1, premium = 5
-    const maxContacts = isFree ? 1 : 5;
+    // Everyone can notify up to 5 contacts
+    const maxContacts = 5;
 
     const body: SOSRequest = await req.json();
     const { user_name, latitude, longitude, contacts, is_test } = body;
@@ -242,7 +218,7 @@ serve(async (req) => {
       return acc + Object.values(channels).filter((s) => s === "sent").length;
     }, 0);
 
-    console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s) (plan: ${isFree ? "free" : "premium"})`);
+    console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s)`);
 
     return new Response(
       JSON.stringify({ success: true, contacts_notified: limitedContacts.length, channel_results: channelResults, is_test }),

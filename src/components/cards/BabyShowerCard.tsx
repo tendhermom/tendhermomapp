@@ -2,22 +2,25 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 
+export type BirthType = "single" | "twins" | "triplets" | "quadruplets";
+
 interface BabyShowerCardProps {
   name: string;
   parentName: string;
   date: string;
   imageUrl: string;
-  gender: "boy" | "girl";
+  gender: "boy" | "girl" | "mixed";
+  birthType?: BirthType;
   reactionsCount?: number;
   userReaction?: string | null;
   onReaction?: (type: "congrats" | "love" | "like" | "celebrate") => void;
+  // Peer-to-peer "Give a Gift"
   giftEnabled?: boolean;
-  giftTotal?: number;
+  hasAccountDetails?: boolean;
   isPremium?: boolean;
   isOwner?: boolean;
-  onToggleGift?: () => void;
-  onSendGift?: () => void;
-  onViewGifts?: () => void;
+  onAddAccountDetails?: () => void;
+  onGiveGift?: () => void;
 }
 
 const REACTIONS: { type: "congrats" | "love" | "like" | "celebrate"; icon: string; activeIcon: string; label: string; color: string }[] = [
@@ -27,25 +30,43 @@ const REACTIONS: { type: "congrats" | "love" | "like" | "celebrate"; icon: strin
   { type: "celebrate", icon: "sparkles-outline", activeIcon: "sparkles", label: "Celebrate", color: "hsl(45 90% 50%)" },
 ];
 
+const BIRTH_TYPE_LABEL: Record<BirthType, string> = {
+  single: "",
+  twins: "Twins",
+  triplets: "Triplets",
+  quadruplets: "Quads",
+};
+
 const BabyShowerCard = ({
   name,
   parentName,
   imageUrl,
   gender,
+  birthType = "single",
   reactionsCount = 0,
   userReaction,
   onReaction,
   giftEnabled = false,
-  giftTotal = 0,
+  hasAccountDetails = false,
   isPremium = false,
   isOwner = false,
-  onToggleGift,
-  onSendGift,
-  onViewGifts,
+  onAddAccountDetails,
+  onGiveGift,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
-  const accentColor = gender === "boy" ? "hsl(214 60% 55%)" : "hsl(var(--coral))";
-  const accentBg = gender === "boy" ? "hsl(214 80% 94%)" : "hsl(var(--light-coral))";
+  const accentColor =
+    gender === "boy"
+      ? "hsl(214 60% 55%)"
+      : gender === "girl"
+      ? "hsl(var(--coral))"
+      : "hsl(var(--green))";
+  const accentBg =
+    gender === "boy"
+      ? "hsl(214 80% 94%)"
+      : gender === "girl"
+      ? "hsl(var(--light-coral))"
+      : "hsl(var(--light-green))";
+  const genderLabel = gender === "boy" ? "Boy" : gender === "girl" ? "Girl" : "Mixed";
 
   const activeReaction = REACTIONS.find((r) => r.type === userReaction);
 
@@ -61,6 +82,11 @@ const BabyShowerCard = ({
     onReaction?.(type);
     setShowPicker(false);
   };
+
+  // P2P gift visibility: viewers see "Give a Gift" only when owner is premium AND added account details
+  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
+  // Owner sees "Add account details" CTA if premium + posted but no account yet
+  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
 
   return (
     <motion.div
@@ -78,14 +104,19 @@ const BabyShowerCard = ({
         <img src={imageUrl} alt={name} className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full" style={{ background: accentColor }}>
           <span className="text-[10px] font-bold text-white font-sans uppercase tracking-wider">
-            {gender === "boy" ? "Boy" : "Girl"}
+            {genderLabel}
           </span>
         </div>
-        {/* Gift badge */}
-        {giftEnabled && (
-          <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "hsl(45 90% 50%)" }}>
-            <IonIcon name="gift" size={10} style={{ color: "white" }} />
-            <span className="text-[9px] font-bold text-white font-sans">GIFTS</span>
+        {/* Multiple-birth badge */}
+        {birthType !== "single" && (
+          <div
+            className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full flex items-center gap-1"
+            style={{ background: "hsl(var(--green))" }}
+          >
+            <IonIcon name="people" size={10} style={{ color: "white" }} />
+            <span className="text-[9px] font-bold text-white font-sans uppercase tracking-wider">
+              {BIRTH_TYPE_LABEL[birthType]}
+            </span>
           </div>
         )}
       </div>
@@ -94,50 +125,36 @@ const BabyShowerCard = ({
       <div className="p-3 space-y-2">
         <div>
           <h4 className="text-[14px] font-semibold font-sans leading-tight" style={{ color: "hsl(var(--dark))" }}>
-            Baby {name}
+            {birthType === "single" ? `Baby ${name}` : name}
           </h4>
           <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
             {parentName}
           </p>
         </div>
 
-        {/* Gift section */}
-        {giftEnabled && (
-          <div className="flex items-center gap-1.5">
-            {isOwner ? (
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={onViewGifts}
-                className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
-                style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
-              >
-                <IonIcon name="gift" size={12} style={{ color: "hsl(45 90% 40%)" }} />
-                ₦{giftTotal.toLocaleString()}
-              </motion.button>
-            ) : (
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={onSendGift}
-                className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
-                style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
-              >
-                <IonIcon name="gift-outline" size={12} style={{ color: "hsl(45 90% 40%)" }} />
-                Send Gift
-              </motion.button>
-            )}
-          </div>
-        )}
-
-        {/* Owner toggle gift */}
-        {isOwner && isPremium && !giftEnabled && (
+        {/* P2P gift CTA — visitors */}
+        {showGiveGiftToVisitor && (
           <motion.button
             whileTap={{ scale: 0.94 }}
-            onClick={onToggleGift}
+            onClick={onGiveGift}
+            className="w-full py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
+            style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
+          >
+            <IonIcon name="gift-outline" size={12} style={{ color: "hsl(45 90% 40%)" }} />
+            Give a Gift
+          </motion.button>
+        )}
+
+        {/* P2P gift CTA — premium owner without account yet */}
+        {showAddDetailsToOwner && (
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={onAddAccountDetails}
             className="w-full py-1.5 rounded-xl text-[10px] font-semibold font-sans flex items-center justify-center gap-1"
             style={{ background: "hsl(var(--bg))", color: "hsl(var(--text-muted))", border: "1px dashed hsl(var(--border-subtle))" }}
           >
-            <IonIcon name="gift-outline" size={11} style={{ color: "hsl(var(--text-muted))" }} />
-            Enable Gifts
+            <IonIcon name="card-outline" size={11} style={{ color: "hsl(var(--text-muted))" }} />
+            Enable "Give a Gift"
           </motion.button>
         )}
 
