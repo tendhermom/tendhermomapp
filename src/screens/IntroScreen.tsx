@@ -15,10 +15,10 @@ const SLIDES = [
     image: introDashboard,
     title: "Your Health,",
     titleAccent: "Your Way",
-    subtitle: "Monitor your health and find trusted nearby care through Health Hubs",
+    subtitle: "Monitor your health and find trusted nearby care through the Rescue Map",
     features: [
       { icon: "pulse-outline", label: "Personalized health updates" },
-      { icon: "grid-outline", label: "Quick access to Health Hubs & tools" },
+      { icon: "grid-outline", label: "Quick access to Rescue Map & tools" },
     ],
     accentColor: "hsl(var(--green))",
   },

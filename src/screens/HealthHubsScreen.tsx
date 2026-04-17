@@ -192,7 +192,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
           </button>
           <div className="flex-1">
             <h1 className="font-serif text-[26px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
-              Health Hubs
+              Rescue Map
             </h1>
             <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
               {location ? "📍 Location detected" : locationLoading ? "📍 Detecting location…" : "📍 Location unavailable"}
@@ -228,7 +228,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         <motion.div variants={fadeUp} className="flex items-start gap-2.5 pt-1">
           <IonIcon name="location" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            Health Hubs uses your location to find nearby facilities using Google Maps. Your location data is not stored.
+            Rescue Map uses your location to find nearby facilities using Google Maps. Your location data is not stored.
           </p>
         </motion.div>
       </motion.div>

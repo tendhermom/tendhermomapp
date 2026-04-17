@@ -14,39 +14,25 @@ const fadeUp = {
 
 const FEATURES = [
   {
-    icon: "shield-checkmark",
-    title: "5 Emergency Contacts",
-    desc: "Ensure your safety with more SOS contacts",
-    free: "1 contact",
-    premium: "5 contacts",
-  },
-  {
-    icon: "flash",
-    title: "Unlimited SOS Triggers",
-    desc: "No monthly limits on emergency alerts",
-    free: "1/month",
-    premium: "Unlimited",
-  },
-  {
-    icon: "location",
-    title: "Health Hubs",
-    desc: "Find nearby health centers, pharmacies & specialists",
-    free: "Limited",
-    premium: "Full Access",
-  },
-  {
     icon: "gift",
-    title: "Baby Shower Gifts",
-    desc: "Enable gift-giving on your baby celebration posts",
+    title: "Baby Shower & Gifts",
+    desc: "Celebrate your baby and receive Peer-to-Peer gifts from loved ones",
     free: "—",
     premium: "Included",
   },
   {
     icon: "chatbubble-ellipses",
-    title: "Priority AI Chat",
-    desc: "Faster responses and extended conversation history",
-    free: "Basic",
-    premium: "Priority",
+    title: "Unlimited AI Chat",
+    desc: "Ask the AI Health Assistant anytime — no weekly limit",
+    free: "2 / week",
+    premium: "Unlimited",
+  },
+  {
+    icon: "location",
+    title: "Rescue Map",
+    desc: "Find nearby health centers, pharmacies & specialists",
+    free: "Limited",
+    premium: "Full Access",
   },
   {
     icon: "ribbon",
