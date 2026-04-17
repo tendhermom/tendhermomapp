@@ -459,19 +459,50 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                       style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
                   </div>
                   <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Gender</label>
-                    <div className="flex gap-3">
-                      {(["boy", "girl"] as const).map((g) => (
-                        <motion.button key={g} whileTap={{ scale: 0.95 }} onClick={() => setGender(g)}
-                          className="flex-1 py-3 rounded-2xl text-[14px] font-semibold font-sans"
+                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Birth Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {([
+                        { v: "single", label: "Single" },
+                        { v: "twins", label: "Twins" },
+                        { v: "triplets", label: "Triplets" },
+                        { v: "quadruplets", label: "Quadruplets" },
+                      ] as const).map((b) => (
+                        <motion.button key={b.v} whileTap={{ scale: 0.95 }} onClick={() => setBirthType(b.v)}
+                          className="py-2.5 rounded-2xl text-[13px] font-semibold font-sans"
                           style={{
-                            background: gender === g ? g === "boy" ? "hsl(214 80% 94%)" : "hsl(var(--light-coral))" : "hsl(var(--bg))",
-                            color: gender === g ? g === "boy" ? "hsl(214 60% 55%)" : "hsl(var(--coral))" : "hsl(var(--text-muted))",
+                            background: birthType === b.v ? "hsl(var(--light-coral))" : "hsl(var(--bg))",
+                            color: birthType === b.v ? "hsl(var(--coral))" : "hsl(var(--text-muted))",
                           }}>
-                          {g === "boy" ? "👶 Boy" : "👶 Girl"}
+                          {b.label}
                         </motion.button>
                       ))}
                     </div>
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
+                      {birthType === "single" ? "Gender" : "Genders"}
+                    </label>
+                    <div className="flex gap-2">
+                      {(birthType === "single" ? (["boy", "girl"] as const) : (["boy", "girl", "mixed"] as const)).map((g) => (
+                        <motion.button key={g} whileTap={{ scale: 0.95 }} onClick={() => setGender(g)}
+                          className="flex-1 py-3 rounded-2xl text-[13px] font-semibold font-sans"
+                          style={{
+                            background: gender === g
+                              ? g === "boy" ? "hsl(214 80% 94%)" : g === "girl" ? "hsl(var(--light-coral))" : "hsl(var(--light-green))"
+                              : "hsl(var(--bg))",
+                            color: gender === g
+                              ? g === "boy" ? "hsl(214 60% 55%)" : g === "girl" ? "hsl(var(--coral))" : "hsl(var(--green))"
+                              : "hsl(var(--text-muted))",
+                          }}>
+                          {g === "boy" ? "👶 Boys" : g === "girl" ? "👶 Girls" : "👶 Mixed"}
+                        </motion.button>
+                      ))}
+                    </div>
+                    {birthType !== "single" && (
+                      <p className="text-[11px] font-sans mt-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+                        Choose "Mixed" if your {birthType} include both boys and girls.
+                      </p>
+                    )}
                   </div>
                   <motion.button whileTap={{ scale: 0.97 }} onClick={handleSubmitPost} disabled={submitting}
                     className="w-full py-[15px] rounded-2xl text-white text-[16px] font-semibold font-sans disabled:opacity-60"
