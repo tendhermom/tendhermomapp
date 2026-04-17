@@ -309,26 +309,27 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
             <label className="text-[12.5px] font-sans block mb-1.5" style={{ color: "hsl(var(--text-muted))" }}>
               Category
             </label>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => {
-                const active = c === category;
-                return (
-                  <motion.button
-                    key={c}
-                    type="button"
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => { hapticLight(); setCategory(c); }}
-                    className="px-3 py-1.5 rounded-full text-[12.5px] font-medium font-sans"
-                    style={{
-                      background: active ? "hsl(var(--green))" : "white",
-                      color: active ? "white" : "hsl(var(--dark))",
-                      border: active ? "0.5px solid hsl(var(--green))" : "0.5px solid hsl(var(--border))",
-                    }}
-                  >
-                    {c}
-                  </motion.button>
-                );
-              })}
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => { hapticLight(); setCategory(e.target.value); }}
+                style={{
+                  ...inputStyle,
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  paddingRight: 38,
+                  cursor: "pointer",
+                }}
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <div
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                <IonIcon name="chevron-down" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+              </div>
             </div>
           </div>
 
