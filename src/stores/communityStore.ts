@@ -82,8 +82,8 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     const uncachedIds = userIds.filter(id => !queryCache.get(`profile:${id}`));
     
     if (uncachedIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
+      const { data: profiles } = await (supabase as any)
+        .from("public_profiles")
         .select("id, full_name, avatar_url")
         .in("id", uncachedIds);
       
@@ -183,8 +183,8 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     const uncachedIds = userIds.filter(id => !queryCache.get(`profile:${id}`));
     
     if (uncachedIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
+      const { data: profiles } = await (supabase as any)
+        .from("public_profiles")
         .select("id, full_name, avatar_url")
         .in("id", uncachedIds);
       (profiles || []).forEach((p: any) => {

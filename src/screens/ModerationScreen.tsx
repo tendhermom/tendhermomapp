@@ -79,8 +79,8 @@ const ModerationScreen = ({ onBack }: ModerationScreenProps) => {
             ...(posts || []).map((p: any) => p.user_id),
           ]),
         ];
-        const { data: profiles } = await supabase
-          .from("profiles")
+        const { data: profiles } = await (supabase as any)
+          .from("public_profiles")
           .select("id, full_name")
           .in("id", userIds);
 
@@ -99,8 +99,8 @@ const ModerationScreen = ({ onBack }: ModerationScreenProps) => {
 
       if (bannedRes.data) {
         const userIds = bannedRes.data.map((b: any) => b.user_id);
-        const { data: profiles } = await supabase
-          .from("profiles")
+        const { data: profiles } = await (supabase as any)
+          .from("public_profiles")
           .select("id, full_name")
           .in("id", userIds);
         const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.full_name]));
