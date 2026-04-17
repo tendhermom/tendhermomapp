@@ -416,23 +416,41 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
       {/* Already premium — manage */}
       {isPremium && (
-        <motion.div variants={fadeUp} className="tend-card p-4">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-              style={{ background: "hsl(var(--light-green))" }}
-            >
-              <IonIcon name="checkmark-circle" size={20} style={{ color: "hsl(var(--green))" }} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                Plus Active
-              </p>
-              <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                All features unlocked
-              </p>
+        <motion.div variants={fadeUp} className="space-y-3">
+          <div className="tend-card p-4">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(var(--light-green))" }}
+              >
+                <IonIcon name="checkmark-circle" size={20} style={{ color: "hsl(var(--green))" }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                  Plus Active
+                </p>
+                <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                  Manage in your device settings
+                </p>
+              </div>
             </div>
           </div>
+
+          {/* Restore Purchases — visible even for premium users (Apple compliance) */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleRestore}
+            disabled={restoring}
+            className="w-full py-[12px] rounded-2xl text-[13px] font-sans font-semibold"
+            style={{
+              background: "transparent",
+              border: "1.5px solid hsl(var(--border))",
+              color: "hsl(var(--green))",
+              opacity: restoring ? 0.6 : 1,
+            }}
+          >
+            {restoring ? "Restoring…" : "Restore Purchases"}
+          </motion.button>
         </motion.div>
       )}
     </motion.div>
