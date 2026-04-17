@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import IonIcon from "@/components/IonIcon";
 import { hapticLight } from "@/lib/despia";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from "@/stores/authStore";
 
 interface HelpSupportScreenProps {
   onBack: () => void;
@@ -11,6 +15,16 @@ const SUPPORT_EMAIL_SECONDARY = "tendhermom@gmail.com";
 const SUPPORT_PHONE_DISPLAY = "+234 810 536 4446";
 const SUPPORT_PHONE_TEL = "+2348105364446";
 const WHATSAPP_NUMBER = "2348105364446";
+
+const CATEGORIES = [
+  "General",
+  "Billing & Plus",
+  "Account",
+  "Health Tracker",
+  "Community",
+  "SOS / Emergency",
+  "Bug report",
+];
 
 const faqs = [
   {
@@ -36,21 +50,84 @@ const faqs = [
 ];
 
 const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
-  const openMail = (email: string) => {
-    hapticLight();
-    window.location.href = `mailto:${email}?subject=TendherMom%20Support%20Request`;
-  };
+  const user = useAuthStore((s) => s.user);
+  const [name, setName] = useState(user?.full_name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
+  const openMail = (addr: string) => {
+    hapticLight();
+    window.location.href = `mailto:${addr}?subject=TendherMom%20Support%20Request`;
+  };
   const openTel = () => {
     hapticLight();
     window.location.href = `tel:${SUPPORT_PHONE_TEL}`;
   };
-
   const openWhatsApp = () => {
     hapticLight();
     window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
       "Hi TendherMom team, I need help with…",
     )}`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedMessage = message.trim();
+    const trimmedSubject = subject.trim();
+
+    if (trimmedName.length < 2) {
+      toast.error("Please enter your name");
+      return;
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(trimmedEmail)) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+    if (trimmedMessage.length < 10) {
+      toast.error("Message must be at least 10 characters");
+      return;
+    }
+
+    hapticLight();
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-support-ticket", {
+        body: {
+          name: trimmedName,
+          email: trimmedEmail,
+          subject: trimmedSubject || `${category} request`,
+          message: trimmedMessage,
+          category,
+        },
+      });
+      if (error) throw error;
+      toast.success("Message sent! We'll reply within a few hours.");
+      setSubject("");
+      setMessage("");
+    } catch (err) {
+      console.error("Support ticket error:", err);
+      toast.error("Could not send message. Please try email or WhatsApp.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    background: "white",
+    border: "0.5px solid hsl(var(--border))",
+    borderRadius: 12,
+    padding: "12px 14px",
+    fontSize: 15,
+    color: "hsl(var(--dark))",
+    width: "100%",
+    fontFamily: "inherit",
+    outline: "none",
   };
 
   return (
@@ -97,7 +174,6 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
           Contact us
         </p>
 
-        {/* Primary email */}
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => openMail(SUPPORT_EMAIL_PRIMARY)}
@@ -120,7 +196,6 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
           <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
         </motion.button>
 
-        {/* Secondary email */}
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => openMail(SUPPORT_EMAIL_SECONDARY)}
@@ -143,7 +218,6 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
           <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
         </motion.button>
 
-        {/* Phone */}
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={openTel}
@@ -166,7 +240,6 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
           <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
         </motion.button>
 
-        {/* WhatsApp */}
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={openWhatsApp}
@@ -190,11 +263,137 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
         </motion.button>
       </motion.div>
 
+      {/* Contact form */}
+      <motion.form
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.18 }}
+        onSubmit={handleSubmit}
+        className="space-y-3"
+      >
+        <p className="label-caps px-1" style={{ color: "hsl(var(--text-muted))" }}>
+          Send us a message
+        </p>
+        <div className="tend-card p-4 space-y-3">
+          <div>
+            <label className="text-[12.5px] font-sans block mb-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+              Your name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Jane Doe"
+              maxLength={100}
+              style={inputStyle}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-[12.5px] font-sans block mb-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              maxLength={255}
+              style={inputStyle}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-[12.5px] font-sans block mb-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+              Category
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map((c) => {
+                const active = c === category;
+                return (
+                  <motion.button
+                    key={c}
+                    type="button"
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { hapticLight(); setCategory(c); }}
+                    className="px-3 py-1.5 rounded-full text-[12.5px] font-medium font-sans"
+                    style={{
+                      background: active ? "hsl(var(--green))" : "white",
+                      color: active ? "white" : "hsl(var(--dark))",
+                      border: active ? "0.5px solid hsl(var(--green))" : "0.5px solid hsl(var(--border))",
+                    }}
+                  >
+                    {c}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[12.5px] font-sans block mb-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+              Subject (optional)
+            </label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Brief summary"
+              maxLength={200}
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label className="text-[12.5px] font-sans block mb-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+              Message
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Tell us how we can help…"
+              maxLength={4000}
+              rows={5}
+              style={{ ...inputStyle, resize: "vertical", minHeight: 120 }}
+              required
+            />
+            <p className="text-[11px] font-sans mt-1 text-right" style={{ color: "hsl(var(--text-muted))" }}>
+              {message.length}/4000
+            </p>
+          </div>
+
+          <motion.button
+            type="submit"
+            whileTap={{ scale: 0.97 }}
+            disabled={submitting}
+            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-[15px] font-sans"
+            style={{
+              background: submitting ? "hsl(var(--green) / 0.5)" : "hsl(var(--green))",
+              color: "white",
+            }}
+          >
+            {submitting ? (
+              <>
+                <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                Sending…
+              </>
+            ) : (
+              <>
+                <IonIcon name="send" size={16} style={{ color: "white" }} />
+                Send message
+              </>
+            )}
+          </motion.button>
+        </div>
+      </motion.form>
+
       {/* FAQs */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.2 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.22 }}
         className="space-y-3"
       >
         <p className="label-caps px-1" style={{ color: "hsl(var(--text-muted))" }}>
