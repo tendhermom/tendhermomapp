@@ -18,20 +18,16 @@ interface BabyShowerPost {
   parent_names: string;
   month_label: string;
   gender: string;
+  birth_type: "single" | "twins" | "triplets" | "quadruplets";
   image_url: string | null;
   reactions_count: number;
   user_id: string;
   created_at: string;
   gift_enabled: boolean;
   gift_total: number;
-}
-
-interface Gift {
-  id: string;
-  sender_name: string;
-  amount: number;
-  message: string | null;
-  created_at: string;
+  account_name: string | null;
+  account_number: string | null;
+  bank_name: string | null;
 }
 
 interface BabyShowerScreenProps {
@@ -78,19 +74,20 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [userReactions, setUserReactions] = useState<Record<string, string>>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Gift modals
-  const [sendGiftPost, setSendGiftPost] = useState<BabyShowerPost | null>(null);
-  const [viewGiftsPost, setViewGiftsPost] = useState<BabyShowerPost | null>(null);
-  const [gifts, setGifts] = useState<Gift[]>([]);
-  const [giftSenderName, setGiftSenderName] = useState("");
-  const [giftAmount, setGiftAmount] = useState("");
-  const [giftMessage, setGiftMessage] = useState("");
-  const [sendingGift, setSendingGift] = useState(false);
+  // P2P Give-a-Gift sheet (visitor sees owner's bank account details)
+  const [giveGiftPost, setGiveGiftPost] = useState<BabyShowerPost | null>(null);
+  // Owner — add/edit bank account details sheet
+  const [editAccountPost, setEditAccountPost] = useState<BabyShowerPost | null>(null);
+  const [accountName, setAccountName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [savingAccount, setSavingAccount] = useState(false);
 
   // Create form state
   const [babyName, setBabyName] = useState("");
   const [parentNames, setParentNames] = useState("");
-  const [gender, setGender] = useState<"boy" | "girl">("boy");
+  const [gender, setGender] = useState<"boy" | "girl" | "mixed">("boy");
+  const [birthType, setBirthType] = useState<"single" | "twins" | "triplets" | "quadruplets">("single");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
