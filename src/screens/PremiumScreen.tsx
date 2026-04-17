@@ -87,7 +87,7 @@ const PLANS: Array<{
 
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const refreshUser = useAuthStore((s) => s.refreshUser);
+  const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const isPremium = user?.plan_type === "premium";
   const [selectedPlan, setSelectedPlan] = useState<"weekly" | "monthly" | "yearly">("yearly");
   const [purchasing, setPurchasing] = useState(false);
