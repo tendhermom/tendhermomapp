@@ -5,8 +5,8 @@ import IonIcon from "@/components/IonIcon";
 // Preview images
 import babyShower1 from "@/assets/previews/baby-shower-1.jpg";
 import babyShower2 from "@/assets/previews/baby-shower-2.jpg";
-import healthHubs1 from "@/assets/previews/doctor-booking-1.jpg";
-import healthHubs2 from "@/assets/previews/doctor-booking-2.jpg";
+import healthHubs1 from "@/assets/hubs/maternal.jpg";
+import healthHubs2 from "@/assets/hubs/diagnostics.jpg";
 import aiChat1 from "@/assets/previews/ai-chat-1.jpg";
 import aiChat2 from "@/assets/previews/ai-chat-2.jpg";
 import sosContacts1 from "@/assets/previews/sos-contacts-1.jpg";
@@ -24,8 +24,8 @@ const FEATURE_PREVIEWS: Record<string, PreviewSlide[]> = {
     { image: babyShower2, title: "Receive Digital Gifts", description: "Friends & family can send gifts and congratulations" },
   ],
   "Health Hubs": [
-    { image: healthHubs1, title: "Health Hubs", description: "Find nearby health centers, pharmacies & emergency facilities" },
-    { image: healthHubs2, title: "Smart Directory", description: "Filter by maternal health, pediatrics, emergency & more" },
+    { image: healthHubs1, title: "Care Near You", description: "Browse trusted maternal, pediatric, emergency, and diagnostic facilities nearby." },
+    { image: healthHubs2, title: "Search With Confidence", description: "Compare services, directions, and location-based options faster with Health Hubs." },
   ],
   "Unlimited AI Chat": [
     { image: aiChat1, title: "24/7 Health Assistant", description: "Get instant answers to pregnancy health questions" },
