@@ -2,12 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 
-// Preview images
+// Static illustrations (one per gated feature — no carousel)
 import babyShowerIllustration from "@/assets/previews/baby-shower-illustration.jpg";
-import healthHubs1 from "@/assets/hubs/maternal.jpg";
-import healthHubs2 from "@/assets/hubs/diagnostics.jpg";
-import aiChat1 from "@/assets/previews/ai-chat-1.jpg";
-import aiChat2 from "@/assets/previews/ai-chat-2.jpg";
+import rescueMapIllustration from "@/assets/previews/rescue-map-illustration.jpg";
+import aiChatIllustration from "@/assets/previews/ai-chat-illustration.jpg";
 
 interface PreviewSlide {
   image: string;
@@ -16,17 +14,14 @@ interface PreviewSlide {
 }
 
 const FEATURE_PREVIEWS: Record<string, PreviewSlide[]> = {
-  // Baby Shower intentionally renders a single static illustration (no carousel) — see render below.
   "Baby Shower": [
     { image: babyShowerIllustration, title: "Celebrate Your Baby", description: "Share milestones and receive gifts from loved ones" },
   ],
   "Rescue Map": [
-    { image: healthHubs1, title: "Care Near You", description: "Browse trusted maternal, pediatric, emergency, and diagnostic facilities nearby." },
-    { image: healthHubs2, title: "Search With Confidence", description: "Compare services, directions, and location-based options faster with the Rescue Map." },
+    { image: rescueMapIllustration, title: "Care Near You", description: "Find trusted maternal, pediatric, emergency, and diagnostic facilities nearby" },
   ],
   "Unlimited AI Chat": [
-    { image: aiChat1, title: "24/7 Health Assistant", description: "Get instant answers to pregnancy health questions" },
-    { image: aiChat2, title: "Personalised Guidance", description: "Nutrition tips with African dietary options included" },
+    { image: aiChatIllustration, title: "24/7 Health Assistant", description: "Personalised pregnancy guidance with no weekly limits" },
   ],
 };
 
@@ -48,7 +43,12 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
   const benefits = FEATURE_BENEFITS[feature] || [];
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // Auto-rotate carousel
+  // Clamp index in case slides shrinks (defensive — fixes a crash when
+  // FEATURE_PREVIEWS is reduced from multi-slide to single illustration).
+  const safeIndex = slides.length > 0 ? Math.min(activeSlide, slides.length - 1) : 0;
+  const currentSlide = slides[safeIndex];
+
+  // Auto-rotate carousel (no-op for single illustration)
   useEffect(() => {
     if (slides.length <= 1) return;
     const interval = setInterval(() => {
