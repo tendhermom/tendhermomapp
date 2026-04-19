@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+
 import { hapticHeavy, hapticWarning, hapticSuccess, screenShield, preventSleep, backgroundLocation } from "@/lib/despia";
 import { Sentry } from "@/lib/sentry";
 
