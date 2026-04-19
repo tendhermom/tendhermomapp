@@ -37,6 +37,8 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const [showSent, setShowSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [sentInfo, setSentInfo] = useState({ count: 0, time: "" });
+  const [sosError, setSosError] = useState<string | null>(null);
+  const [contactsError, setContactsError] = useState<string | null>(null);
 
   // Fetch contacts
   useEffect(() => {
@@ -90,15 +92,19 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
 
   const handleSOSTap = useCallback(() => {
     if (contacts.length === 0) {
-      toast.error("Add at least one emergency contact first");
+      setContactsError("Add at least one emergency contact below before sending an SOS.");
+      hapticWarning();
       return;
     }
+    setContactsError(null);
+    setSosError(null);
     hapticWarning();
     setShowConfirm(true);
   }, [contacts]);
 
   const handleSendSOS = async () => {
     setIsSending(true);
+    setSosError(null);
     hapticHeavy();
     // Keep screen awake and track location in background during SOS
     preventSleep.enable();
@@ -161,7 +167,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         tags: { feature: "sos", severity: "critical" },
         extra: { contactCount: contacts.length, hasCoords: !!coords },
       });
-      toast.error("Failed to send alert. Please call emergency services directly: 112");
+      setSosError("Could not send alert. Please call emergency services directly: 112");
     } finally {
       setIsSending(false);
       preventSleep.disable();
