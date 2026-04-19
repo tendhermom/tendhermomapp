@@ -534,6 +534,7 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          inactivity_alerts_enabled: boolean
           last_active_at: string
           lmp_date: string | null
           phone: string | null
@@ -556,6 +557,7 @@ export type Database = {
           email?: string | null
           full_name?: string
           id: string
+          inactivity_alerts_enabled?: boolean
           last_active_at?: string
           lmp_date?: string | null
           phone?: string | null
@@ -578,6 +580,7 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          inactivity_alerts_enabled?: boolean
           last_active_at?: string
           lmp_date?: string | null
           phone?: string | null

@@ -15,6 +15,7 @@ interface UserProfile {
   can_post: boolean;
   avatar_url: string | null;
   user_type: "mother";
+  inactivity_alerts_enabled: boolean;
 }
 
 interface AuthState {
@@ -62,6 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           can_post: data.can_post,
           avatar_url: data.avatar_url,
           user_type: "mother",
+          inactivity_alerts_enabled: (data as any).inactivity_alerts_enabled ?? true,
         },
         isAuthenticated: true,
         isLoading: false,

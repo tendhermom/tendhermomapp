@@ -6,6 +6,7 @@ import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import HelpSupportScreen from "@/screens/HelpSupportScreen";
+import SafetySettingsScreen from "@/screens/SafetySettingsScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +35,7 @@ const menuSections = [
       { icon: "diamond-outline", label: "TendherMom Plus", route: "premium" },
       { icon: "people-outline", label: "Refer & Earn", route: "referrals" },
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
+      { icon: "shield-checkmark-outline", label: "Safety Net", route: "safety" },
       { icon: "notifications-outline", label: "Notifications", route: "notifications" },
       { icon: "shield-outline", label: "Moderation", route: "moderation", adminOnly: true },
       { icon: "share-social-outline", label: "Share TendherMom", route: "share-app" },
@@ -112,6 +114,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "help") {
     return <HelpSupportScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "safety") {
+    return <SafetySettingsScreen onBack={() => setSubScreen(null)} />;
+  }
   if (subScreen === "privacy" || subScreen === "terms") {
     return (
       <div className="space-y-4 pb-4">
@@ -144,7 +149,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       setSubScreen(route);
       return;
     }
-    if (["edit-profile", "notifications"].includes(route)) {
+    if (["edit-profile", "notifications", "safety"].includes(route)) {
       setSubScreen(route);
     } else if (route === "premium" || route === "emergency-contacts") {
       onNavigate(route);

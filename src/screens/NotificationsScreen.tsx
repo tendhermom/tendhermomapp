@@ -22,6 +22,7 @@ const typeIcons: Record<string, { icon: string; color: string }> = {
   community: { icon: "people-outline", color: "hsl(var(--sage))" },
   reminder: { icon: "alarm-outline", color: "hsl(var(--coral))" },
   emergency: { icon: "warning-outline", color: "hsl(var(--destructive))" },
+  checkin: { icon: "heart-outline", color: "hsl(var(--green))" },
   general: { icon: "notifications-outline", color: "hsl(var(--green))" },
 };
 

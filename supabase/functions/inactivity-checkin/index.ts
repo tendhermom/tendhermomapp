@@ -25,6 +25,7 @@ interface Profile {
   id: string;
   full_name: string;
   last_active_at: string;
+  inactivity_alerts_enabled?: boolean | null;
 }
 
 interface Contact {
@@ -80,7 +81,7 @@ serve(async (req) => {
     const selfCutoff = new Date(Date.now() - SELF_CHECKIN_HOURS * 60 * 60 * 1000).toISOString();
     const { data: profiles, error: profilesErr } = await admin
       .from("profiles")
-      .select("id, full_name, last_active_at")
+      .select("id, full_name, last_active_at, inactivity_alerts_enabled")
       .lt("last_active_at", selfCutoff)
       .limit(MAX_USERS_PER_RUN);
 
@@ -155,6 +156,12 @@ serve(async (req) => {
       }
 
       // ─── TIER 2: 48h+ contact escalation ───
+      // Respect user opt-out (Apple compliance / consent)
+      if (profile.inactivity_alerts_enabled === false) {
+        skipped.push(`${profile.id}:opted-out`);
+        continue;
+      }
+
       if (!termiiKey) {
         skipped.push(`${profile.id}:no-termii-key`);
         continue;
