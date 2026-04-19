@@ -81,16 +81,44 @@ const SEVERITY_CONFIG: Record<Severity, { bg: string; color: string; icon: strin
   },
 };
 
+// Universal intake screening question — guarantees every pathway has at least
+// one upstream step so users never feel they "jumped" straight to a result.
+// Clinically meaningful: duration is always a relevant first-line filter.
+const INTAKE_ID = "__intake__";
+const INTAKE_QUESTION = {
+  id: INTAKE_ID,
+  text: "How long have you been experiencing this?",
+  // `next` is patched at runtime to point to the pathway's real first question.
+  options: [
+    { label: "Just started — within the last hour", next: "" },
+    { label: "Earlier today", next: "" },
+    { label: "1–3 days", next: "" },
+    { label: "More than 3 days", next: "" },
+  ],
+};
+
 const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const [selectedPathway, setSelectedPathway] = useState<TriagePathway | null>(null);
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<string[]>([]);
   const [outcome, setOutcome] = useState<TriageOutcome | null>(null);
+  const [pendingOutcome, setPendingOutcome] = useState<TriageOutcome | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const currentQuestion = selectedPathway?.questions.find((q) => q.id === currentQuestionId) || null;
+  // Build a pathway with the intake question prepended and routed to the original first Q.
+  const augmentedPathway = useMemo<TriagePathway | null>(() => {
+    if (!selectedPathway) return null;
+    const realFirstId = selectedPathway.questions[0].id;
+    const intake = {
+      ...INTAKE_QUESTION,
+      options: INTAKE_QUESTION.options.map((o) => ({ ...o, next: realFirstId })),
+    };
+    return { ...selectedPathway, questions: [intake, ...selectedPathway.questions] };
+  }, [selectedPathway]);
+
+  const currentQuestion = augmentedPathway?.questions.find((q) => q.id === currentQuestionId) || null;
   // Use sequential step count based on answers given, not array index
   const stepNumber = answers.length + 1;
   // Calculate max depth for current path by traversing from current question
@@ -108,7 +136,9 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     }
     return maxD;
   }, []);
-  const totalStepsEstimate = selectedPathway ? getMaxDepth(selectedPathway.questions[0].id, selectedPathway, 1) : 1;
+  const totalStepsEstimate = augmentedPathway
+    ? getMaxDepth(augmentedPathway.questions[0].id, augmentedPathway, 1)
+    : 1;
 
   const groupedPathways = useMemo(() => {
     const groups: Record<string, TriagePathway[]> = {};
@@ -126,9 +156,10 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
 
   const startPathway = useCallback((pathway: TriagePathway) => {
     setSelectedPathway(pathway);
-    setCurrentQuestionId(pathway.questions[0].id);
+    setCurrentQuestionId(INTAKE_ID);
     setAnswers([]);
     setOutcome(null);
+    setPendingOutcome(null);
   }, []);
 
   const handleAnswer = useCallback(async (optionLabel: string, next?: string, optionOutcome?: TriageOutcome) => {
@@ -136,7 +167,8 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setAnswers(newAnswers);
 
     if (optionOutcome) {
-      setOutcome(optionOutcome);
+      // Show a brief "analysing" transition so the result never feels like an abrupt jump.
+      setPendingOutcome(optionOutcome);
       setCurrentQuestionId(null);
       if (user && selectedPathway) {
         setSaving(true);
@@ -150,6 +182,11 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         }]);
         setSaving(false);
       }
+      // Reveal outcome after a short, deliberate delay (~1.2s).
+      window.setTimeout(() => {
+        setOutcome(optionOutcome);
+        setPendingOutcome(null);
+      }, 1200);
     } else if (next) {
       setCurrentQuestionId(next);
     }
@@ -160,6 +197,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setCurrentQuestionId(null);
     setAnswers([]);
     setOutcome(null);
+    setPendingOutcome(null);
     setSelectedCategory(null);
   }, []);
 
@@ -168,6 +206,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setCurrentQuestionId(null);
     setAnswers([]);
     setOutcome(null);
+    setPendingOutcome(null);
   }, []);
 
   // ========================
