@@ -328,7 +328,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
               whileTap={{ scale: 0.9 }}
               onClick={async () => {
                 if (!isContactPickerSupported()) {
-                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
                   setEditingContact({ ...emptyContact });
                   return;
                 }
@@ -343,12 +343,12 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
                       : `+234${result.contact.phone.replace(/^0/, "")}`,
                   });
                 } else if (result.status === "denied") {
-                  toast.error("Permission denied. Enable contacts access in your browser settings.");
+                  showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
                 } else if (result.status === "unsupported") {
-                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
                   setEditingContact({ ...emptyContact });
                 }
-                // 'cancelled' = user closed picker, no toast needed
+                // 'cancelled' = user closed picker, no message needed
               }}
               className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
               style={{ background: "hsl(var(--light-green))" }}
