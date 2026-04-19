@@ -405,6 +405,41 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   }
 
   // ========================
+  // ANALYSING TRANSITION (between last answer and outcome)
+  // ========================
+  if (pendingOutcome && !outcome) {
+    return (
+      <motion.div
+        key="analysing"
+        className="flex flex-col items-center justify-center min-h-[60vh] space-y-5"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div
+          className="w-[68px] h-[68px] rounded-full flex items-center justify-center"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))",
+            boxShadow: "0 8px 32px -8px hsla(153,42%,30%,0.35)",
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.2, ease: "linear", repeat: Infinity }}
+        >
+          <IonIcon name="sync" size={28} style={{ color: "hsl(var(--green))" }} />
+        </motion.div>
+        <div className="text-center space-y-1">
+          <p className="font-serif text-[18px]" style={{ color: "hsl(var(--dark))" }}>
+            Reviewing your answers
+          </p>
+          <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+            Matching against clinical guidance…
+          </p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ========================
   // OUTCOME SCREEN
   // ========================
   if (outcome) {
