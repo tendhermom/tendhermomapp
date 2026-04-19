@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { pickNativeContact, isContactPickerSupported, hapticSuccess } from "@/lib/despia";
+
+type StatusMsg = { kind: "error" | "success" | "info"; text: string } | null;
 
 interface EmergencyContact {
   id: string;
