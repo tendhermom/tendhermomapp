@@ -82,8 +82,8 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
                 className="absolute inset-0"
               >
                 <img
-                  src={slides[activeSlide].image}
-                  alt={slides[activeSlide].title}
+                  src={currentSlide.image}
+                  alt={currentSlide.title}
                   className="w-full h-full object-cover"
                   loading="lazy"
                   width={640}
@@ -110,10 +110,10 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
                   transition={{ duration: 0.3 }}
                 >
                   <h3 className="text-white text-[18px] font-serif leading-tight">
-                    {slides[activeSlide].title}
+                    {currentSlide.title}
                   </h3>
                   <p className="text-white/70 text-[12px] font-sans mt-1 leading-relaxed">
-                    {slides[activeSlide].description}
+                    {currentSlide.description}
                   </p>
                 </motion.div>
               </AnimatePresence>
