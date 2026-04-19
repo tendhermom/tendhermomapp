@@ -5,6 +5,7 @@ import IonIcon from "@/components/IonIcon";
 import { hapticLight } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
+import { Sentry } from "@/lib/sentry";
 
 interface HelpSupportScreenProps {
   onBack: () => void;
@@ -96,6 +97,12 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
 
     hapticLight();
     setSubmitting(true);
+    Sentry.addBreadcrumb({
+      category: "support",
+      level: "info",
+      message: "ticket-submit",
+      data: { category, hasSubject: !!trimmedSubject, messageLength: trimmedMessage.length },
+    });
     try {
       const { error } = await supabase.functions.invoke("send-support-ticket", {
         body: {
@@ -112,6 +119,7 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
       setMessage("");
     } catch (err) {
       console.error("Support ticket error:", err);
+      Sentry.captureException(err, { tags: { feature: "support-ticket" }, extra: { category } });
       toast.error("Could not send message. Please try email or WhatsApp.");
     } finally {
       setSubmitting(false);

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
+import { Sentry } from "@/lib/sentry";
 
 interface AIChatScreenProps {
   onBack: () => void;
@@ -42,6 +43,13 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
     setInput("");
     setIsLoading(true);
 
+    Sentry.addBreadcrumb({
+      category: "ai-chat",
+      level: "info",
+      message: "send",
+      data: { messageCount: newMessages.length, isPremium },
+    });
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const resp = await fetch(CHAT_URL, {
@@ -56,7 +64,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
       });
 
       if (!resp.ok || !resp.body) {
-        throw new Error("Failed to get response");
+        throw new Error(`ai-chat HTTP ${resp.status}`);
       }
 
       // Stream SSE response
@@ -96,6 +104,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
 
       if (!isPremium) setWeeklyCount((c) => c + 1);
     } catch (e) {
+      Sentry.captureException(e, { tags: { feature: "ai-chat" } });
       setMessages((prev) => [
         ...prev,
         { id: (Date.now() + 2).toString(), role: "assistant", content: "I'm having trouble connecting right now. Please try again in a moment." },

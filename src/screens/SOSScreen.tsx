@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hapticHeavy, hapticWarning, hapticSuccess, screenShield, preventSleep, backgroundLocation } from "@/lib/despia";
+import { Sentry } from "@/lib/sentry";
 
 interface EmergencyContact {
   id: string;
@@ -102,6 +103,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     // Keep screen awake and track location in background during SOS
     preventSleep.enable();
     backgroundLocation.start();
+    Sentry.addBreadcrumb({
+      category: "sos",
+      level: "warning",
+      message: "dispatch-start",
+      data: { contactCount: contacts.length, hasCoords: !!coords },
+    });
     try {
     const contactsPayload = contacts.map((c) => ({
         name: c.name,
@@ -147,8 +154,13 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       setShowConfirm(false);
       setShowSent(true);
       hapticSuccess();
+      Sentry.addBreadcrumb({ category: "sos", level: "info", message: "dispatch-success" });
     } catch (err) {
       console.error("SOS send error:", err);
+      Sentry.captureException(err, {
+        tags: { feature: "sos", severity: "critical" },
+        extra: { contactCount: contacts.length, hasCoords: !!coords },
+      });
       toast.error("Failed to send alert. Please call emergency services directly: 112");
     } finally {
       setIsSending(false);
