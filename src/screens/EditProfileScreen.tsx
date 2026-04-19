@@ -210,6 +210,34 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
         </div>
       </div>
 
+      <AnimatePresence>
+        {status && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="px-4 py-3 rounded-2xl flex items-start gap-2"
+            style={{
+              background:
+                status.kind === "error"
+                  ? "hsl(var(--light-coral))"
+                  : status.kind === "success"
+                  ? "hsl(var(--light-green))"
+                  : "hsl(var(--surface))",
+            }}
+          >
+            <IonIcon
+              name={status.kind === "error" ? "alert-circle" : status.kind === "success" ? "checkmark-circle" : "information-circle"}
+              size={18}
+              style={{ color: status.kind === "error" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+            />
+            <span className="text-[13px] font-sans" style={{ color: "hsl(var(--dark))" }}>
+              {status.text}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={handleSave}
