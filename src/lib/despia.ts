@@ -284,58 +284,57 @@ export interface NativeContact {
   phone: string;
 }
 
+export type ContactPickStatus = "ok" | "cancelled" | "unsupported" | "denied";
+
+export interface ContactPickResult {
+  status: ContactPickStatus;
+  contact: NativeContact | null;
+}
+
+/** True if a contact picker (Web Contacts API or supported native shell) is usable on this device. */
+export const isContactPickerSupported = (): boolean => {
+  if (typeof navigator === "undefined" || typeof window === "undefined") return false;
+  return "contacts" in navigator && "ContactsManager" in window;
+};
+
 /**
- * Pick a contact from the device's native contact book.
- * On native: triggers contactpicker:// protocol and listens for the callback.
- * On web: uses the Contact Picker API if available, otherwise returns null.
+ * Pick a contact from the device's address book.
+ * Uses the W3C Contact Picker API (Chrome on Android, Despia Android shell).
+ * iOS Safari / iOS Despia do not expose this API — caller should fall back to manual entry.
  */
-export const pickNativeContact = (): Promise<NativeContact | null> => {
-  return new Promise((resolve) => {
-    if (isDespiaNative()) {
-      // Despia sends the result back via a global callback
-      const callbackName = `__despia_contact_cb_${Date.now()}`;
-      (window as any)[callbackName] = (name: string, phone: string) => {
-        delete (window as any)[callbackName];
-        if (name && phone) {
-          resolve({ name, phone: phone.replace(/[\s()-]/g, "") });
-        } else {
-          resolve(null);
-        }
-      };
-      despiaCommand("contactpicker", "pick", { callback: callbackName });
+export const pickNativeContact = async (): Promise<ContactPickResult> => {
+  if (!isContactPickerSupported()) {
+    return { status: "unsupported", contact: null };
+  }
 
-      // Timeout fallback — if no response in 30s, resolve null
-      setTimeout(() => {
-        if ((window as any)[callbackName]) {
-          delete (window as any)[callbackName];
-          resolve(null);
-        }
-      }, 30000);
-      return;
+  try {
+    const results = await (navigator as any).contacts.select(["name", "tel"], {
+      multiple: false,
+    });
+
+    if (!results || results.length === 0) {
+      // User opened the picker and closed it without choosing
+      return { status: "cancelled", contact: null };
     }
 
-    // Web Contact Picker API fallback (Chrome on Android)
-    if ("contacts" in navigator && "ContactsManager" in window) {
-      (navigator as any).contacts
-        .select(["name", "tel"], { multiple: false })
-        .then((results: any[]) => {
-          if (results && results.length > 0) {
-            const c = results[0];
-            resolve({
-              name: c.name?.[0] || "",
-              phone: (c.tel?.[0] || "").replace(/[\s()-]/g, ""),
-            });
-          } else {
-            resolve(null);
-          }
-        })
-        .catch(() => resolve(null));
-      return;
+    const c = results[0];
+    const name = Array.isArray(c.name) ? c.name[0] || "" : c.name || "";
+    const rawPhone = Array.isArray(c.tel) ? c.tel[0] || "" : c.tel || "";
+    const phone = String(rawPhone).replace(/[\s()-]/g, "");
+
+    if (!phone) {
+      return { status: "cancelled", contact: null };
     }
 
-    // No native contact access
-    resolve(null);
-  });
+    return { status: "ok", contact: { name, phone } };
+  } catch (err: any) {
+    // SecurityError / NotAllowedError = user denied permission
+    const code = err?.name || "";
+    if (code === "SecurityError" || code === "NotAllowedError") {
+      return { status: "denied", contact: null };
+    }
+    return { status: "unsupported", contact: null };
+  }
 };
 
 // ─── Native Torch / Flashlight ────────────────────────────────
