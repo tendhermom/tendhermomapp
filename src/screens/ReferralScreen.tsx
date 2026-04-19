@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hapticLight, hapticSuccess } from "@/lib/despia";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { Sentry } from "@/lib/sentry";
 
 interface ReferralScreenProps {
   onBack: () => void;
@@ -69,6 +70,12 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
     if (!user?.id) return;
 
     setSending(true);
+    Sentry.addBreadcrumb({
+      category: "referral",
+      level: "info",
+      message: "invite-send",
+      data: { phoneLength: formatted.length },
+    });
     try {
       const existing = referrals.find((r) => r.referred_phone === formatted);
       if (existing) {
@@ -87,12 +94,13 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
 
       // Send SMS via edge function
       const { data: session } = await supabase.auth.getSession();
-      await supabase.functions.invoke("send-referral-sms", {
+      const { error: smsError } = await supabase.functions.invoke("send-referral-sms", {
         body: { phone: formatted, referrer_name: user.full_name },
         headers: session?.session
           ? { Authorization: `Bearer ${session.session.access_token}` }
           : undefined,
       });
+      if (smsError) throw smsError;
 
       hapticSuccess();
       toast.success("Invitation sent via SMS!");
@@ -106,6 +114,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         .order("created_at", { ascending: false });
       setReferrals((data as Referral[]) || []);
     } catch (err: any) {
+      Sentry.captureException(err, { tags: { feature: "referral-sms" } });
       toast.error(err.message || "Failed to send invite");
     } finally {
       setSending(false);

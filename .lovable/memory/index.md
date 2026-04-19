@@ -37,3 +37,5 @@
 - [User Roles](mem://architecture/user-roles) — Mum and Admin only. Health Expert decommissioned.
 - [Onboarding Flow](mem://auth/onboarding-flow) — Splash to Intro to Signup. Mandatory LMP entry for new Mums.
 - [Scaling & Performance](mem://architecture/scaling) — DB indexes, edge function rate limits, image compression, query caching
+- [Inactivity Check-In](mem://features/inactivity-checkin) — 48h silent SMS wellness check to up to 2 emergency contacts via hourly cron
+- [Observability](mem://architecture/observability) — Sentry breadcrumbs + capture across ai-chat, sos, referral-sms, support-ticket

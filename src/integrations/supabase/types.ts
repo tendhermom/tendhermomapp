@@ -389,6 +389,45 @@ export type Database = {
         }
         Relationships: []
       }
+      inactivity_alerts: {
+        Row: {
+          channel: string
+          contact_id: string
+          contact_name: string
+          contact_phone: string
+          error: string | null
+          id: string
+          inactive_hours: number
+          sent_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          contact_id: string
+          contact_name: string
+          contact_phone: string
+          error?: string | null
+          id?: string
+          inactive_hours: number
+          sent_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          contact_id?: string
+          contact_name?: string
+          contact_phone?: string
+          error?: string | null
+          id?: string
+          inactive_hours?: number
+          sent_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -495,6 +534,7 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          last_active_at: string
           lmp_date: string | null
           phone: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
@@ -516,6 +556,7 @@ export type Database = {
           email?: string | null
           full_name?: string
           id: string
+          last_active_at?: string
           lmp_date?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
@@ -537,6 +578,7 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          last_active_at?: string
           lmp_date?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
@@ -835,6 +877,7 @@ export type Database = {
       increment_comments: { Args: { p_post_id: string }; Returns: undefined }
       increment_likes: { Args: { p_post_id: string }; Returns: undefined }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
+      touch_last_active: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
