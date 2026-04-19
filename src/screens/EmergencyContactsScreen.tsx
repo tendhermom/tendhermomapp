@@ -297,6 +297,35 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           ))}
         </div>
 
+        {/* Inline status (form) */}
+        <AnimatePresence>
+          {formStatus && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="px-4 py-3 rounded-2xl flex items-start gap-2"
+              style={{
+                background:
+                  formStatus.kind === "error"
+                    ? "hsl(var(--light-coral))"
+                    : formStatus.kind === "success"
+                    ? "hsl(var(--light-green))"
+                    : "hsl(var(--bg))",
+              }}
+            >
+              <IonIcon
+                name={formStatus.kind === "error" ? "alert-circle" : formStatus.kind === "success" ? "checkmark-circle" : "information-circle"}
+                size={18}
+                style={{ color: formStatus.kind === "error" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+              />
+              <span className="text-[13px] font-sans" style={{ color: "hsl(var(--dark))" }}>
+                {formStatus.text}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Save button */}
         <motion.button
           whileTap={{ scale: 0.97 }}
