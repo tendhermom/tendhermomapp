@@ -81,16 +81,44 @@ const SEVERITY_CONFIG: Record<Severity, { bg: string; color: string; icon: strin
   },
 };
 
+// Universal intake screening question — guarantees every pathway has at least
+// one upstream step so users never feel they "jumped" straight to a result.
+// Clinically meaningful: duration is always a relevant first-line filter.
+const INTAKE_ID = "__intake__";
+const INTAKE_QUESTION = {
+  id: INTAKE_ID,
+  text: "How long have you been experiencing this?",
+  // `next` is patched at runtime to point to the pathway's real first question.
+  options: [
+    { label: "Just started — within the last hour", next: "" },
+    { label: "Earlier today", next: "" },
+    { label: "1–3 days", next: "" },
+    { label: "More than 3 days", next: "" },
+  ],
+};
+
 const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const [selectedPathway, setSelectedPathway] = useState<TriagePathway | null>(null);
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<string[]>([]);
   const [outcome, setOutcome] = useState<TriageOutcome | null>(null);
+  const [pendingOutcome, setPendingOutcome] = useState<TriageOutcome | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const currentQuestion = selectedPathway?.questions.find((q) => q.id === currentQuestionId) || null;
+  // Build a pathway with the intake question prepended and routed to the original first Q.
+  const augmentedPathway = useMemo<TriagePathway | null>(() => {
+    if (!selectedPathway) return null;
+    const realFirstId = selectedPathway.questions[0].id;
+    const intake = {
+      ...INTAKE_QUESTION,
+      options: INTAKE_QUESTION.options.map((o) => ({ ...o, next: realFirstId })),
+    };
+    return { ...selectedPathway, questions: [intake, ...selectedPathway.questions] };
+  }, [selectedPathway]);
+
+  const currentQuestion = augmentedPathway?.questions.find((q) => q.id === currentQuestionId) || null;
   // Use sequential step count based on answers given, not array index
   const stepNumber = answers.length + 1;
   // Calculate max depth for current path by traversing from current question
@@ -108,7 +136,9 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     }
     return maxD;
   }, []);
-  const totalStepsEstimate = selectedPathway ? getMaxDepth(selectedPathway.questions[0].id, selectedPathway, 1) : 1;
+  const totalStepsEstimate = augmentedPathway
+    ? getMaxDepth(augmentedPathway.questions[0].id, augmentedPathway, 1)
+    : 1;
 
   const groupedPathways = useMemo(() => {
     const groups: Record<string, TriagePathway[]> = {};
@@ -126,9 +156,10 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
 
   const startPathway = useCallback((pathway: TriagePathway) => {
     setSelectedPathway(pathway);
-    setCurrentQuestionId(pathway.questions[0].id);
+    setCurrentQuestionId(INTAKE_ID);
     setAnswers([]);
     setOutcome(null);
+    setPendingOutcome(null);
   }, []);
 
   const handleAnswer = useCallback(async (optionLabel: string, next?: string, optionOutcome?: TriageOutcome) => {
@@ -136,7 +167,8 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setAnswers(newAnswers);
 
     if (optionOutcome) {
-      setOutcome(optionOutcome);
+      // Show a brief "analysing" transition so the result never feels like an abrupt jump.
+      setPendingOutcome(optionOutcome);
       setCurrentQuestionId(null);
       if (user && selectedPathway) {
         setSaving(true);
@@ -150,6 +182,11 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         }]);
         setSaving(false);
       }
+      // Reveal outcome after a short, deliberate delay (~1.2s).
+      window.setTimeout(() => {
+        setOutcome(optionOutcome);
+        setPendingOutcome(null);
+      }, 1200);
     } else if (next) {
       setCurrentQuestionId(next);
     }
@@ -160,6 +197,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setCurrentQuestionId(null);
     setAnswers([]);
     setOutcome(null);
+    setPendingOutcome(null);
     setSelectedCategory(null);
   }, []);
 
@@ -168,6 +206,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
     setCurrentQuestionId(null);
     setAnswers([]);
     setOutcome(null);
+    setPendingOutcome(null);
   }, []);
 
   // ========================
@@ -249,7 +288,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         <motion.div variants={fadeUp} className="flex items-start gap-2.5 pt-1">
           <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            Reviewed by Dr. Adaeze Nwosu, FWACS · LUTH. Adapted from NHS 111 protocols with Nigerian clinical context. This tool does not replace professional medical advice.
+            Adapted from NHS 111 protocols with Nigerian clinical context. This tool does not replace professional medical advice.
           </p>
         </motion.div>
       </motion.div>
@@ -366,6 +405,41 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   }
 
   // ========================
+  // ANALYSING TRANSITION (between last answer and outcome)
+  // ========================
+  if (pendingOutcome && !outcome) {
+    return (
+      <motion.div
+        key="analysing"
+        className="flex flex-col items-center justify-center min-h-[60vh] space-y-5"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div
+          className="w-[68px] h-[68px] rounded-full flex items-center justify-center"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--light-green)), hsl(144 28% 89%))",
+            boxShadow: "0 8px 32px -8px hsla(153,42%,30%,0.35)",
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.2, ease: "linear", repeat: Infinity }}
+        >
+          <IonIcon name="sync" size={28} style={{ color: "hsl(var(--green))" }} />
+        </motion.div>
+        <div className="text-center space-y-1">
+          <p className="font-serif text-[18px]" style={{ color: "hsl(var(--dark))" }}>
+            Reviewing your answers
+          </p>
+          <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+            Matching against clinical guidance…
+          </p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ========================
   // OUTCOME SCREEN
   // ========================
   if (outcome) {
@@ -466,7 +540,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         <div className="flex items-start gap-2.5">
           <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            This is guidance only and does not replace professional medical advice. Reviewed by Dr. Adaeze Nwosu, FWACS.
+            This is guidance only and does not replace professional medical advice.
           </p>
         </div>
       </motion.div>
