@@ -96,6 +96,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
     if (!validate(editingContact)) return;
 
     setSaving(true);
+    setFormStatus(null);
     const payload = {
       user_id: user.id,
       name: editingContact.name!.trim(),
@@ -105,7 +106,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
       email: null,
       sms_enabled: editingContact.sms_enabled ?? true,
       whatsapp_enabled: editingContact.whatsapp_enabled ?? false,
-      email_enabled: editingContact.voice_enabled ?? false, // store voice in email_enabled column
+      email_enabled: editingContact.voice_enabled ?? false,
       is_primary: contacts.length === 0,
     };
 
@@ -114,30 +115,39 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         .from("emergency_contacts")
         .update(payload)
         .eq("id", editingContact.id);
-      if (error) toast.error("Failed to update contact");
-      else toast.success("Contact updated");
+      if (error) {
+        setSaving(false);
+        showFormStatus({ kind: "error", text: "Couldn't update contact. Check your connection and try again." });
+        return;
+      }
     } else {
       const { error } = await supabase.from("emergency_contacts").insert(payload);
-      if (error) toast.error("Failed to add contact");
-      else toast.success("Contact added");
+      if (error) {
+        setSaving(false);
+        showFormStatus({ kind: "error", text: "Couldn't add contact. Check your connection and try again." });
+        return;
+      }
     }
 
     setSaving(false);
     setEditingContact(null);
+    setFormStatus(null);
+    showListStatus({ kind: "success", text: editingContact.id ? "Contact updated." : "Contact added." });
     fetchContacts();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("emergency_contacts").delete().eq("id", id);
-    if (error) toast.error("Failed to delete contact");
-    else {
-      toast.success("Contact removed");
+    if (error) {
+      showListStatus({ kind: "error", text: "Couldn't remove contact. Try again." });
+    } else {
+      showListStatus({ kind: "success", text: "Contact removed." });
       fetchContacts();
     }
   };
 
   const handleSendTest = async () => {
-    toast.info("Sending test alert to all contacts…");
+    showListStatus({ kind: "info", text: "Sending test alert to all contacts…" }, 0);
     try {
       const contactsPayload = contacts.map((c) => ({
         name: c.name,
@@ -168,9 +178,9 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         is_test: true,
       });
 
-      toast.success("Test alert sent successfully");
+      showListStatus({ kind: "success", text: "Test alert sent successfully." });
     } catch {
-      toast.error("Failed to send test alert");
+      showListStatus({ kind: "error", text: "Failed to send test alert. Try again." });
     }
   };
 
