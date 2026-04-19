@@ -47,6 +47,17 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const [editingContact, setEditingContact] = useState<Partial<EmergencyContact> | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formStatus, setFormStatus] = useState<StatusMsg>(null);
+  const [listStatus, setListStatus] = useState<StatusMsg>(null);
+
+  const showFormStatus = (msg: StatusMsg, autoHide = 3500) => {
+    setFormStatus(msg);
+    if (msg && autoHide) setTimeout(() => setFormStatus(null), autoHide);
+  };
+  const showListStatus = (msg: StatusMsg, autoHide = 3500) => {
+    setListStatus(msg);
+    if (msg && autoHide) setTimeout(() => setListStatus(null), autoHide);
+  };
 
   useEffect(() => {
     fetchContacts();
