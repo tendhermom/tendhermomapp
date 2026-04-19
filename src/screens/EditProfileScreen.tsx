@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
+
+type StatusMsg = { kind: "error" | "success" | "info"; text: string } | null;
 
 interface EditProfileScreenProps {
   onBack: () => void;
@@ -21,6 +22,12 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
   const [dueDate, setDueDate] = useState(user?.due_date || "");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [status, setStatus] = useState<StatusMsg>(null);
+
+  const showStatus = (msg: StatusMsg, autoHide = 3500) => {
+    setStatus(msg);
+    if (msg && autoHide) setTimeout(() => setStatus(null), autoHide);
+  };
 
   const initials = user?.full_name
     ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -31,7 +38,7 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
     if (!file || !user) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+      showStatus({ kind: "error", text: "Image must be under 5MB." });
       return;
     }
 
@@ -39,6 +46,7 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
     file = await compressImage(file, { maxDimension: 400, quality: 0.85, maxSizeKB: 200 });
 
     setUploading(true);
+    setStatus(null);
     const ext = file.name.split(".").pop();
     const path = `${user.id}/avatar.${ext}`;
 
@@ -47,13 +55,12 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
       .upload(path, file, { upsert: true });
 
     if (uploadError) {
-      toast.error("Upload failed");
+      showStatus({ kind: "error", text: "Avatar upload failed. Try again." });
       setUploading(false);
       return;
     }
 
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-    // Append cache-buster to avoid stale cached avatars
     const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
     const { error: updateError } = await supabase
@@ -62,10 +69,10 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
       .eq("id", user.id);
 
     if (updateError) {
-      toast.error("Failed to save avatar");
+      showStatus({ kind: "error", text: "Couldn't save avatar. Try again." });
     } else {
       await fetchProfile(user.id);
-      toast.success("Avatar updated!");
+      showStatus({ kind: "success", text: "Avatar updated." });
     }
     setUploading(false);
   };
@@ -73,11 +80,12 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
   const handleSave = async () => {
     if (!user) return;
     if (!fullName.trim()) {
-      toast.error("Name is required");
+      showStatus({ kind: "error", text: "Name is required." });
       return;
     }
 
     setSaving(true);
+    setStatus(null);
     const updates: Record<string, unknown> = {
       full_name: fullName.trim(),
       phone: phone.trim() || null,
@@ -91,13 +99,13 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
       .eq("id", user.id);
 
     if (error) {
-      toast.error("Failed to save");
+      showStatus({ kind: "error", text: "Couldn't save profile. Try again." });
+      setSaving(false);
     } else {
       await fetchProfile(user.id);
-      toast.success("Profile updated!");
+      setSaving(false);
       onBack();
     }
-    setSaving(false);
   };
 
   return (
@@ -201,6 +209,34 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {status && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="px-4 py-3 rounded-2xl flex items-start gap-2"
+            style={{
+              background:
+                status.kind === "error"
+                  ? "hsl(var(--light-coral))"
+                  : status.kind === "success"
+                  ? "hsl(var(--light-green))"
+                  : "hsl(var(--surface))",
+            }}
+          >
+            <IonIcon
+              name={status.kind === "error" ? "alert-circle" : status.kind === "success" ? "checkmark-circle" : "information-circle"}
+              size={18}
+              style={{ color: status.kind === "error" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+            />
+            <span className="text-[13px] font-sans" style={{ color: "hsl(var(--dark))" }}>
+              {status.text}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.button
         whileTap={{ scale: 0.97 }}

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { pickNativeContact, isContactPickerSupported, hapticSuccess } from "@/lib/despia";
+
+type StatusMsg = { kind: "error" | "success" | "info"; text: string } | null;
 
 interface EmergencyContact {
   id: string;
@@ -46,6 +47,17 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const [editingContact, setEditingContact] = useState<Partial<EmergencyContact> | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formStatus, setFormStatus] = useState<StatusMsg>(null);
+  const [listStatus, setListStatus] = useState<StatusMsg>(null);
+
+  const showFormStatus = (msg: StatusMsg, autoHide = 3500) => {
+    setFormStatus(msg);
+    if (msg && autoHide) setTimeout(() => setFormStatus(null), autoHide);
+  };
+  const showListStatus = (msg: StatusMsg, autoHide = 3500) => {
+    setListStatus(msg);
+    if (msg && autoHide) setTimeout(() => setListStatus(null), autoHide);
+  };
 
   useEffect(() => {
     fetchContacts();
@@ -84,6 +96,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
     if (!validate(editingContact)) return;
 
     setSaving(true);
+    setFormStatus(null);
     const payload = {
       user_id: user.id,
       name: editingContact.name!.trim(),
@@ -93,7 +106,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
       email: null,
       sms_enabled: editingContact.sms_enabled ?? true,
       whatsapp_enabled: editingContact.whatsapp_enabled ?? false,
-      email_enabled: editingContact.voice_enabled ?? false, // store voice in email_enabled column
+      email_enabled: editingContact.voice_enabled ?? false,
       is_primary: contacts.length === 0,
     };
 
@@ -102,30 +115,39 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         .from("emergency_contacts")
         .update(payload)
         .eq("id", editingContact.id);
-      if (error) toast.error("Failed to update contact");
-      else toast.success("Contact updated");
+      if (error) {
+        setSaving(false);
+        showFormStatus({ kind: "error", text: "Couldn't update contact. Check your connection and try again." });
+        return;
+      }
     } else {
       const { error } = await supabase.from("emergency_contacts").insert(payload);
-      if (error) toast.error("Failed to add contact");
-      else toast.success("Contact added");
+      if (error) {
+        setSaving(false);
+        showFormStatus({ kind: "error", text: "Couldn't add contact. Check your connection and try again." });
+        return;
+      }
     }
 
     setSaving(false);
     setEditingContact(null);
+    setFormStatus(null);
+    showListStatus({ kind: "success", text: editingContact.id ? "Contact updated." : "Contact added." });
     fetchContacts();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("emergency_contacts").delete().eq("id", id);
-    if (error) toast.error("Failed to delete contact");
-    else {
-      toast.success("Contact removed");
+    if (error) {
+      showListStatus({ kind: "error", text: "Couldn't remove contact. Try again." });
+    } else {
+      showListStatus({ kind: "success", text: "Contact removed." });
       fetchContacts();
     }
   };
 
   const handleSendTest = async () => {
-    toast.info("Sending test alert to all contacts…");
+    showListStatus({ kind: "info", text: "Sending test alert to all contacts…" }, 0);
     try {
       const contactsPayload = contacts.map((c) => ({
         name: c.name,
@@ -156,9 +178,9 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         is_test: true,
       });
 
-      toast.success("Test alert sent successfully");
+      showListStatus({ kind: "success", text: "Test alert sent successfully." });
     } catch {
-      toast.error("Failed to send test alert");
+      showListStatus({ kind: "error", text: "Failed to send test alert. Try again." });
     }
   };
 
@@ -275,6 +297,35 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           ))}
         </div>
 
+        {/* Inline status (form) */}
+        <AnimatePresence>
+          {formStatus && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="px-4 py-3 rounded-2xl flex items-start gap-2"
+              style={{
+                background:
+                  formStatus.kind === "error"
+                    ? "hsl(var(--light-coral))"
+                    : formStatus.kind === "success"
+                    ? "hsl(var(--light-green))"
+                    : "hsl(var(--bg))",
+              }}
+            >
+              <IonIcon
+                name={formStatus.kind === "error" ? "alert-circle" : formStatus.kind === "success" ? "checkmark-circle" : "information-circle"}
+                size={18}
+                style={{ color: formStatus.kind === "error" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+              />
+              <span className="text-[13px] font-sans" style={{ color: "hsl(var(--dark))" }}>
+                {formStatus.text}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Save button */}
         <motion.button
           whileTap={{ scale: 0.97 }}
@@ -306,7 +357,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
               whileTap={{ scale: 0.9 }}
               onClick={async () => {
                 if (!isContactPickerSupported()) {
-                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
                   setEditingContact({ ...emptyContact });
                   return;
                 }
@@ -321,12 +372,12 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
                       : `+234${result.contact.phone.replace(/^0/, "")}`,
                   });
                 } else if (result.status === "denied") {
-                  toast.error("Permission denied. Enable contacts access in your browser settings.");
+                  showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
                 } else if (result.status === "unsupported") {
-                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
                   setEditingContact({ ...emptyContact });
                 }
-                // 'cancelled' = user closed picker, no toast needed
+                // 'cancelled' = user closed picker, no message needed
               }}
               className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
               style={{ background: "hsl(var(--light-green))" }}
@@ -345,6 +396,35 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           </div>
         )}
       </div>
+
+      {/* Inline status (list) */}
+      <AnimatePresence>
+        {listStatus && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="px-4 py-3 rounded-2xl flex items-start gap-2"
+            style={{
+              background:
+                listStatus.kind === "error"
+                  ? "hsl(var(--light-coral))"
+                  : listStatus.kind === "success"
+                  ? "hsl(var(--light-green))"
+                  : "hsl(var(--bg))",
+            }}
+          >
+            <IonIcon
+              name={listStatus.kind === "error" ? "alert-circle" : listStatus.kind === "success" ? "checkmark-circle" : "information-circle"}
+              size={18}
+              style={{ color: listStatus.kind === "error" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+            />
+            <span className="text-[13px] font-sans" style={{ color: "hsl(var(--dark))" }}>
+              {listStatus.text}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Contacts list */}
       {loading ? (
@@ -365,7 +445,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
               whileTap={{ scale: 0.95 }}
               onClick={async () => {
                 if (!isContactPickerSupported()) {
-                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
                   setEditingContact({ ...emptyContact });
                   return;
                 }
@@ -380,7 +460,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
                       : `+234${result.contact.phone.replace(/^0/, "")}`,
                   });
                 } else if (result.status === "denied") {
-                  toast.error("Permission denied. Enable contacts access in your browser settings.");
+                  showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
                 } else if (result.status === "unsupported") {
                   setEditingContact({ ...emptyContact });
                 }
