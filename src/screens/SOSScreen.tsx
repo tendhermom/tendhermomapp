@@ -253,6 +253,24 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
             </span>
           </div>
         </div>
+
+        {/* Inline contact-required notice */}
+        <AnimatePresence>
+          {contactsError && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="mt-4 mx-4 px-4 py-3 rounded-2xl flex items-start gap-2.5"
+              style={{ background: "hsl(var(--light-coral))" }}
+            >
+              <IonIcon name="alert-circle" size={18} style={{ color: "hsl(var(--coral))", marginTop: 1 }} />
+              <p className="text-[13px] font-sans leading-relaxed flex-1" style={{ color: "hsl(var(--dark))" }}>
+                {contactsError}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Emergency Contacts Card */}
@@ -422,6 +440,17 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                   {contacts.some((c) => c.whatsapp_enabled) ? ", WhatsApp" : ""}
                   {contacts.some((c) => c.email_enabled) ? " and Voice Call" : ""}.
                 </p>
+                {sosError && (
+                  <div
+                    className="w-full mb-3 px-4 py-3 rounded-2xl flex items-start gap-2.5 text-left"
+                    style={{ background: "hsl(var(--light-coral))" }}
+                  >
+                    <IonIcon name="alert-circle" size={18} style={{ color: "hsl(var(--coral))", marginTop: 1 }} />
+                    <p className="text-[13px] font-sans leading-relaxed flex-1" style={{ color: "hsl(var(--dark))" }}>
+                      {sosError}
+                    </p>
+                  </div>
+                )}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSendSOS}
@@ -429,11 +458,11 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                   className="w-full py-[15px] rounded-2xl text-white text-[16px] font-semibold font-sans mb-3 disabled:opacity-60"
                   style={{ background: "hsl(var(--coral))" }}
                 >
-                  {isSending ? "Sending…" : "Send SOS Now"}
+                  {isSending ? "Sending…" : sosError ? "Try Again" : "Send SOS Now"}
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowConfirm(false)}
+                  onClick={() => { setShowConfirm(false); setSosError(null); }}
                   disabled={isSending}
                   className="w-full py-[13px] rounded-2xl text-[15px] font-semibold font-sans"
                   style={{ color: "hsl(var(--text-muted))" }}
