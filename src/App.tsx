@@ -14,6 +14,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
 import BiometricLock from "./components/BiometricLock";
+import PhoneBackfillPrompt from "./components/PhoneBackfillPrompt";
 
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -160,6 +161,7 @@ const App = () => {
         <BrowserRouter>
           <AuthListener />
           <AppContent />
+          <PhoneBackfillPrompt />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
