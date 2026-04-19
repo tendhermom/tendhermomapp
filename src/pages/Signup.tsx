@@ -36,8 +36,13 @@ const Signup = () => {
   // Step 1: Send OTP code via Resend
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim() || !email.trim() || !password || password.length < 6) {
+    if (!fullName.trim() || !email.trim() || !phone.trim() || !password || password.length < 6) {
       toast.error("Please fill all fields. Password must be at least 6 characters.");
+      return;
+    }
+    const cleanPhone = phone.replace(/\s/g, "");
+    if (!PHONE_REGEX.test(cleanPhone)) {
+      toast.error("Phone must be in format +234XXXXXXXXXX");
       return;
     }
     setLoading(true);
@@ -76,7 +81,7 @@ const Signup = () => {
         email: email.trim(),
         password,
         options: {
-          data: { full_name: fullName.trim(), user_type: "mother" },
+          data: { full_name: fullName.trim(), phone: phone.replace(/\s/g, ""), user_type: "mother" },
         },
       });
       if (signupErr) throw signupErr;
