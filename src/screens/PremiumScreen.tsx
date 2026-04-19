@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -93,6 +92,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [nativeAvailable, setNativeAvailable] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
 
   useEffect(() => {
     setNativeAvailable(isNativeBillingAvailable());
@@ -103,8 +103,13 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     const plan = PLANS.find((p) => p.id === selectedPlan);
     if (!plan) return;
 
+    setStatusMsg(null);
+
     if (!nativeAvailable) {
-      toast.error("Subscriptions are only available in the TendherMom mobile app.");
+      setStatusMsg({
+        kind: "error",
+        text: "Subscriptions are only available in the TendherMom mobile app.",
+      });
       hapticError();
       return;
     }
@@ -114,19 +119,18 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     try {
       const result = await purchase(plan.productId);
       if (result.cancelled) {
-        // Silent — user backed out
         return;
       }
       if (!result.success) {
-        toast.error(result.error || "Purchase failed. Please try again.");
+        setStatusMsg({ kind: "error", text: result.error || "Purchase failed. Please try again." });
         hapticError();
         return;
       }
       hapticSuccess();
-      toast.success("Welcome to Plus! ✨");
+      setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
       if (user?.id) await fetchProfile(user.id);
     } catch (e: any) {
-      toast.error(e?.message || "Something went wrong.");
+      setStatusMsg({ kind: "error", text: e?.message || "Something went wrong." });
       hapticError();
     } finally {
       setPurchasing(false);
@@ -136,21 +140,22 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const handleRestore = async () => {
     if (restoring) return;
     setRestoring(true);
+    setStatusMsg(null);
     try {
       const result = await restorePurchases();
       if (!result.success) {
-        toast.error(result.error || "No previous purchases found.");
+        setStatusMsg({ kind: "error", text: result.error || "No previous purchases found." });
         return;
       }
       if (result.plan_type === "premium") {
         hapticSuccess();
-        toast.success("Plus restored ✨");
+        setStatusMsg({ kind: "success", text: "Plus restored ✨" });
         if (user?.id) await fetchProfile(user.id);
       } else {
-        toast.info("No active subscription to restore.");
+        setStatusMsg({ kind: "info", text: "No active subscription to restore." });
       }
     } catch (e: any) {
-      toast.error(e?.message || "Restore failed.");
+      setStatusMsg({ kind: "error", text: e?.message || "Restore failed." });
     } finally {
       setRestoring(false);
     }
