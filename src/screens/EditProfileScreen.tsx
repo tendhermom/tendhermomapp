@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
+
+type StatusMsg = { kind: "error" | "success" | "info"; text: string } | null;
 
 interface EditProfileScreenProps {
   onBack: () => void;
