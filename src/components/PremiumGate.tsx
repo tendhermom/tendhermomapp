@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 
 // Preview images
-import babyShower1 from "@/assets/previews/baby-shower-1.jpg";
-import babyShower2 from "@/assets/previews/baby-shower-2.jpg";
+import babyShowerIllustration from "@/assets/previews/baby-shower-illustration.jpg";
 import healthHubs1 from "@/assets/hubs/maternal.jpg";
 import healthHubs2 from "@/assets/hubs/diagnostics.jpg";
 import aiChat1 from "@/assets/previews/ai-chat-1.jpg";
@@ -17,9 +16,9 @@ interface PreviewSlide {
 }
 
 const FEATURE_PREVIEWS: Record<string, PreviewSlide[]> = {
+  // Baby Shower intentionally renders a single static illustration (no carousel) — see render below.
   "Baby Shower": [
-    { image: babyShower1, title: "Celebrate Your Baby", description: "Share beautiful announcements with the TendherMom community" },
-    { image: babyShower2, title: "Receive Peer-to-Peer Gifts", description: "Friends & family send gifts directly to your bank account" },
+    { image: babyShowerIllustration, title: "Celebrate Your Baby", description: "Share milestones and receive gifts from loved ones" },
   ],
   "Rescue Map": [
     { image: healthHubs1, title: "Care Near You", description: "Browse trusted maternal, pediatric, emergency, and diagnostic facilities nearby." },
