@@ -41,11 +41,19 @@ const AuthListener = () => {
   const { fetchProfile, setUser, setLoading } = useAuthStore();
 
   useEffect(() => {
+    // Refresh last_active_at so the inactivity check-in safety net knows the user is active.
+    const touchActivity = () => {
+      supabase.rpc("touch_last_active").then(({ error }) => {
+        if (error) console.warn("[activity] touch failed:", error.message);
+      });
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
           localStorage.setItem("has_logged_in", "true");
           fetchProfile(session.user.id);
+          touchActivity();
           import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
             setOneSignalExternalUserId(session.user.id);
           });
@@ -59,6 +67,7 @@ const AuthListener = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchProfile(session.user.id);
+        touchActivity();
         import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
           setOneSignalExternalUserId(session.user.id);
         });
@@ -67,7 +76,16 @@ const AuthListener = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Re-touch when the app returns to foreground (covers long sessions kept open in background).
+    const onVisible = () => {
+      if (document.visibilityState === "visible") touchActivity();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   return null;
