@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
-import { pickNativeContact, isDespiaNative, hapticSuccess } from "@/lib/despia";
+import { pickNativeContact, isContactPickerSupported, hapticSuccess } from "@/lib/despia";
 
 interface EmergencyContact {
   id: string;
@@ -305,17 +305,28 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={async () => {
-                const contact = await pickNativeContact();
-                if (contact) {
+                if (!isContactPickerSupported()) {
+                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  setEditingContact({ ...emptyContact });
+                  return;
+                }
+                const result = await pickNativeContact();
+                if (result.status === "ok" && result.contact) {
                   hapticSuccess();
                   setEditingContact({
                     ...emptyContact,
-                    name: contact.name,
-                    phone: contact.phone.startsWith("+") ? contact.phone : `+234${contact.phone.replace(/^0/, "")}`,
+                    name: result.contact.name,
+                    phone: result.contact.phone.startsWith("+")
+                      ? result.contact.phone
+                      : `+234${result.contact.phone.replace(/^0/, "")}`,
                   });
-                } else if (!isDespiaNative() && !("contacts" in navigator)) {
-                  toast.info("Contact import is available in the native app");
+                } else if (result.status === "denied") {
+                  toast.error("Permission denied. Enable contacts access in your browser settings.");
+                } else if (result.status === "unsupported") {
+                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  setEditingContact({ ...emptyContact });
                 }
+                // 'cancelled' = user closed picker, no toast needed
               }}
               className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
               style={{ background: "hsl(var(--light-green))" }}
@@ -353,15 +364,24 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={async () => {
-                const contact = await pickNativeContact();
-                if (contact) {
+                if (!isContactPickerSupported()) {
+                  toast.info("Contact import isn't supported on this device — please add manually.");
+                  setEditingContact({ ...emptyContact });
+                  return;
+                }
+                const result = await pickNativeContact();
+                if (result.status === "ok" && result.contact) {
                   hapticSuccess();
                   setEditingContact({
                     ...emptyContact,
-                    name: contact.name,
-                    phone: contact.phone.startsWith("+") ? contact.phone : `+234${contact.phone.replace(/^0/, "")}`,
+                    name: result.contact.name,
+                    phone: result.contact.phone.startsWith("+")
+                      ? result.contact.phone
+                      : `+234${result.contact.phone.replace(/^0/, "")}`,
                   });
-                } else if (!isDespiaNative() && !("contacts" in navigator)) {
+                } else if (result.status === "denied") {
+                  toast.error("Permission denied. Enable contacts access in your browser settings.");
+                } else if (result.status === "unsupported") {
                   setEditingContact({ ...emptyContact });
                 }
               }}
