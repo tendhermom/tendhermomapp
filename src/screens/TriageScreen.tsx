@@ -249,7 +249,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         <motion.div variants={fadeUp} className="flex items-start gap-2.5 pt-1">
           <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            Reviewed by Dr. Adaeze Nwosu, FWACS · LUTH. Adapted from NHS 111 protocols with Nigerian clinical context. This tool does not replace professional medical advice.
+            Adapted from NHS 111 protocols with Nigerian clinical context. This tool does not replace professional medical advice.
           </p>
         </motion.div>
       </motion.div>
@@ -466,7 +466,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         <div className="flex items-start gap-2.5">
           <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            This is guidance only and does not replace professional medical advice. Reviewed by Dr. Adaeze Nwosu, FWACS.
+            This is guidance only and does not replace professional medical advice.
           </p>
         </div>
       </motion.div>
