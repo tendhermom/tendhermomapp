@@ -351,6 +351,48 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       {/* CTA */}
       {!isPremium && (
         <motion.div variants={fadeUp} className="space-y-3">
+          <AnimatePresence>
+            {statusMsg && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="px-4 py-3 rounded-2xl flex items-start gap-2.5"
+                style={{
+                  background:
+                    statusMsg.kind === "error"
+                      ? "hsl(var(--light-coral))"
+                      : statusMsg.kind === "success"
+                      ? "hsl(var(--light-green))"
+                      : "hsl(var(--surface))",
+                }}
+              >
+                <IonIcon
+                  name={
+                    statusMsg.kind === "error"
+                      ? "alert-circle"
+                      : statusMsg.kind === "success"
+                      ? "checkmark-circle"
+                      : "information-circle"
+                  }
+                  size={18}
+                  style={{
+                    color:
+                      statusMsg.kind === "error"
+                        ? "hsl(var(--coral))"
+                        : "hsl(var(--green))",
+                    marginTop: 1,
+                  }}
+                />
+                <p
+                  className="text-[13px] font-sans leading-relaxed flex-1"
+                  style={{ color: "hsl(var(--dark))" }}
+                >
+                  {statusMsg.text}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handlePurchase}
@@ -422,6 +464,48 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       {/* Already premium — manage */}
       {isPremium && (
         <motion.div variants={fadeUp} className="space-y-3">
+          <AnimatePresence>
+            {statusMsg && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="px-4 py-3 rounded-2xl flex items-start gap-2.5"
+                style={{
+                  background:
+                    statusMsg.kind === "error"
+                      ? "hsl(var(--light-coral))"
+                      : statusMsg.kind === "success"
+                      ? "hsl(var(--light-green))"
+                      : "hsl(var(--surface))",
+                }}
+              >
+                <IonIcon
+                  name={
+                    statusMsg.kind === "error"
+                      ? "alert-circle"
+                      : statusMsg.kind === "success"
+                      ? "checkmark-circle"
+                      : "information-circle"
+                  }
+                  size={18}
+                  style={{
+                    color:
+                      statusMsg.kind === "error"
+                        ? "hsl(var(--coral))"
+                        : "hsl(var(--green))",
+                    marginTop: 1,
+                  }}
+                />
+                <p
+                  className="text-[13px] font-sans leading-relaxed flex-1"
+                  style={{ color: "hsl(var(--dark))" }}
+                >
+                  {statusMsg.text}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="tend-card p-4">
             <div className="flex items-center gap-3">
               <div
