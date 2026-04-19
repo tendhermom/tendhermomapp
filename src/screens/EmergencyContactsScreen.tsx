@@ -397,6 +397,35 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
         )}
       </div>
 
+      {/* Inline status (list) */}
+      <AnimatePresence>
+        {listStatus && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="px-4 py-3 rounded-2xl flex items-start gap-2"
+            style={{
+              background:
+                listStatus.kind === "error"
+                  ? "hsl(var(--light-coral))"
+                  : listStatus.kind === "success"
+                  ? "hsl(var(--light-green))"
+                  : "hsl(var(--bg))",
+            }}
+          >
+            <IonIcon
+              name={listStatus.kind === "error" ? "alert-circle" : listStatus.kind === "success" ? "checkmark-circle" : "information-circle"}
+              size={18}
+              style={{ color: listStatus.kind === "error" ? "hsl(var(--coral))" : "hsl(var(--green))" }}
+            />
+            <span className="text-[13px] font-sans" style={{ color: "hsl(var(--dark))" }}>
+              {listStatus.text}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Contacts list */}
       {loading ? (
         <div className="tend-card p-6 text-center">
