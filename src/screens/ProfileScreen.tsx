@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
@@ -10,17 +10,7 @@ import SafetySettingsScreen from "@/screens/SafetySettingsScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
@@ -52,8 +42,11 @@ const menuSections = [
 
 const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [subScreen, setSubScreen] = useState<string | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteSheet, setShowDeleteSheet] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
+  const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<InlineStatusMsg | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const user = useAuthStore((s) => s.user);
   const { logout, getCurrentWeek } = useAuthStore();
@@ -71,12 +64,25 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
     navigate("/login");
   };
 
+  const closeDeleteSheet = () => {
+    if (isDeleting) return;
+    setShowDeleteSheet(false);
+    // small delay so users don't see the reset mid-animation
+    window.setTimeout(() => {
+      setDeleteStep(1);
+      setConfirmText("");
+      setDeleteStatus(null);
+    }, 220);
+  };
+
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
+    setDeleteStatus(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("You must be logged in to delete your account.");
+        setDeleteStatus({ kind: "error", text: "You must be signed in to delete your account." });
+        setIsDeleting(false);
         return;
       }
 
@@ -84,18 +90,15 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (error) throw error;
+      if (error || (data as any)?.error) throw error || new Error((data as any).error);
 
       await supabase.auth.signOut();
       useAuthStore.getState().setUser(null);
       navigate("/login");
-      toast.success("Your account has been deleted.");
     } catch (err) {
       console.error("Delete account failed:", err);
-      toast.error("Failed to delete account. Please try again.");
-    } finally {
+      setDeleteStatus({ kind: "error", text: "Couldn't delete your account. Please try again or contact support." });
       setIsDeleting(false);
-      setShowDeleteDialog(false);
     }
   };
 
@@ -260,42 +263,156 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
         <span className="text-destructive text-[15px] font-semibold font-sans">Log Out</span>
       </motion.button>
 
-      {/* Delete account */}
+      {/* Delete account button */}
       <motion.button
         whileTap={{ scale: 0.97 }}
-        onClick={() => { hapticLight(); setShowDeleteDialog(true); }}
+        onClick={() => { hapticLight(); setShowDeleteSheet(true); }}
         className="w-full tend-card py-[15px] flex items-center justify-center gap-2"
       >
         <IonIcon name="trash-outline" size={20} style={{ color: "hsl(var(--destructive))" }} />
         <span className="text-destructive text-[15px] font-semibold font-sans">Delete Account</span>
       </motion.button>
 
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="rounded-2xl max-w-[340px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[17px] font-serif">Delete Account?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[14px]">
-              This will permanently delete your profile, posts, emergency contacts, and all associated data. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-3">
-            <AlertDialogCancel
-              disabled={isDeleting}
-              className="flex-1 mt-0 rounded-xl"
+      {/* Delete confirmation — premium bottom sheet, two-step */}
+      <AnimatePresence>
+        {showDeleteSheet && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeDeleteSheet}
+              className="fixed inset-0 z-[100]"
+              style={{ background: "rgba(0,0,0,0.55)" }}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 320 }}
+              className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[24px] px-6 pt-6 pb-[max(env(safe-area-inset-bottom,32px),32px)]"
+              style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto" }}
             >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isDeleting}
-              onClick={(e) => { e.preventDefault(); handleDeleteAccount(); }}
-              className="flex-1 bg-destructive hover:bg-destructive/90 rounded-xl"
-            >
-              {isDeleting ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border))" }} />
+
+              {deleteStep === 1 ? (
+                <>
+                  <div
+                    className="w-[56px] h-[56px] rounded-2xl flex items-center justify-center mx-auto mb-3"
+                    style={{ background: "hsl(var(--light-coral))" }}
+                  >
+                    <IonIcon name="warning-outline" size={26} style={{ color: "hsl(var(--coral))" }} />
+                  </div>
+                  <h3 className="font-serif text-[22px] text-center mb-2" style={{ color: "hsl(var(--dark))" }}>
+                    Delete your account?
+                  </h3>
+                  <p className="text-[13px] font-sans text-center leading-relaxed mb-5" style={{ color: "hsl(var(--text-muted))" }}>
+                    This permanently removes your profile, posts, emergency contacts,
+                    health records, and all data tied to your account.
+                  </p>
+
+                  {/* Recovery / grace info card */}
+                  <div
+                    className="rounded-2xl p-4 space-y-2.5 mb-5"
+                    style={{ background: "hsl(var(--bg))" }}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <IonIcon name="time-outline" size={16} style={{ color: "hsl(var(--green))", marginTop: 2 }} />
+                      <p className="text-[12px] font-sans flex-1 leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                        <span className="font-semibold">7-day grace period.</span>{" "}
+                        Sign in within 7 days to cancel deletion and restore your account.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <IonIcon name="shield-checkmark-outline" size={16} style={{ color: "hsl(var(--green))", marginTop: 2 }} />
+                      <p className="text-[12px] font-sans flex-1 leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                        After 7 days, all your data is permanently deleted and cannot be recovered.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <IonIcon name="card-outline" size={16} style={{ color: "hsl(var(--coral))", marginTop: 2 }} />
+                      <p className="text-[12px] font-sans flex-1 leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                        Active TendherMom Plus subscriptions must be cancelled separately
+                        through the App Store or Google Play.
+                      </p>
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setDeleteStep(2)}
+                    className="w-full py-[14px] rounded-2xl text-white text-[15px] font-semibold font-sans mb-2"
+                    style={{ background: "hsl(var(--coral))" }}
+                  >
+                    Continue
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={closeDeleteSheet}
+                    className="w-full py-[12px] rounded-2xl text-[15px] font-semibold font-sans"
+                    style={{ color: "hsl(var(--text-muted))" }}
+                  >
+                    Keep my account
+                  </motion.button>
+                </>
+              ) : (
+                <>
+                  <div
+                    className="w-[56px] h-[56px] rounded-2xl flex items-center justify-center mx-auto mb-3"
+                    style={{ background: "hsl(var(--light-coral))" }}
+                  >
+                    <IonIcon name="trash-outline" size={26} style={{ color: "hsl(var(--coral))" }} />
+                  </div>
+                  <h3 className="font-serif text-[20px] text-center mb-2" style={{ color: "hsl(var(--dark))" }}>
+                    Final confirmation
+                  </h3>
+                  <p className="text-[13px] font-sans text-center mb-4" style={{ color: "hsl(var(--text-muted))" }}>
+                    Type{" "}
+                    <span className="font-bold" style={{ color: "hsl(var(--coral))" }}>DELETE</span>
+                    {" "}below to confirm.
+                  </p>
+
+                  <input
+                    type="text"
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+                    placeholder="Type DELETE"
+                    autoFocus
+                    autoCapitalize="characters"
+                    className="w-full px-4 py-3.5 rounded-2xl text-[15px] font-sans font-semibold text-center outline-none mb-3 tracking-widest"
+                    style={{
+                      background: "hsl(var(--bg))",
+                      color: "hsl(var(--dark))",
+                      border: "1.5px solid hsl(var(--border))",
+                    }}
+                  />
+
+                  <InlineStatus status={deleteStatus} spacing="mb-3" />
+
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting || confirmText !== "DELETE"}
+                    className="w-full py-[14px] rounded-2xl text-white text-[15px] font-semibold font-sans mb-2 disabled:opacity-50"
+                    style={{ background: "hsl(var(--coral))" }}
+                  >
+                    {isDeleting ? "Deleting your account…" : "Permanently delete"}
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={closeDeleteSheet}
+                    disabled={isDeleting}
+                    className="w-full py-[12px] rounded-2xl text-[15px] font-semibold font-sans"
+                    style={{ color: "hsl(var(--text-muted))" }}
+                  >
+                    Cancel
+                  </motion.button>
+                </>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

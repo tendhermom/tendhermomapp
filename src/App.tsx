@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
 import BiometricLock from "./components/BiometricLock";
 import PhoneBackfillPrompt from "./components/PhoneBackfillPrompt";
+import OfflineBanner from "./components/OfflineBanner";
 
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -153,6 +154,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <OfflineBanner />
         <BiometricLock />
         <BrowserRouter>
           <AuthListener />

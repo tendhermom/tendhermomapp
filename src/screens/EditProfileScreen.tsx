@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { compressImage } from "@/lib/imageCompression";
+import { uploadWithProgress } from "@/lib/uploadWithProgress";
+import UploadProgress from "@/components/UploadProgress";
 
 type StatusMsg = { kind: "error" | "success" | "info"; text: string } | null;
 
@@ -22,6 +24,7 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
   const [dueDate, setDueDate] = useState(user?.due_date || "");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [status, setStatus] = useState<StatusMsg>(null);
 
   const showStatus = (msg: StatusMsg, autoHide = 3500) => {
@@ -46,35 +49,38 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
     file = await compressImage(file, { maxDimension: 400, quality: 0.85, maxSizeKB: 200 });
 
     setUploading(true);
+    setUploadProgress(0);
     setStatus(null);
     const ext = file.name.split(".").pop();
     const path = `${user.id}/avatar.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true });
+    try {
+      const { publicUrl } = await uploadWithProgress({
+        bucket: "avatars",
+        path,
+        file,
+        upsert: true,
+        onProgress: (p) => setUploadProgress(p),
+      });
 
-    if (uploadError) {
+      const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("id", user.id);
+
+      if (updateError) {
+        showStatus({ kind: "error", text: "Couldn't save avatar. Try again." });
+      } else {
+        await fetchProfile(user.id);
+        showStatus({ kind: "success", text: "Avatar updated." });
+      }
+    } catch {
       showStatus({ kind: "error", text: "Avatar upload failed. Try again." });
+    } finally {
       setUploading(false);
-      return;
+      setUploadProgress(null);
     }
-
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-    const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ avatar_url: avatarUrl })
-      .eq("id", user.id);
-
-    if (updateError) {
-      showStatus({ kind: "error", text: "Couldn't save avatar. Try again." });
-    } else {
-      await fetchProfile(user.id);
-      showStatus({ kind: "success", text: "Avatar updated." });
-    }
-    setUploading(false);
   };
 
   const handleSave = async () => {
@@ -124,7 +130,7 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
       <div className="flex flex-col items-center gap-3">
         <div className="relative">
           <div
-            className="w-[80px] h-[80px] rounded-full flex items-center justify-center overflow-hidden"
+            className="relative w-[80px] h-[80px] rounded-full flex items-center justify-center overflow-hidden"
             style={{ background: "hsl(var(--green))" }}
           >
             {user?.avatar_url ? (
@@ -132,19 +138,18 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
             ) : (
               <span className="text-white text-[28px] font-bold font-sans">{initials}</span>
             )}
+            <UploadProgress progress={uploadProgress} rounded="rounded-full" />
           </div>
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => fileRef.current?.click()}
-            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center"
+            disabled={uploading}
+            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-50"
             style={{ background: "hsl(var(--coral))" }}
           >
             <IonIcon name="camera-outline" size={16} style={{ color: "white" }} />
           </motion.button>
         </div>
-        {uploading && (
-          <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Uploading…</p>
-        )}
         <input
           ref={fileRef}
           type="file"

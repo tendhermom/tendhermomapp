@@ -4,6 +4,8 @@ import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import { compressImage } from "@/lib/imageCompression";
+import { uploadWithProgress } from "@/lib/uploadWithProgress";
+import UploadProgress from "@/components/UploadProgress";
 
 interface CreatePostModalProps {
   open: boolean;
@@ -18,6 +20,7 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [status, setStatus] = useState<InlineStatusMsg | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -49,26 +52,30 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
 
     if (imageFile) {
       setUploading(true);
+      setUploadProgress(0);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setUploading(false); return; }
+      if (!user) { setUploading(false); setUploadProgress(null); return; }
 
       const ext = imageFile.name.split(".").pop();
       const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("community-images")
-        .upload(path, imageFile);
 
-      if (error) {
+      try {
+        const { publicUrl } = await uploadWithProgress({
+          bucket: "community-images",
+          path,
+          file: imageFile,
+          onProgress: (p) => setUploadProgress(p),
+        });
+        imageUrl = publicUrl;
+      } catch {
         setStatus({ kind: "error", text: "Couldn't upload image. Please try again." });
         setUploading(false);
+        setUploadProgress(null);
         return;
       }
 
-      const { data: urlData } = supabase.storage
-        .from("community-images")
-        .getPublicUrl(path);
-      imageUrl = urlData.publicUrl;
       setUploading(false);
+      setUploadProgress(null);
     }
 
     onSubmit(content, imageUrl);
@@ -120,14 +127,17 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
             {imagePreview && (
               <div className="relative mt-3">
                 <img src={imagePreview} alt="Preview" className="w-full h-[160px] object-cover rounded-2xl" />
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(0,0,0,0.6)" }}
-                >
-                  <IonIcon name="close" size={16} style={{ color: "white" }} />
-                </motion.button>
+                <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
+                {!uploading && (
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(0,0,0,0.6)" }}
+                  >
+                    <IonIcon name="close" size={16} style={{ color: "white" }} />
+                  </motion.button>
+                )}
               </div>
             )}
 

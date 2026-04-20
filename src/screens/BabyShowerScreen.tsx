@@ -6,6 +6,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PremiumGate from "@/components/PremiumGate";
+import { uploadWithProgress } from "@/lib/uploadWithProgress";
+import UploadProgress from "@/components/UploadProgress";
 
 import babyShower1 from "@/assets/baby-shower-1.jpg";
 import babyShower2 from "@/assets/baby-shower-2.jpg";
@@ -91,6 +93,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -224,15 +227,20 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
     if (!activeMonth) return;
     setSubmitting(true);
+    setUploadProgress(null);
     let imageUrl: string | null = null;
     try {
       if (imageFile) {
         const ext = imageFile.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("baby-shower-images").upload(path, imageFile);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage.from("baby-shower-images").getPublicUrl(path);
-        imageUrl = urlData.publicUrl;
+        setUploadProgress(0);
+        const { publicUrl } = await uploadWithProgress({
+          bucket: "baby-shower-images",
+          path,
+          file: imageFile,
+          onProgress: (p) => setUploadProgress(p),
+        });
+        imageUrl = publicUrl;
       }
       const { error } = await supabase.from("baby_shower_posts").insert({
         user_id: user.id, baby_name: babyName.trim(), parent_names: parentNames.trim(),
@@ -244,7 +252,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFile(null); setImagePreview(null);
       await fetchPosts();
     } catch (err) { console.error(err); toast.error("Failed to create post"); }
-    finally { setSubmitting(false); }
+    finally { setSubmitting(false); setUploadProgress(null); }
   };
 
   const handleMonthTap = (monthLabel: string, isCurrent: boolean) => {
@@ -448,11 +456,12 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                   <div>
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
                     {imagePreview ? (
-                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => fileInputRef.current?.click()} className="relative cursor-pointer">
+                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => !submitting && fileInputRef.current?.click()} className="relative cursor-pointer">
                         <img src={imagePreview} alt="Preview" className="w-full h-[180px] object-cover rounded-2xl" />
                         <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
                           <IonIcon name="camera" size={28} style={{ color: "white" }} />
                         </div>
+                        <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
                       </motion.div>
                     ) : (
                       <motion.button whileTap={{ scale: 0.97 }} onClick={() => fileInputRef.current?.click()}

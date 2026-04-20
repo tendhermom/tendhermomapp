@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 interface SafetySettingsScreenProps {
   onBack: () => void;
@@ -15,10 +15,16 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const [enabled, setEnabled] = useState<boolean>(user?.inactivity_alerts_enabled ?? true);
   const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     setEnabled(user?.inactivity_alerts_enabled ?? true);
   }, [user?.inactivity_alerts_enabled]);
+
+  const showStatus = (msg: InlineStatusMsg) => {
+    setStatus(msg);
+    window.setTimeout(() => setStatus(null), 3000);
+  };
 
   const handleToggle = async (next: boolean) => {
     if (!user) return;
@@ -31,11 +37,14 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
     setSaving(false);
     if (error) {
       setEnabled(!next);
-      toast.error("Could not update setting");
+      showStatus({ kind: "error", text: "Couldn't update setting. Please try again." });
       return;
     }
     await fetchProfile(user.id);
-    toast.success(next ? "Safety net enabled" : "Safety net disabled");
+    showStatus({
+      kind: "success",
+      text: next ? "Safety net enabled — your contacts will be alerted after 48h of inactivity." : "Safety net disabled — only the 24h self check-in remains.",
+    });
   };
 
   return (
@@ -74,6 +83,8 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
             </p>
           </div>
         </div>
+
+        <InlineStatus status={status} spacing="mb-4 mt-1" />
 
         <div
           className="rounded-2xl p-4 space-y-3"
