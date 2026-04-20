@@ -63,10 +63,13 @@ const Index = () => {
   useEffect(() => {
     const emergencyScreens = ["sos", "emergency-contacts"];
     const lightScreens = ["community", "baby-shower"];
+    const surfaceScreens = ["profile", "premium", "referrals", "moderation", "notifications"];
     if (emergencyScreens.includes(activeTab)) {
       StatusBarThemes.emergency();
     } else if (lightScreens.includes(activeTab)) {
       StatusBarThemes.light();
+    } else if (surfaceScreens.includes(activeTab)) {
+      StatusBarThemes.surface();
     } else {
       StatusBarThemes.primary();
     }
