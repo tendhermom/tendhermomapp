@@ -8,7 +8,7 @@ import NotificationsScreen from "@/screens/NotificationsScreen";
 import HelpSupportScreen from "@/screens/HelpSupportScreen";
 import SafetySettingsScreen from "@/screens/SafetySettingsScreen";
 import { useAuthStore } from "@/stores/authStore";
-import { nativeShare, hapticLight } from "@/lib/despia";
+import { nativeShare, hapticLight, screenShield } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
@@ -58,6 +58,12 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       setIsAdmin(!!data);
     });
   }, [user]);
+
+  // Screen Shield — protect personal profile data from screenshots/screen recording.
+  useEffect(() => {
+    screenShield.enable();
+    return () => { screenShield.disable(); };
+  }, []);
 
   const handleLogout = async () => {
     await logout();
