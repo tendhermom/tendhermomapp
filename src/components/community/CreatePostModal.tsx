@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import { compressImage } from "@/lib/imageCompression";
 
 interface CreatePostModalProps {
@@ -18,16 +18,17 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     let file = e.target.files?.[0];
     if (!file) return;
+    setStatus(null);
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image must be under 10MB");
+      setStatus({ kind: "error", text: "Image must be under 10MB" });
       return;
     }
-    // Compress before preview and upload
     file = await compressImage(file, { maxDimension: 1200, quality: 0.8, maxSizeKB: 500 });
     setImageFile(file);
     const reader = new FileReader();
@@ -42,6 +43,7 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
 
   const handleSubmit = async () => {
     if (!content.trim() && !imageFile) return;
+    setStatus(null);
 
     let imageUrl: string | undefined;
 
@@ -57,7 +59,7 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
         .upload(path, imageFile);
 
       if (error) {
-        toast.error("Failed to upload image");
+        setStatus({ kind: "error", text: "Couldn't upload image. Please try again." });
         setUploading(false);
         return;
       }
@@ -142,6 +144,8 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
                 <span className="text-[13px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>Photo</span>
               </motion.button>
             </div>
+
+            <InlineStatus status={status} spacing="mt-3" />
 
             <motion.button
               whileTap={{ scale: 0.97 }}

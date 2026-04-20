@@ -4,7 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import type { CommunityPost } from "@/stores/communityStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 interface CommunityCardProps {
   post: CommunityPost;
@@ -38,6 +38,8 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   const [showReport, setShowReport] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [reporting, setReporting] = useState(false);
+  const [cardStatus, setCardStatus] = useState<InlineStatusMsg | null>(null);
+  const [reportStatus, setReportStatus] = useState<InlineStatusMsg | null>(null);
 
   const initials = (post.author_name || "A")
     .split(" ")
@@ -51,6 +53,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   const handleReport = async () => {
     if (!selectedReason || !user) return;
     setReporting(true);
+    setReportStatus(null);
     const { error } = await (supabase as any).from("reported_posts").insert({
       post_id: post.id,
       reporter_id: user.id,
@@ -58,20 +61,25 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
     });
     setReporting(false);
     if (!error) {
-      toast.success("Post reported. Our team will review it.");
-      setShowReport(false);
-      setShowMenu(false);
-      setSelectedReason(null);
+      setReportStatus({ kind: "success", text: "Post reported. Our team will review it." });
+      setTimeout(() => {
+        setShowReport(false);
+        setShowMenu(false);
+        setSelectedReason(null);
+        setReportStatus(null);
+      }, 1400);
     } else {
-      toast.error("Failed to report post");
+      setReportStatus({ kind: "error", text: "Couldn't submit report. Please try again." });
     }
   };
 
   const handleDeleteOwn = async () => {
     const { error } = await supabase.from("community_posts").delete().eq("id", post.id);
     if (!error) {
-      toast.success("Post deleted");
       onHide?.(post.id);
+    } else {
+      setCardStatus({ kind: "error", text: "Couldn't delete post. Please try again." });
+      setTimeout(() => setCardStatus(null), 3500);
     }
     setShowMenu(false);
   };
@@ -158,6 +166,9 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Inline card-level status (e.g., delete error) */}
+      <InlineStatus status={cardStatus} spacing="" />
 
       {/* Content */}
       <p className="text-[14px] font-sans leading-relaxed whitespace-pre-wrap" style={{ color: "hsl(var(--dark))" }}>
@@ -265,6 +276,8 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
                   </motion.button>
                 ))}
               </div>
+              <InlineStatus status={reportStatus} spacing="mb-3" />
+
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleReport}

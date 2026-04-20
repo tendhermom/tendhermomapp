@@ -215,6 +215,9 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
           </motion.button>
         </div>
 
+        {/* Inline status banner */}
+        <InlineStatus status={feedStatus} spacing="" />
+
         {/* Posts feed — Facebook-style */}
         {loading ? (
           <div className="flex justify-center py-12">
@@ -488,6 +491,8 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
                     {COMMUNITIES.find(c => c.id === joiningCommunity)?.label}
                   </span>? Joining lets you share, post pictures, comment, and connect with moms in the same stage.
                 </p>
+
+                <InlineStatus status={joinStatus} spacing="mb-2 w-full" />
 
                 <motion.button
                   whileTap={{ scale: 0.97 }}
