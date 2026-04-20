@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -12,33 +12,35 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     const hash = window.location.hash;
     if (!hash.includes("type=recovery")) {
-      toast.error("Invalid or expired reset link.");
+      // No banner here — the screen redirects immediately.
       navigate("/login");
     }
   }, [navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    setStatus(null);
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+      setStatus({ kind: "error", text: "Password must be at least 6 characters." });
       return;
     }
     if (password !== confirm) {
-      toast.error("Passwords don't match.");
+      setStatus({ kind: "error", text: "Passwords don't match." });
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      setStatus({ kind: "error", text: error.message });
     } else {
-      toast.success("Password updated successfully!");
-      navigate("/");
+      setStatus({ kind: "success", text: "Password updated — taking you in…" });
+      setTimeout(() => navigate("/"), 800);
     }
   };
 
@@ -168,6 +170,8 @@ const ResetPassword = () => {
                 </span>
               </motion.div>
             )}
+
+            <InlineStatus status={status} spacing="" />
 
             <motion.button
               initial={{ opacity: 0, y: 12 }}

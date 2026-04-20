@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import heroImg from "@/assets/auth-reset-hero.png";
 
 const SPARKLES = [
@@ -16,16 +16,18 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
+    setStatus(null);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
-    if (error) toast.error(error.message);
+    if (error) setStatus({ kind: "error", text: error.message });
     else setSent(true);
   };
 
@@ -144,6 +146,7 @@ const ForgotPassword = () => {
                     />
                   </div>
                 </div>
+                <InlineStatus status={status} spacing="" />
                 <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={loading}
                   className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
                   style={{
