@@ -4,6 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import PATHWAYS, { CATEGORIES, type TriagePathway, type TriageOutcome, type Severity } from "@/data/triagePathways";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
+import { hapticSelection, hapticSuccess, hapticWarning } from "@/lib/despia";
 
 // Category images
 import imgFetal from "@/assets/triage/fetal.jpg";
@@ -163,6 +164,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   }, []);
 
   const handleAnswer = useCallback(async (optionLabel: string, next?: string, optionOutcome?: TriageOutcome) => {
+    hapticSelection();
     const newAnswers = [...answers, optionLabel];
     setAnswers(newAnswers);
 
@@ -186,6 +188,9 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
       window.setTimeout(() => {
         setOutcome(optionOutcome);
         setPendingOutcome(null);
+        // Severity-aware feedback: red = warning buzz, others = soft success.
+        if (optionOutcome.severity === "red") hapticWarning();
+        else hapticSuccess();
       }, 1200);
     } else if (next) {
       setCurrentQuestionId(next);

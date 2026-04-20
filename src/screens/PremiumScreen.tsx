@@ -8,7 +8,7 @@ import {
   restorePurchases,
   type PlusProductId,
 } from "@/lib/native-billing";
-import { hapticSuccess, hapticError, hapticSelection } from "@/lib/despia";
+import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 
 interface PremiumScreenProps {
   onBack: () => void;
@@ -96,6 +96,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
   useEffect(() => {
     setNativeAvailable(isNativeBillingAvailable());
+    // Screen Shield — block screenshots/recordings of pricing & purchase flow
+    screenShield.enable();
+    return () => { screenShield.disable(); };
   }, []);
 
   const handlePurchase = async () => {
