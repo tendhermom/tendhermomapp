@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import CreatePostModal from "@/components/community/CreatePostModal";
 import CommentsSheet from "@/components/community/CommentsSheet";
+import { PostCardSkeleton } from "@/components/skeletons/Skeletons";
 
 import img1st from "@/assets/1st_trimester.jpeg";
 import img2nd from "@/assets/2nd_trimester.jpeg";
@@ -220,8 +221,10 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
 
         {/* Posts feed — Facebook-style */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
+          <div className="space-y-3">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
           </div>
         ) : posts.length === 0 ? (
           <div className="tend-card p-10 text-center">
@@ -389,8 +392,14 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
       </div>
 
       {loadingMemberships ? (
-        <div className="flex justify-center py-12">
-          <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
+        <div className="grid grid-cols-2 gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="rounded-[20px] animate-pulse"
+              style={{ aspectRatio: "3/4", background: "hsl(var(--muted))" }}
+            />
+          ))}
         </div>
       ) : (
         <motion.div

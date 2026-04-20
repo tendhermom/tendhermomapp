@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
+import { NotificationSkeleton } from "@/components/skeletons/Skeletons";
 
 interface NotificationsScreenProps {
   onBack: () => void;
@@ -135,8 +136,11 @@ const NotificationsScreen = ({ onBack }: NotificationsScreenProps) => {
 
       {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <p className="text-[14px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Loading…</p>
+        <div className="space-y-2">
+          <NotificationSkeleton />
+          <NotificationSkeleton />
+          <NotificationSkeleton />
+          <NotificationSkeleton />
         </div>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
