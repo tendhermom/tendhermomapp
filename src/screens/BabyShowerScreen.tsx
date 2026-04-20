@@ -631,7 +631,9 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                     alt={month.label}
                     className="absolute inset-0 w-full h-full object-cover"
                     style={{ objectPosition: "center 30%" }}
-                    loading="lazy"
+                    loading={isCurrent ? "eager" : "lazy"}
+                    decoding="async"
+                    {...(!isCurrent ? { fetchpriority: "low" as any } : {})}
                   />
                   {/* Warm gradient overlay */}
                   <div
