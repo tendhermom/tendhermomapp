@@ -302,13 +302,9 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           >
             {savingLmp ? "Saving…" : "Continue"}
           </motion.button>
-          <button
-            onClick={goNext}
-            className="w-full py-3 text-[14px] font-sans font-medium"
-            style={{ color: "hsl(var(--text-muted))" }}
-          >
-            I'll do this later
-          </button>
+          <p className="text-[12px] font-sans text-center px-4" style={{ color: "hsl(var(--text-muted))" }}>
+            Your LMP powers your due date, weekly insights, and antenatal timeline — it's required to continue.
+          </p>
         </div>
       </div>
     );

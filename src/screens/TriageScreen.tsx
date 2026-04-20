@@ -4,6 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import PATHWAYS, { CATEGORIES, type TriagePathway, type TriageOutcome, type Severity } from "@/data/triagePathways";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
+import { hapticSelection, hapticSuccess, hapticWarning } from "@/lib/despia";
 
 // Category images
 import imgFetal from "@/assets/triage/fetal.jpg";
