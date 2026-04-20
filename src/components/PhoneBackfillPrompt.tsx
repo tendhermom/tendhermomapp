@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 const PHONE_REGEX = /^\+234[0-9]{10}$/;
 const SKIP_KEY = "phone_backfill_skipped_at";
@@ -19,6 +19,7 @@ const PhoneBackfillPrompt = () => {
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -43,8 +44,9 @@ const PhoneBackfillPrompt = () => {
   const handleSave = async () => {
     if (!user) return;
     const clean = phone.replace(/\s/g, "");
+    setStatus(null);
     if (!PHONE_REGEX.test(clean)) {
-      toast.error("Please enter a valid Nigerian number (+234XXXXXXXXXX)");
+      setStatus({ kind: "error", text: "Please enter a valid Nigerian number (+234XXXXXXXXXX)" });
       return;
     }
     setSaving(true);
@@ -54,13 +56,16 @@ const PhoneBackfillPrompt = () => {
       .eq("id", user.id);
     setSaving(false);
     if (error) {
-      toast.error("Could not save your number");
+      setStatus({ kind: "error", text: "Couldn't save your number. Please try again." });
       return;
     }
     await fetchProfile(user.id);
     localStorage.removeItem(SKIP_KEY);
-    toast.success("Phone number saved");
-    setOpen(false);
+    setStatus({ kind: "success", text: "Phone number saved!" });
+    setTimeout(() => {
+      setOpen(false);
+      setStatus(null);
+    }, 1100);
   };
 
   return (
@@ -117,6 +122,7 @@ const PhoneBackfillPrompt = () => {
                 color: "hsl(var(--dark))",
               }}
             />
+            <InlineStatus status={status} spacing="mb-3" />
             <div className="flex gap-2">
               <button
                 onClick={handleSkip}

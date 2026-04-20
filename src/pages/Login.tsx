@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import { useAuthStore } from "@/stores/authStore";
 import heroImg from "@/assets/auth-login-hero.png";
 import logo from "@/assets/logo.jpeg";
@@ -23,6 +23,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [resending, setResending] = useState(false);
   const [showResend, setShowResend] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) navigate("/", { replace: true });
@@ -33,23 +34,24 @@ const Login = () => {
     if (!email.trim() || !password) return;
     setLoading(true);
     setShowResend(false);
+    setStatus(null);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) setShowResend(true);
-      toast.error(error.message);
+      setStatus({ kind: "error", text: error.message });
     } else {
       navigate("/");
     }
   };
 
   const handleResendVerification = async () => {
-    if (!email.trim()) { toast.error("Please enter your email first"); return; }
+    if (!email.trim()) { setStatus({ kind: "error", text: "Please enter your email first" }); return; }
     setResending(true);
     const { error } = await supabase.auth.resend({ type: "signup", email: email.trim() });
     setResending(false);
-    if (error) toast.error(error.message);
-    else { toast.success("Verification email sent! Check your inbox."); setShowResend(false); }
+    if (error) setStatus({ kind: "error", text: error.message });
+    else { setStatus({ kind: "success", text: "Verification email sent! Check your inbox." }); setShowResend(false); }
   };
 
   return (
@@ -195,6 +197,8 @@ const Login = () => {
                   </motion.button>
                 </motion.div>
               )}
+
+              <InlineStatus status={status} spacing="" />
 
               <motion.button
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}

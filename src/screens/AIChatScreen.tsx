@@ -4,6 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { Sentry } from "@/lib/sentry";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 interface AIChatScreenProps {
   onBack: () => void;
@@ -26,6 +27,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [weeklyCount, setWeeklyCount] = useState(0);
+  const [errorStatus, setErrorStatus] = useState<InlineStatusMsg | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const canAsk = isPremium || weeklyCount < WEEKLY_LIMIT_FREE;
@@ -37,6 +39,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
   const handleSend = async () => {
     if (!input.trim() || isLoading || !canAsk) return;
 
+    setErrorStatus(null);
     const userMsg: Message = { id: Date.now().toString(), role: "user", content: input.trim() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -105,10 +108,10 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
       if (!isPremium) setWeeklyCount((c) => c + 1);
     } catch (e) {
       Sentry.captureException(e, { tags: { feature: "ai-chat" } });
-      setMessages((prev) => [
-        ...prev,
-        { id: (Date.now() + 2).toString(), role: "assistant", content: "I'm having trouble connecting right now. Please try again in a moment." },
-      ]);
+      setErrorStatus({
+        kind: "error",
+        text: "Couldn't reach the assistant. Check your connection and try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -212,6 +215,9 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
           </motion.button>
         </motion.div>
       )}
+
+      {/* Inline error */}
+      <InlineStatus status={errorStatus} spacing="mb-1" />
 
       {/* Input */}
       <div className="flex items-end gap-2 pt-2" style={{ borderTop: "1px solid hsl(var(--border-subtle))" }}>

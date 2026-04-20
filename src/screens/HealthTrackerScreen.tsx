@@ -4,7 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import SmartGuidance from "@/components/health/SmartGuidance";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 interface HealthTrackerScreenProps {
   onNavigate: (screen: string) => void;
@@ -56,6 +56,7 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const [weight, setWeight] = useState("");
   const [entries, setEntries] = useState<HealthEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [logStatus, setLogStatus] = useState<InlineStatusMsg | null>(null);
 
   const fetchEntries = useCallback(async () => {
     if (!user?.id) return;
@@ -90,6 +91,7 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const handleSaveEntry = async () => {
     if (!systolic && !diastolic && !heartRate && !weight) return;
     if (!user?.id) return;
+    setLogStatus(null);
 
     const payload: any = { user_id: user.id };
     if (systolic) payload.systolic = parseInt(systolic);
@@ -99,18 +101,21 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
 
     const { error } = await supabase.from("health_metrics" as any).insert(payload);
     if (error) {
-      toast.error("Failed to save entry");
+      setLogStatus({ kind: "error", text: "Couldn't save your entry. Please try again." });
       return;
     }
 
-    toast.success("Health metrics saved!");
+    const isHighBP = systolic && parseInt(systolic) > 140;
+    setLogStatus({
+      kind: isHighBP ? "warning" : "success",
+      text: isHighBP
+        ? "Saved. Your blood pressure is elevated — please consult your doctor."
+        : "Health metrics saved!",
+    });
     setSystolic(""); setDiastolic(""); setHeartRate(""); setWeight("");
     setShowInput(false);
     fetchEntries();
-
-    if (systolic && parseInt(systolic) > 140) {
-      toast.warning("Your blood pressure is elevated — please consult your doctor.");
-    }
+    setTimeout(() => setLogStatus(null), 5000);
   };
 
   const getBPStatus = (sys?: number, dia?: number) => {
@@ -192,6 +197,7 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
 
           {/* Add Entry */}
           <motion.div variants={fadeUp}>
+            <InlineStatus status={logStatus} spacing="mb-2" />
             <AnimatePresence>
               {showInput ? (
                 <motion.div

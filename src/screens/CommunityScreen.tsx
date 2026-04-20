@@ -6,7 +6,7 @@ import TopBar from "@/components/navigation/TopBar";
 import { useCommunityStore, type ChannelId, type PostComment } from "@/stores/communityStore";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import CreatePostModal from "@/components/community/CreatePostModal";
 import CommentsSheet from "@/components/community/CommentsSheet";
 
@@ -54,6 +54,10 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const [comments, setComments] = useState<PostComment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+
+  // Inline status banners
+  const [feedStatus, setFeedStatus] = useState<InlineStatusMsg | null>(null);
+  const [joinStatus, setJoinStatus] = useState<InlineStatusMsg | null>(null);
 
   // Fetch memberships
   useEffect(() => {
@@ -109,6 +113,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const handleJoin = async () => {
     if (!user || !joiningCommunity) return;
     setJoining(true);
+    setJoinStatus(null);
     const { error } = await db
       .from("community_memberships")
       .insert({ user_id: user.id, community: joiningCommunity });
@@ -118,9 +123,13 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
       setShowJoinModal(false);
       setActiveCommunity(joiningCommunity);
       setActiveChannel(joiningCommunity);
-      toast.success(`Welcome to the ${COMMUNITIES.find(c => c.id === joiningCommunity)?.label} community!`);
+      setFeedStatus({
+        kind: "success",
+        text: `Welcome to the ${COMMUNITIES.find(c => c.id === joiningCommunity)?.label} community!`,
+      });
+      setTimeout(() => setFeedStatus(null), 3500);
     } else {
-      toast.error("Failed to join community");
+      setJoinStatus({ kind: "error", text: "Couldn't join the community. Please try again." });
     }
     setJoining(false);
   };
@@ -139,19 +148,20 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
     setShowLeaveConfirm(false);
     setActiveCommunity(null);
     setLeaving(false);
-    toast("You left the community");
   };
 
   const handleCreatePost = async (content: string, imageUrl?: string) => {
     if ((!content.trim() && !imageUrl) || !user || !activeCommunity) return;
     setPosting(true);
+    setFeedStatus(null);
     const ok = await createPost(content.trim(), activeCommunity, imageUrl);
     setPosting(false);
     if (ok) {
       setShowCreate(false);
-      toast.success("Post shared!");
+      setFeedStatus({ kind: "success", text: "Post shared!" });
+      setTimeout(() => setFeedStatus(null), 3000);
     } else {
-      toast.error("Failed to create post");
+      setFeedStatus({ kind: "error", text: "Couldn't share your post. Please try again." });
     }
   };
 
@@ -204,6 +214,9 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
             Leave
           </motion.button>
         </div>
+
+        {/* Inline status banner */}
+        <InlineStatus status={feedStatus} spacing="" />
 
         {/* Posts feed — Facebook-style */}
         {loading ? (
@@ -478,6 +491,8 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
                     {COMMUNITIES.find(c => c.id === joiningCommunity)?.label}
                   </span>? Joining lets you share, post pictures, comment, and connect with moms in the same stage.
                 </p>
+
+                <InlineStatus status={joinStatus} spacing="mb-2 w-full" />
 
                 <motion.button
                   whileTap={{ scale: 0.97 }}

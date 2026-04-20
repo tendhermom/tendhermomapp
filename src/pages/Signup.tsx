@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import IonIcon from "@/components/IonIcon";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import { useAuthStore } from "@/stores/authStore";
 import heroMumImg from "@/assets/auth-signup-hero.png";
 import logo from "@/assets/logo.jpeg";
@@ -28,6 +28,8 @@ const Signup = () => {
   const [emailSent, setEmailSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [formStatus, setFormStatus] = useState<InlineStatusMsg | null>(null);
+  const [otpStatus, setOtpStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) navigate("/", { replace: true });
@@ -36,13 +38,14 @@ const Signup = () => {
   // Step 1: Send OTP code via Resend
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormStatus(null);
     if (!fullName.trim() || !email.trim() || !phone.trim() || !password || password.length < 6) {
-      toast.error("Please fill all fields. Password must be at least 6 characters.");
+      setFormStatus({ kind: "error", text: "Please fill all fields. Password must be at least 6 characters." });
       return;
     }
     const cleanPhone = phone.replace(/\s/g, "");
     if (!PHONE_REGEX.test(cleanPhone)) {
-      toast.error("Phone must be in format +234XXXXXXXXXX");
+      setFormStatus({ kind: "error", text: "Phone must be in format +234XXXXXXXXXX" });
       return;
     }
     setLoading(true);
@@ -53,9 +56,9 @@ const Signup = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setEmailSent(true);
-      toast.success("Verification code sent to your email!");
+      setOtpStatus({ kind: "success", text: "Verification code sent to your email!" });
     } catch (err: any) {
-      toast.error(err.message || "Failed to send verification code");
+      setFormStatus({ kind: "error", text: err.message || "Failed to send verification code" });
     } finally {
       setLoading(false);
     }
@@ -63,20 +66,19 @@ const Signup = () => {
 
   // Step 2: Verify OTP then create Supabase account
   const handleVerifyAndSignup = async () => {
+    setOtpStatus(null);
     if (otpCode.length !== 6) {
-      toast.error("Please enter the 6-digit code");
+      setOtpStatus({ kind: "error", text: "Please enter the 6-digit code" });
       return;
     }
     setVerifying(true);
     try {
-      // Verify the code
       const { data: verifyData, error: verifyErr } = await supabase.functions.invoke("verify-email-code", {
         body: { email: email.trim(), code: otpCode },
       });
       if (verifyErr) throw verifyErr;
       if (verifyData?.error) throw new Error(verifyData.error);
 
-      // Code verified — now create the Supabase account (auto-confirmed)
       const { error: signupErr } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -85,9 +87,9 @@ const Signup = () => {
         },
       });
       if (signupErr) throw signupErr;
-      toast.success("Account created successfully!");
+      setOtpStatus({ kind: "success", text: "Account created — taking you in…" });
     } catch (err: any) {
-      toast.error(err.message || "Verification failed");
+      setOtpStatus({ kind: "error", text: err.message || "Verification failed" });
     } finally {
       setVerifying(false);
     }
@@ -96,15 +98,16 @@ const Signup = () => {
   // Resend code
   const handleResend = async () => {
     setLoading(true);
+    setOtpStatus(null);
     try {
       const { data, error } = await supabase.functions.invoke("send-verification-code", {
         body: { email: email.trim() },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success("Verification code resent!");
+      setOtpStatus({ kind: "success", text: "Verification code resent!" });
     } catch (err: any) {
-      toast.error(err.message || "Failed to resend code");
+      setOtpStatus({ kind: "error", text: err.message || "Failed to resend code" });
     } finally {
       setLoading(false);
     }
@@ -134,6 +137,8 @@ const Signup = () => {
                 We sent a 6-digit code to <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{email}</span>
               </p>
             </div>
+
+            <InlineStatus status={otpStatus} />
 
             {/* OTP Input */}
             <div className="flex flex-col items-center gap-4 mb-6">
@@ -281,6 +286,8 @@ const Signup = () => {
                   </button>
                 </div>
               </motion.div>
+
+              <InlineStatus status={formStatus} spacing="" />
 
               <motion.button
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
