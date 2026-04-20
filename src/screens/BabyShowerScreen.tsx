@@ -456,11 +456,12 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                   <div>
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
                     {imagePreview ? (
-                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => fileInputRef.current?.click()} className="relative cursor-pointer">
+                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => !submitting && fileInputRef.current?.click()} className="relative cursor-pointer">
                         <img src={imagePreview} alt="Preview" className="w-full h-[180px] object-cover rounded-2xl" />
                         <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
                           <IonIcon name="camera" size={28} style={{ color: "white" }} />
                         </div>
+                        <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
                       </motion.div>
                     ) : (
                       <motion.button whileTap={{ scale: 0.97 }} onClick={() => fileInputRef.current?.click()}
