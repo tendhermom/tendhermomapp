@@ -28,6 +28,7 @@ const Signup = () => {
   const [emailSent, setEmailSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [formStatus, setFormStatus] = useState<InlineStatusMsg | null>(null);
   const [otpStatus, setOtpStatus] = useState<InlineStatusMsg | null>(null);
 
@@ -41,6 +42,10 @@ const Signup = () => {
     setFormStatus(null);
     if (!fullName.trim() || !email.trim() || !phone.trim() || !password || password.length < 6) {
       setFormStatus({ kind: "error", text: "Please fill all fields. Password must be at least 6 characters." });
+      return;
+    }
+    if (!acceptTerms) {
+      setFormStatus({ kind: "error", text: "Please accept our Terms of Service and Privacy Policy to continue." });
       return;
     }
     const cleanPhone = phone.replace(/\s/g, "");
@@ -289,11 +294,39 @@ const Signup = () => {
 
               <InlineStatus status={formStatus} spacing="" />
 
+              {/* Terms acceptance — must check to enable submit */}
+              <motion.label
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.38 }}
+                className="flex items-start gap-2.5 cursor-pointer select-none py-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => setAcceptTerms(!acceptTerms)}
+                  className="mt-[2px] w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+                  style={{
+                    background: acceptTerms ? "hsl(var(--green))" : "hsl(var(--surface))",
+                    border: acceptTerms ? "none" : "1.5px solid hsl(var(--border))",
+                  }}
+                  aria-checked={acceptTerms}
+                  role="checkbox"
+                >
+                  {acceptTerms && <IonIcon name="checkmark" size={14} style={{ color: "white" }} />}
+                </button>
+                <span className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+                  I agree to TendherMom's{" "}
+                  <Link to="/terms" target="_blank" className="font-semibold underline" style={{ color: "hsl(var(--green))" }}>Terms of Service</Link>
+                  {" "}and{" "}
+                  <Link to="/privacy" target="_blank" className="font-semibold underline" style={{ color: "hsl(var(--green))" }}>Privacy Policy</Link>.
+                </span>
+              </motion.label>
+
               <motion.button
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                whileTap={{ scale: 0.97 }} type="submit" disabled={loading}
+                whileTap={{ scale: 0.97 }} type="submit" disabled={loading || !acceptTerms}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, hsl(var(--green)), hsl(153 42% 22%))", color: "white", opacity: loading ? 0.6 : 1, boxShadow: "0 6px 24px -6px hsla(153, 42%, 30%, 0.4)" }}
+                style={{ background: "linear-gradient(135deg, hsl(var(--green)), hsl(153 42% 22%))", color: "white", opacity: (loading || !acceptTerms) ? 0.55 : 1, boxShadow: "0 6px 24px -6px hsla(153, 42%, 30%, 0.4)" }}
               >
                 {loading ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <>Create Account <IonIcon name="arrow-forward" size={18} style={{ color: "white" }} /></>}
               </motion.button>
@@ -305,13 +338,6 @@ const Signup = () => {
                 <Link to="/login" className="font-semibold" style={{ color: "hsl(var(--green))" }}>Sign In</Link>
               </p>
             </motion.div>
-
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-              className="text-[10px] font-sans text-center mt-4 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-              By signing up, you agree to our{" "}
-              <Link to="/terms" className="underline">Terms</Link> &{" "}
-              <Link to="/privacy" className="underline">Privacy Policy</Link>
-            </motion.p>
           </motion.div>
         </div>
       </div>
