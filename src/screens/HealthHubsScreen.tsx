@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { hapticSelection } from "@/lib/despia";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
+import { PlaceCardSkeleton } from "@/components/skeletons/Skeletons";
 
 // Category images
 import imgMaternal from "@/assets/hubs/maternal.jpg";
@@ -128,10 +129,11 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation not supported");
+      setStatus({ kind: "warning", text: "Geolocation isn't supported on this device." });
       setLocationLoading(false);
       return;
     }
@@ -141,7 +143,10 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         setLocationLoading(false);
       },
       () => {
-        toast.error("Please enable location access to find nearby health centers");
+        setStatus({
+          kind: "warning",
+          text: "Enable location access to find nearby health centers.",
+        });
         setLocationLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -150,9 +155,10 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
 
   const searchPlaces = useCallback(async (keyword: string) => {
     if (!location) {
-      toast.error("Location not available");
+      setStatus({ kind: "warning", text: "Location not available yet. Please enable location access." });
       return;
     }
+    setStatus(null);
     setSearching(true);
     setSearched(true);
     try {
@@ -162,7 +168,8 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
       if (error) throw error;
       setPlaces(data?.results || []);
     } catch {
-      toast.error("Failed to search health centers");
+      setStatus({ kind: "error", text: "Couldn't load nearby health centers. Please try again." });
+      setPlaces([]);
     } finally {
       setSearching(false);
     }
@@ -198,6 +205,10 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
               {location ? "📍 Location detected" : locationLoading ? "📍 Detecting location…" : "📍 Location unavailable"}
             </p>
           </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <InlineStatus status={status} spacing="" />
         </motion.div>
 
         <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
@@ -316,20 +327,38 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         </div>
       </div>
 
+      {/* Inline status (errors, location warnings) */}
+      <InlineStatus status={status} spacing="" />
+
       {/* Results */}
       <AnimatePresence mode="wait">
         {searching && (
-          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-12 gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: category!.color, borderTopColor: "transparent" }} />
-            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Searching nearby health centers…</p>
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-2"
+          >
+            <p className="label-caps" style={{ color: "hsl(var(--text-muted))" }}>SEARCHING NEARBY…</p>
+            <PlaceCardSkeleton />
+            <PlaceCardSkeleton />
+            <PlaceCardSkeleton />
           </motion.div>
         )}
 
-        {!searching && searched && places.length === 0 && (
-          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
-            <IonIcon name="location-outline" size={40} style={{ color: "hsl(var(--text-muted))" }} />
-            <p className="text-[14px] font-sans font-semibold mt-3" style={{ color: "hsl(var(--dark))" }}>No results found nearby</p>
-            <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>Try a different service category</p>
+        {!searching && searched && places.length === 0 && !status && (
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="tend-card text-center py-10 px-6">
+            <div
+              className="w-[56px] h-[56px] rounded-full mx-auto flex items-center justify-center mb-3"
+              style={{ background: "hsl(var(--light-green))" }}
+            >
+              <IonIcon name="location-outline" size={26} style={{ color: "hsl(var(--green))" }} />
+            </div>
+            <p className="text-[15px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>No centers in your area</p>
+            <p className="text-[12px] font-sans mt-1.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+              We couldn't find any {category!.label.toLowerCase()} centers nearby. Try another service or expand your search later.
+            </p>
           </motion.div>
         )}
 

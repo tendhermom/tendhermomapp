@@ -7,6 +7,7 @@ import { hapticLight, hapticSuccess } from "@/lib/despia";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { Sentry } from "@/lib/sentry";
+import { ListItemSkeleton } from "@/components/skeletons/Skeletons";
 
 interface ReferralScreenProps {
   onBack: () => void;
@@ -263,20 +264,24 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div
-              className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }}
-            />
+          <div className="tend-card overflow-hidden divide-y" style={{ borderColor: "hsl(var(--border-subtle))" }}>
+            <ListItemSkeleton />
+            <ListItemSkeleton />
+            <ListItemSkeleton />
           </div>
         ) : referrals.length === 0 ? (
           <div className="tend-card p-8 text-center">
-            <div className="text-[32px] mb-2">👋</div>
-            <p className="text-[14px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>
+            <div
+              className="w-[56px] h-[56px] rounded-full mx-auto flex items-center justify-center mb-3"
+              style={{ background: "hsl(var(--light-coral))" }}
+            >
+              <IonIcon name="paper-plane-outline" size={26} style={{ color: "hsl(var(--coral))" }} />
+            </div>
+            <p className="text-[15px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
               No referrals yet
             </p>
-            <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
-              Invite a friend by phone and start earning rewards!
+            <p className="text-[12px] font-sans mt-1 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+              Invite a friend above and you'll see their status appear here.
             </p>
           </div>
         ) : (
