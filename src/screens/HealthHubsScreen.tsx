@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { hapticSelection } from "@/lib/despia";
-import { toast } from "sonner";
+import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
+import { PlaceCardSkeleton } from "@/components/skeletons/Skeletons";
 
 // Category images
 import imgMaternal from "@/assets/hubs/maternal.jpg";
@@ -128,10 +129,11 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation not supported");
+      setStatus({ kind: "warning", text: "Geolocation isn't supported on this device." });
       setLocationLoading(false);
       return;
     }
@@ -141,7 +143,10 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         setLocationLoading(false);
       },
       () => {
-        toast.error("Please enable location access to find nearby health centers");
+        setStatus({
+          kind: "warning",
+          text: "Enable location access to find nearby health centers.",
+        });
         setLocationLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -150,9 +155,10 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
 
   const searchPlaces = useCallback(async (keyword: string) => {
     if (!location) {
-      toast.error("Location not available");
+      setStatus({ kind: "warning", text: "Location not available yet. Please enable location access." });
       return;
     }
+    setStatus(null);
     setSearching(true);
     setSearched(true);
     try {
@@ -162,7 +168,8 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
       if (error) throw error;
       setPlaces(data?.results || []);
     } catch {
-      toast.error("Failed to search health centers");
+      setStatus({ kind: "error", text: "Couldn't load nearby health centers. Please try again." });
+      setPlaces([]);
     } finally {
       setSearching(false);
     }
