@@ -545,7 +545,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         <div className="flex items-start gap-2.5">
           <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            This is guidance only and does not replace professional medical advice.
+            This tool does not replace professional medical advice.
           </p>
         </div>
       </motion.div>
