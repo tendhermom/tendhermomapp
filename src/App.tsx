@@ -14,6 +14,7 @@ import SplashScreen from "./components/SplashScreen";
 import BiometricLock from "./components/BiometricLock";
 import PhoneBackfillPrompt from "./components/PhoneBackfillPrompt";
 import OfflineBanner from "./components/OfflineBanner";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
