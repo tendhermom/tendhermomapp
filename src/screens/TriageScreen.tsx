@@ -293,7 +293,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         <motion.div variants={fadeUp} className="flex items-start gap-2.5 pt-1">
           <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
           <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-            Adapted from NHS 111 protocols with Nigerian clinical context. This tool does not replace professional medical advice.
+            This tool does not replace professional medical advice.
           </p>
         </motion.div>
       </motion.div>
