@@ -2,16 +2,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 /**
  * Scheduled purge job. Finds profiles with `deletion_requested_at` older than 7 days
  * and deletes all their data + auth records.
  *
- * SECURITY: Restricted to the cron caller via a shared secret.
- *   - Required header: `x-cron-secret: <PURGE_CRON_SECRET>`
- *   - OR Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
+ * SECURITY: Restricted to the service role.
+ *   - Required: Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
  *
  * Anonymous and end-user JWTs are rejected. The function is idempotent and safe
  * to retry, but only the eligible (>=7d) profiles are ever touched.
@@ -21,20 +20,14 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  // ── Auth gate ────────────────────────────────────────────────────────────
-  const cronSecret = Deno.env.get("PURGE_CRON_SECRET");
+  // ── Auth gate (service role only) ─────────────────────────────────────────
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-  const headerSecret = req.headers.get("x-cron-secret");
   const authHeader = req.headers.get("authorization") ?? "";
   const bearer = authHeader.toLowerCase().startsWith("bearer ")
     ? authHeader.slice(7).trim()
     : "";
 
-  const allowedBySecret = !!cronSecret && headerSecret === cronSecret;
-  const allowedByServiceRole = !!serviceRoleKey && bearer === serviceRoleKey;
-
-  if (!allowedBySecret && !allowedByServiceRole) {
+  if (!serviceRoleKey || bearer !== serviceRoleKey) {
     return new Response(
       JSON.stringify({ error: "Forbidden" }),
       { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
