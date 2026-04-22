@@ -98,6 +98,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
 
       if (error || (data as any)?.error) throw error || new Error((data as any).error);
 
+      // Mark locally so a future sign-in within 7 days can offer recovery.
+      try { localStorage.setItem("deletion_pending", "true"); } catch (_) {}
+
       await supabase.auth.signOut();
       useAuthStore.getState().setUser(null);
       navigate("/login");
