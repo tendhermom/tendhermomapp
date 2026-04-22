@@ -184,6 +184,7 @@ const App = () => {
       <TooltipProvider>
         <OfflineBanner />
         <BiometricLock />
+        <SonnerToaster />
         <BrowserRouter>
           <AuthListener />
           <AppContent />
