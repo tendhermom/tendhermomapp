@@ -43,99 +43,259 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
     await fetchProfile(user.id);
     showStatus({
       kind: "success",
-      text: next ? "Safety net enabled — your contacts will be alerted after 48h of inactivity." : "Safety net disabled — only the 24h self check-in remains.",
+      text: next
+        ? "Safety net enabled — your contacts will be alerted after 48h of inactivity."
+        : "Safety net disabled — only the 24h self check-in remains.",
     });
   };
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-5 pb-6">
+      {/* Header */}
       <div className="flex items-center gap-3 pt-1">
         <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
           <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
         </motion.button>
-        <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
+        <h1
+          className="font-serif text-[26px] tracking-[-0.01em]"
+          style={{ color: "hsl(var(--dark))" }}
+        >
           Safety Net
         </h1>
       </div>
 
+      {/* Hero card with gradient */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl p-5"
-        style={{ background: "white", boxShadow: "0 4px 24px -12px rgba(0,0,0,0.08)" }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-[28px] p-6"
+        style={{
+          background:
+            "linear-gradient(135deg, hsl(var(--green)) 0%, hsl(var(--green)) 60%, hsl(var(--coral) / 0.85) 140%)",
+          boxShadow: "0 20px 50px -20px hsl(var(--green) / 0.45)",
+        }}
       >
-        <div className="flex items-start gap-3 mb-4">
+        {/* Decorative orbs */}
+        <div
+          className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full"
+          style={{ background: "hsl(0 0% 100% / 0.12)", filter: "blur(8px)" }}
+        />
+        <div
+          className="pointer-events-none absolute -bottom-20 -left-12 w-40 h-40 rounded-full"
+          style={{ background: "hsl(0 0% 100% / 0.08)", filter: "blur(10px)" }}
+        />
+
+        <div className="relative">
           <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm"
+            style={{ background: "hsl(0 0% 100% / 0.18)" }}
+          >
+            <IonIcon
+              name="shield-checkmark"
+              size={24}
+              style={{ color: "hsl(0 0% 100%)" }}
+            />
+          </div>
+          <p
+            className="font-sans text-[11px] uppercase tracking-[0.18em] mb-1.5"
+            style={{ color: "hsl(0 0% 100% / 0.75)" }}
+          >
+            Always watching over you
+          </p>
+          <h2
+            className="font-serif text-[24px] leading-[1.15] tracking-[-0.01em]"
+            style={{ color: "hsl(0 0% 100%)" }}
+          >
+            Your silent
+            <br />
+            safety net.
+          </h2>
+        </div>
+      </motion.div>
+
+      {/* Toggle card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+        className="rounded-[24px] p-5"
+        style={{
+          background: "white",
+          boxShadow: "0 4px 24px -12px rgba(0,0,0,0.08)",
+        }}
+      >
+        <div className="flex items-center gap-4">
+          <div
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: "hsl(var(--light-green))" }}
           >
-            <IonIcon name="shield-checkmark-outline" size={20} style={{ color: "hsl(var(--green))" }} />
+            <IonIcon
+              name="pulse-outline"
+              size={20}
+              style={{ color: "hsl(var(--green))" }}
+            />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between gap-3 mb-1">
-              <h2 className="font-sans font-semibold text-[15px]" style={{ color: "hsl(var(--dark))" }}>
-                Inactivity check-in
-              </h2>
-              <Switch checked={enabled} onCheckedChange={handleToggle} disabled={saving} />
-            </div>
-            <p className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-              Your silent safety net.
+          <div className="flex-1 min-w-0">
+            <h3
+              className="font-sans font-semibold text-[15px] leading-tight"
+              style={{ color: "hsl(var(--dark))" }}
+            >
+              Inactivity check-in
+            </h3>
+            <p
+              className="text-[12px] font-sans mt-0.5"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              {enabled ? "Active · monitoring quietly" : "Paused · self-pings only"}
             </p>
           </div>
+          <Switch checked={enabled} onCheckedChange={handleToggle} disabled={saving} />
         </div>
 
-        <InlineStatus status={status} spacing="mb-4 mt-1" />
+        <InlineStatus status={status} spacing="mt-4" />
+      </motion.div>
 
-        <div
-          className="rounded-2xl p-4 space-y-3"
-          style={{ background: "hsl(var(--bg))" }}
+      {/* Timeline card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        className="rounded-[24px] p-5"
+        style={{
+          background: "white",
+          boxShadow: "0 4px 24px -12px rgba(0,0,0,0.08)",
+        }}
+      >
+        <p
+          className="font-sans text-[11px] uppercase tracking-[0.18em] mb-4"
+          style={{ color: "hsl(var(--text-muted))" }}
         >
-          <div className="flex gap-3">
+          How it works
+        </p>
+
+        <div className="relative">
+          {/* Vertical connector line */}
+          <div
+            className="absolute left-[22px] top-12 bottom-12 w-px"
+            style={{
+              background:
+                "linear-gradient(to bottom, hsl(var(--green) / 0.3), hsl(var(--coral) / 0.3))",
+            }}
+          />
+
+          {/* Step 1 — 24h */}
+          <div className="flex gap-4 mb-5">
             <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-              style={{ background: "white" }}
+              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 relative z-10"
+              style={{
+                background: "hsl(var(--light-green))",
+                boxShadow: "0 0 0 4px white, 0 4px 12px -4px hsl(var(--green) / 0.4)",
+              }}
             >
-              <span className="text-[11px] font-bold font-sans" style={{ color: "hsl(var(--green))" }}>
+              <span
+                className="text-[11px] font-bold font-sans"
+                style={{ color: "hsl(var(--green))" }}
+              >
                 24h
               </span>
             </div>
-            <div>
-              <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                We check in with you
-              </p>
-              <p className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-                A gentle "We miss you" notification, just for you. Always on.
+            <div className="flex-1 pt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h4
+                  className="font-sans font-semibold text-[14px]"
+                  style={{ color: "hsl(var(--dark))" }}
+                >
+                  We check in with you
+                </h4>
+                <span
+                  className="text-[10px] font-sans font-medium px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "hsl(var(--light-green))",
+                    color: "hsl(var(--green))",
+                  }}
+                >
+                  Always on
+                </span>
+              </div>
+              <p
+                className="text-[12.5px] font-sans leading-relaxed"
+                style={{ color: "hsl(var(--text-muted))" }}
+              >
+                A gentle "We miss you" notification, just for you.
               </p>
             </div>
           </div>
-          <div className="flex gap-3">
+
+          {/* Step 2 — 48h */}
+          <div className="flex gap-4">
             <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-              style={{ background: "white" }}
+              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 relative z-10"
+              style={{
+                background: "hsl(var(--coral) / 0.12)",
+                boxShadow: "0 0 0 4px white, 0 4px 12px -4px hsl(var(--coral) / 0.4)",
+              }}
             >
-              <span className="text-[11px] font-bold font-sans" style={{ color: "hsl(var(--coral))" }}>
+              <span
+                className="text-[11px] font-bold font-sans"
+                style={{ color: "hsl(var(--coral))" }}
+              >
                 48h
               </span>
             </div>
-            <div>
-              <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                We alert your contacts
-              </p>
-              <p className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+            <div className="flex-1 pt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h4
+                  className="font-sans font-semibold text-[14px]"
+                  style={{ color: "hsl(var(--dark))" }}
+                >
+                  We alert your contacts
+                </h4>
+                <span
+                  className="text-[10px] font-sans font-medium px-2 py-0.5 rounded-full"
+                  style={{
+                    background: enabled ? "hsl(var(--coral) / 0.12)" : "hsl(var(--bg))",
+                    color: enabled ? "hsl(var(--coral))" : "hsl(var(--text-muted))",
+                  }}
+                >
+                  {enabled ? "Enabled" : "Paused"}
+                </span>
+              </div>
+              <p
+                className="text-[12.5px] font-sans leading-relaxed"
+                style={{ color: "hsl(var(--text-muted))" }}
+              >
                 A wellness-check SMS to up to 2 of your emergency contacts (primary first).
                 Never medical info — just "please check on her."
               </p>
             </div>
           </div>
         </div>
+      </motion.div>
 
+      {/* Privacy footnote */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+        className="flex gap-2.5 px-1"
+      >
+        <IonIcon
+          name="lock-closed-outline"
+          size={14}
+          style={{ color: "hsl(var(--text-muted))", marginTop: 2, flexShrink: 0 }}
+        />
         <p
-          className="text-[11px] font-sans leading-relaxed mt-4"
+          className="text-[11.5px] font-sans leading-relaxed"
           style={{ color: "hsl(var(--text-muted))" }}
         >
           Turning this off disables the 48h SMS escalation. The 24h self check-in stays on so you
           never miss a gentle reminder. See our{" "}
-          <a href="/privacy" className="underline" style={{ color: "hsl(var(--green))" }}>
+          <a
+            href="/privacy"
+            className="underline font-medium"
+            style={{ color: "hsl(var(--green))" }}
+          >
             Privacy Policy
           </a>{" "}
           for full details.
