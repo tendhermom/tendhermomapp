@@ -14,6 +14,7 @@ import SplashScreen from "./components/SplashScreen";
 import BiometricLock from "./components/BiometricLock";
 import PhoneBackfillPrompt from "./components/PhoneBackfillPrompt";
 import OfflineBanner from "./components/OfflineBanner";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -48,12 +49,38 @@ const AuthListener = () => {
       });
     };
 
+    // If the user signs back in within the 7-day grace window, auto-cancel the pending deletion.
+    const cancelPendingDeletionIfAny = async (userId: string) => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("deletion_requested_at")
+          .eq("id", userId)
+          .maybeSingle();
+        if (data && (data as any).deletion_requested_at) {
+          await supabase.functions.invoke("delete-account", {
+            body: { cancel: true },
+          });
+          try { localStorage.removeItem("deletion_pending"); } catch (_) {}
+          // Re-fetch the freshly-restored profile
+          fetchProfile(userId);
+          // Lightweight toast — Sonner is loaded elsewhere; fall back to console if not.
+          import("sonner").then(({ toast }) => {
+            toast.success("Welcome back — your account deletion was cancelled.");
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn("[deletion] cancel-on-login failed:", err);
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
           localStorage.setItem("has_logged_in", "true");
           fetchProfile(session.user.id);
           touchActivity();
+          cancelPendingDeletionIfAny(session.user.id);
           import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
             setOneSignalExternalUserId(session.user.id);
           });
@@ -68,6 +95,7 @@ const AuthListener = () => {
       if (session?.user) {
         fetchProfile(session.user.id);
         touchActivity();
+        cancelPendingDeletionIfAny(session.user.id);
         import("./lib/onesignal").then(({ setOneSignalExternalUserId }) => {
           setOneSignalExternalUserId(session.user.id);
         });
@@ -156,6 +184,7 @@ const App = () => {
       <TooltipProvider>
         <OfflineBanner />
         <BiometricLock />
+        <SonnerToaster />
         <BrowserRouter>
           <AuthListener />
           <AppContent />

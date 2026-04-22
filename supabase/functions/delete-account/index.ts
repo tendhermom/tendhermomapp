@@ -5,6 +5,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Soft-deletes the authenticated user's account by stamping `deletion_requested_at`.
+ * The actual purge happens 7 days later via the `purge-deleted-accounts` edge function
+ * triggered by pg_cron. Until then the user can sign in to cancel.
+ *
+ * Body (optional):
+ *   { cancel: true }  -> clears `deletion_requested_at` (recover account)
+ */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -19,7 +27,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create client with user's token to get their ID
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -36,50 +43,54 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userId = user.id;
+    // Optional cancel path
+    let cancel = false;
+    try {
+      if (req.headers.get("content-type")?.includes("application/json")) {
+        const body = await req.json();
+        cancel = body?.cancel === true;
+      }
+    } catch (_) { /* no body is fine */ }
 
-    // Use service role to delete all user data and auth record
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Delete from all user-owned tables (order matters for foreign keys)
-    const tables = [
-      "post_comments",
-      "post_likes",
-      "reactions",
-      "community_posts",
-      "community_memberships",
-      "community_points",
-      "baby_shower_posts",
-      "emergency_contacts",
-      "emergency_alerts",
-      "notifications",
-      "triage_sessions",
-      "referrals",
-      "user_roles",
-      "rate_limits",
-      "profiles",
-    ];
-
-    for (const table of tables) {
-      await adminClient.from(table).delete().eq("user_id", userId);
+    if (cancel) {
+      const { error } = await adminClient
+        .from("profiles")
+        .update({ deletion_requested_at: null })
+        .eq("id", user.id);
+      if (error) throw error;
+      return new Response(
+        JSON.stringify({ success: true, cancelled: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    // profiles uses `id` not `user_id`
-    await adminClient.from("profiles").delete().eq("id", userId);
+    // Soft-delete: stamp the request time. The purge job handles the rest.
+    const { error: stampError } = await adminClient
+      .from("profiles")
+      .update({ deletion_requested_at: new Date().toISOString() })
+      .eq("id", user.id);
 
-    // Delete the auth user
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
-    if (deleteError) {
-      console.error("Failed to delete auth user:", deleteError);
-      return new Response(JSON.stringify({ error: "Failed to delete account" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (stampError) {
+      console.error("Failed to stamp deletion_requested_at:", stampError);
+      return new Response(
+        JSON.stringify({ error: "Failed to schedule deletion" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const purgeAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        scheduled: true,
+        purge_at: purgeAt,
+        grace_days: 7,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (err) {
     console.error("Delete account error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {

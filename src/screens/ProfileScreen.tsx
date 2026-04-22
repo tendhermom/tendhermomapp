@@ -98,6 +98,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
 
       if (error || (data as any)?.error) throw error || new Error((data as any).error);
 
+      // Mark locally so a future sign-in within 7 days can offer recovery.
+      try { localStorage.setItem("deletion_pending", "true"); } catch (_) {}
+
       await supabase.auth.signOut();
       useAuthStore.getState().setUser(null);
       navigate("/login");
@@ -402,7 +405,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                     className="w-full py-[14px] rounded-2xl text-white text-[15px] font-semibold font-sans mb-2 disabled:opacity-50"
                     style={{ background: "hsl(var(--coral))" }}
                   >
-                    {isDeleting ? "Deleting your account…" : "Permanently delete"}
+                    {isDeleting ? "Scheduling deletion…" : "Schedule deletion"}
                   </motion.button>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
