@@ -405,7 +405,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                     className="w-full py-[14px] rounded-2xl text-white text-[15px] font-semibold font-sans mb-2 disabled:opacity-50"
                     style={{ background: "hsl(var(--coral))" }}
                   >
-                    {isDeleting ? "Deleting your account…" : "Permanently delete"}
+                    {isDeleting ? "Scheduling deletion…" : "Schedule deletion"}
                   </motion.button>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
