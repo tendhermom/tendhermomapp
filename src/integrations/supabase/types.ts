@@ -530,6 +530,7 @@ export type Database = {
           can_post: boolean
           created_at: string
           current_stage: Database["public"]["Enums"]["pregnancy_stage"]
+          deletion_requested_at: string | null
           due_date: string | null
           email: string | null
           full_name: string
@@ -553,6 +554,7 @@ export type Database = {
           can_post?: boolean
           created_at?: string
           current_stage?: Database["public"]["Enums"]["pregnancy_stage"]
+          deletion_requested_at?: string | null
           due_date?: string | null
           email?: string | null
           full_name?: string
@@ -576,6 +578,7 @@ export type Database = {
           can_post?: boolean
           created_at?: string
           current_stage?: Database["public"]["Enums"]["pregnancy_stage"]
+          deletion_requested_at?: string | null
           due_date?: string | null
           email?: string | null
           full_name?: string
