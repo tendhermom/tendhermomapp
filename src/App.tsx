@@ -18,6 +18,8 @@ import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const TechnicalPopups = lazy(() => import("./pages/TechnicalPopups"));
+const HealthSafety = lazy(() => import("./pages/HealthSafety"));
 
 const Index = lazy(() => import("./pages/Index"));
 
@@ -132,6 +134,8 @@ const AppContent = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/privacy" element={<Suspense fallback={<LoadingSpinner />}><Privacy /></Suspense>} />
       <Route path="/terms" element={<Suspense fallback={<LoadingSpinner />}><Terms /></Suspense>} />
+      <Route path="/technical-popups" element={<Suspense fallback={<LoadingSpinner />}><TechnicalPopups /></Suspense>} />
+      <Route path="/health-safety" element={<Suspense fallback={<LoadingSpinner />}><HealthSafety /></Suspense>} />
       <Route
         path="/"
         element={

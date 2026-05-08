@@ -14,6 +14,8 @@ import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
+const TechnicalPopups = lazy(() => import("@/pages/TechnicalPopups"));
+const HealthSafety = lazy(() => import("@/pages/HealthSafety"));
 
 interface ProfileScreenProps {
   onNavigate: (tab: string) => void;
@@ -34,8 +36,10 @@ const menuSections = [
   {
     items: [
       { icon: "shield-checkmark-outline", label: "Privacy Policy", route: "privacy" },
+      { icon: "document-text-outline", label: "Terms of Use", route: "terms" },
+      { icon: "information-circle-outline", label: "Technical Pop-Ups", route: "technical-popups" },
+      { icon: "medkit-outline", label: "Health & Safety", route: "health-safety" },
       { icon: "help-circle-outline", label: "Help & Support", route: "help" },
-      { icon: "document-text-outline", label: "Terms of Service", route: "terms" },
     ],
   },
 ];
@@ -129,21 +133,14 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "safety") {
     return <SafetySettingsScreen onBack={() => setSubScreen(null)} />;
   }
-  if (subScreen === "privacy" || subScreen === "terms") {
+  if (subScreen === "privacy" || subScreen === "terms" || subScreen === "technical-popups" || subScreen === "health-safety") {
     return (
-      <div className="space-y-4 pb-4">
-        <div className="flex items-center gap-3">
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setSubScreen(null)} className="p-1">
-            <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-          </motion.button>
-          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
-            {subScreen === "privacy" ? "Privacy Policy" : "Terms of Service"}
-          </h1>
-        </div>
-        <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
-          {subScreen === "privacy" ? <Privacy onBack={() => setSubScreen(null)} /> : <Terms onBack={() => setSubScreen(null)} />}
-        </Suspense>
-      </div>
+      <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
+        {subScreen === "privacy" && <Privacy onBack={() => setSubScreen(null)} />}
+        {subScreen === "terms" && <Terms onBack={() => setSubScreen(null)} />}
+        {subScreen === "technical-popups" && <TechnicalPopups onBack={() => setSubScreen(null)} />}
+        {subScreen === "health-safety" && <HealthSafety onBack={() => setSubScreen(null)} />}
+      </Suspense>
     );
   }
 
@@ -157,7 +154,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       });
       return;
     }
-    if (route === "privacy" || route === "terms" || route === "help") {
+    if (["privacy", "terms", "help", "technical-popups", "health-safety"].includes(route)) {
       setSubScreen(route);
       return;
     }

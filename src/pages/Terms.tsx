@@ -14,75 +14,46 @@ const fadeUp = {
 const sections = [
   {
     icon: "checkmark-circle-outline",
-    title: "1. Acceptance of Terms",
-    content: "By creating an account or using TendherMom, you agree to these Terms of Service. If you do not agree, do not use the app.",
+    title: "1. Binding Agreement",
+    content:
+      "These Terms of Use constitute a legally binding agreement between you and TENDHERMOM LTD. By accessing or using TendherMom, you agree to be bound by these terms.",
   },
   {
-    icon: "apps-outline",
-    title: "2. Description of Service",
-    content: "TendherMom is a maternal health companion application that provides:",
-    items: [
-      "Pregnancy tracking and trimester-based health guidance",
-      "Symptom triage assessment (not a substitute for professional medical advice)",
-      "Emergency SOS alerts to designated contacts",
-      "Trimester-specific community forums",
-      "Baby shower celebration features",
-    ],
+    icon: "refresh-outline",
+    title: "2. Service Evolution & Updates",
+    content:
+      "To ensure TendherMom remains a leading safety and support tool, TENDHERMOM LTD may update these Terms of Use to reflect new features, improved security, or regulatory changes. By continuing to enjoy the app's features and community, you accept the most current version of these Terms, ensuring a consistent and high-quality experience for all members of our community.",
   },
   {
     icon: "medkit-outline",
-    title: "3. Medical Disclaimer",
-    content: "TendherMom is NOT a substitute for professional medical advice, diagnosis, or treatment. The triage feature provides general guidance only. Always consult a qualified healthcare provider for medical concerns. In a medical emergency, call your local emergency services immediately.",
+    title: "3. Medical & Emergency Disclaimer",
     highlight: true,
-  },
-  {
-    icon: "person-circle-outline",
-    title: "4. User Accounts",
     items: [
-      "You must provide accurate information when creating an account",
-      "You are responsible for maintaining the security of your account credentials",
-      "You must be at least 16 years old to use TendherMom",
-      "One account per person — duplicate accounts may be terminated",
+      { bold: "No Medical Advice:", text: "TendherMom is an information tool, not a medical provider. TENDHERMOM LTD does not provide medical diagnoses. Always seek the advice of a physician." },
+      { bold: "Emergency Limitations:", text: "The SOS and Rescue Map features rely on GPS and cellular networks. TENDHERMOM LTD is not liable for any failure, delay, or inaccuracy in these features due to network issues or third-party service failures." },
+      { bold: "Assumption of Risk:", text: "You acknowledge that pregnancy involves inherent health risks. TENDHERMOM LTD is not liable for any medical complications, injuries, or fatalities occurring during the use of the app." },
     ],
   },
   {
-    icon: "people-outline",
-    title: "5. Community Guidelines",
-    content: "When participating in community forums, you agree to:",
+    icon: "diamond-outline",
+    title: "4. Premium Subscriptions",
+    content:
+      "Premium features (Inactivity Alert, Unlimited AI, Gift Button) require a subscription (₦300/week, ₦1,000/month, or ₦10,000/year). Payments are processed securely via Apple Pay for iOS users and Google Pay for Android users, subject to their respective privacy policies and terms. TENDHERMOM LTD does not store your payment card details and is not liable for payment failures, network errors, or unauthorized bank charges.",
+  },
+  {
+    icon: "gift-outline",
+    title: "5. Baby Shower Gift Button",
     items: [
-      "Be respectful and supportive of other mothers",
-      "Not post medical advice or diagnoses",
-      "Not share harmful, hateful, or misleading content",
-      "Not engage in spam, harassment, or commercial solicitation",
-      "Not share other users' personal information",
+      { bold: "Facilitation Only:", text: "TENDHERMOM LTD facilitates wishlist sharing but is not responsible for the delivery of physical gifts or the conduct of gift-givers." },
+      { bold: "Non-Refundable:", text: "All financial gifts sent to users via TendherMom are final and non-refundable." },
+      { bold: "Fees:", text: "You acknowledge that Apple Pay and Google Pay may deduct standard transaction fees from gifts received." },
     ],
-    footer: "We reserve the right to remove content and suspend accounts that violate these guidelines.",
   },
   {
-    icon: "alert-circle-outline",
-    title: "6. SOS Emergency Feature",
-    content: "The SOS feature sends alerts to your designated emergency contacts. TendherMom is not an emergency service and does not guarantee message delivery. You are responsible for maintaining accurate emergency contact information. Do not rely solely on this feature in life-threatening situations — always call emergency services.",
-  },
-  {
-    icon: "close-circle-outline",
-    title: "7. Account Termination",
-    content: "You may delete your account at any time from Profile settings. We may suspend or terminate accounts that violate these terms. Upon termination, all your data will be permanently deleted.",
-  },
-  {
-    icon: "warning-outline",
-    title: "8. Limitation of Liability",
-    content: "TendherMom is provided \"as is\" without warranties of any kind. We are not liable for any damages arising from your use of the app, including but not limited to health outcomes, missed emergency alerts, or community interactions.",
-  },
-  {
-    icon: "create-outline",
-    title: "9. Changes to Terms",
-    content: "We may update these terms at any time. Continued use of TendherMom after changes constitutes acceptance of the updated terms.",
-  },
-  {
-    icon: "mail-outline",
-    title: "10. Contact",
-    content: "Questions about these terms? Contact us at legal@tendhermom.com",
-    email: "legal@tendhermom.com",
+    icon: "shield-outline",
+    title: "6. Indemnification",
+    content:
+      "You agree to defend and hold harmless TENDHERMOM LTD, its directors, and employees from any claims, suits, or damages (including legal fees) arising from your use of the app or violation of these terms.",
   },
 ];
 
@@ -99,7 +70,6 @@ const Terms = ({ onBack }: TermsProps = {}) => {
           animate="show"
           variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
         >
-          {/* Back button */}
           <motion.button
             variants={fadeUp}
             whileTap={{ scale: 0.92 }}
@@ -110,7 +80,6 @@ const Terms = ({ onBack }: TermsProps = {}) => {
             <span className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>Back</span>
           </motion.button>
 
-          {/* Hero */}
           <motion.div
             variants={fadeUp}
             className="rounded-[20px] p-6 mb-6"
@@ -125,48 +94,32 @@ const Terms = ({ onBack }: TermsProps = {}) => {
                 <IonIcon name="document-text" size={22} style={{ color: "hsl(var(--coral))" }} />
               </div>
             </div>
-            <h1 className="text-white font-serif text-[26px] leading-tight tracking-[-0.01em]">
-              Terms of Service
-            </h1>
-            <p className="text-white/50 text-[12px] font-sans mt-2">
-              Last updated: March 16, 2026
-            </p>
+            <h1 className="text-white font-serif text-[26px] leading-tight tracking-[-0.01em]">Terms of Use</h1>
+            <p className="text-white/60 text-[12px] font-sans mt-2">Last Updated: April 28, 2026</p>
+            <p className="text-white/50 text-[11px] font-sans mt-1">TENDHERMOM LTD</p>
           </motion.div>
 
-          {/* Sections */}
           <div className="space-y-4">
             {sections.map((section, idx) => (
               <motion.div
                 key={idx}
                 variants={fadeUp}
                 className="tend-card overflow-hidden"
-                style={section.highlight ? {
-                  borderLeft: "3px solid hsl(var(--coral))",
-                } : undefined}
+                style={section.highlight ? { borderLeft: "3px solid hsl(var(--coral))" } : undefined}
               >
-                {/* Section header */}
                 <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-                  <div
-                    className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center flex-shrink-0"
-                    style={{ background: section.highlight ? "hsl(var(--light-coral))" : "hsl(var(--light-green))" }}
-                  >
+                  <div className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+                    style={{ background: section.highlight ? "hsl(var(--light-coral))" : "hsl(var(--light-green))" }}>
                     <IonIcon name={section.icon} size={18} style={{ color: section.highlight ? "hsl(var(--coral))" : "hsl(var(--green))" }} />
                   </div>
                   <h2 className="text-[15px] font-sans font-bold" style={{ color: "hsl(var(--dark))" }}>
                     {section.title}
                   </h2>
                 </div>
-
-                {/* Section body */}
                 <div className="px-5 pb-5">
                   {section.content && (
-                    <p className={`text-[13px] font-sans leading-[1.7] ${section.items || section.footer ? "mb-2" : ""}`}
-                      style={{ color: "hsl(var(--text-muted))", fontWeight: section.highlight ? 600 : 400 }}>
-                      {section.email ? (
-                        <>Questions about these terms? Contact us at{" "}
-                          <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>{section.email}</span>
-                        </>
-                      ) : section.content}
+                    <p className="text-[13px] font-sans leading-[1.7]" style={{ color: "hsl(var(--text-muted))" }}>
+                      {section.content}
                     </p>
                   )}
                   {section.items && (
@@ -174,27 +127,22 @@ const Terms = ({ onBack }: TermsProps = {}) => {
                       {section.items.map((item, i) => (
                         <div key={i} className="flex items-start gap-2.5">
                           <div className="w-[6px] h-[6px] rounded-full mt-[7px] flex-shrink-0"
-                            style={{ background: "hsl(var(--green))" }} />
+                            style={{ background: section.highlight ? "hsl(var(--coral))" : "hsl(var(--green))" }} />
                           <p className="text-[13px] font-sans leading-[1.7]" style={{ color: "hsl(var(--text-muted))" }}>
-                            {item}
+                            {item.bold && <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{item.bold} </span>}
+                            {item.text}
                           </p>
                         </div>
                       ))}
                     </div>
-                  )}
-                  {section.footer && (
-                    <p className="text-[12px] font-sans mt-3 leading-[1.6]" style={{ color: "hsl(var(--text-muted))" }}>
-                      {section.footer}
-                    </p>
                   )}
                 </div>
               </motion.div>
             ))}
           </div>
 
-          {/* Footer */}
           <motion.p variants={fadeUp} className="text-center text-[11px] font-sans mt-6" style={{ color: "hsl(var(--text-muted))" }}>
-            © {new Date().getFullYear()} TendherMom. All rights reserved.
+            © {new Date().getFullYear()} TENDHERMOM LTD. All rights reserved.
           </motion.p>
         </motion.div>
       </div>
