@@ -444,7 +444,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
           <div className="flex items-center justify-center gap-3 pt-1">
             <button
-              onClick={() => window.open("/terms", "_blank")}
+              onClick={() => { window.location.assign("/terms"); }}
               className="text-[11px] font-sans underline"
               style={{ color: "hsl(var(--text-muted))" }}
             >
@@ -454,7 +454,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
               ·
             </span>
             <button
-              onClick={() => window.open("/privacy", "_blank")}
+              onClick={() => { window.location.assign("/privacy"); }}
               className="text-[11px] font-sans underline"
               style={{ color: "hsl(var(--text-muted))" }}
             >
