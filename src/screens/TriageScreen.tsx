@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import MedicalDisclaimer from "@/components/MedicalDisclaimer";
 import PATHWAYS, { CATEGORIES, type TriagePathway, type TriageOutcome, type Severity } from "@/data/triagePathways";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";

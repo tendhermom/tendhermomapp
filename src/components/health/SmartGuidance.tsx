@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import MedicalDisclaimer from "@/components/MedicalDisclaimer";
 
 interface HealthEntry {
   id: string;
