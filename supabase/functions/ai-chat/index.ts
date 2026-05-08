@@ -55,6 +55,8 @@ serve(async (req) => {
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
+      // 30s budget covers slow streaming starts; the stream itself is read until completion.
+      signal: AbortSignal.timeout(30000),
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",

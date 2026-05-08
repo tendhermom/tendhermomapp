@@ -40,6 +40,7 @@ async function sendTermiiSMS(phone: string, message: string, apiKey: string): Pr
         channel: "dnd",
         api_key: apiKey,
       }),
+      signal: AbortSignal.timeout(8000),
     });
 
     const data = await response.json();
@@ -70,6 +71,7 @@ async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string
         channel: "whatsapp",
         api_key: apiKey,
       }),
+      signal: AbortSignal.timeout(8000),
     });
 
     const data = await response.json();

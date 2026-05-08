@@ -62,40 +62,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Tables keyed by user_id (order matters where FKs exist)
-    const userTables = [
-      "post_comments",
-      "post_likes",
-      "reactions",
-      "community_posts",
-      "community_memberships",
-      "community_points",
-      "baby_shower_posts",
-      "emergency_contacts",
-      "emergency_alerts",
-      "inactivity_alerts",
-      "notifications",
-      "triage_sessions",
-      "health_metrics",
-      "referrals",
-      "user_roles",
-      "rate_limits",
-      "reported_posts",
-    ];
-
     const results: { id: string; ok: boolean; error?: string }[] = [];
 
     for (const row of pending) {
       const userId = row.id;
       try {
-        for (const table of userTables) {
-          await admin.from(table).delete().eq("user_id", userId);
-        }
-        // Reports filed BY this user
-        await admin.from("reported_posts").delete().eq("reporter_id", userId);
-        // Profile row uses `id`
-        await admin.from("profiles").delete().eq("id", userId);
-        // Auth user
+        // Single-transaction wipe of all user-owned data (Postgres-side)
+        const { error: purgeError } = await admin.rpc("purge_user_data", { _user_id: userId });
+        if (purgeError) throw purgeError;
+
+        // Auth row lives outside Postgres — must use admin API
         const { error: authError } = await admin.auth.admin.deleteUser(userId);
         if (authError) throw authError;
 
