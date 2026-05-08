@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
@@ -33,9 +32,7 @@ const LegalModal = ({ doc, onClose }: LegalModalProps) => {
       <DialogContent
         className="p-0 gap-0 border-0 bg-transparent shadow-none max-w-none w-screen h-screen translate-x-0 translate-y-0 left-0 top-0 rounded-none data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"
       >
-        <VisuallyHidden>
-          <DialogTitle>{doc ? TITLES[doc] : ""}</DialogTitle>
-        </VisuallyHidden>
+        <DialogTitle className="sr-only">{doc ? TITLES[doc] : ""}</DialogTitle>
         <div className="w-full h-full overflow-y-auto" style={{ background: "hsl(var(--bg))" }}>
           <Suspense fallback={<div className="w-full h-full" style={{ background: "hsl(var(--bg))" }} />}>
             {doc === "privacy" && <Privacy onBack={onClose} />}
