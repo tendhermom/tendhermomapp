@@ -7,6 +7,7 @@ import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import HelpSupportScreen from "@/screens/HelpSupportScreen";
 import SafetySettingsScreen from "@/screens/SafetySettingsScreen";
+import ComplianceScreen from "@/screens/ComplianceScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight, screenShield } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +40,7 @@ const menuSections = [
       { icon: "document-text-outline", label: "Terms of Use", route: "terms" },
       { icon: "information-circle-outline", label: "Technical Pop-Ups", route: "technical-popups" },
       { icon: "medkit-outline", label: "Health & Safety", route: "health-safety" },
+      { icon: "ribbon-outline", label: "Compliance", route: "compliance" },
       { icon: "help-circle-outline", label: "Help & Support", route: "help" },
     ],
   },
@@ -133,6 +135,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "safety") {
     return <SafetySettingsScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "compliance") {
+    return <ComplianceScreen onBack={() => setSubScreen(null)} />;
+  }
   if (subScreen === "privacy" || subScreen === "terms" || subScreen === "technical-popups" || subScreen === "health-safety") {
     return (
       <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
@@ -154,7 +159,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       });
       return;
     }
-    if (["privacy", "terms", "help", "technical-popups", "health-safety"].includes(route)) {
+    if (["privacy", "terms", "help", "technical-popups", "health-safety", "compliance"].includes(route)) {
       setSubScreen(route);
       return;
     }
