@@ -248,12 +248,6 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Footer */}
-      <motion.div variants={fadeUp} className="pt-2">
-        <p className="text-center text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-          © {new Date().getFullYear()} TENDHERMOM LTD
-        </p>
-      </motion.div>
     </motion.div>
   );
 };
