@@ -9,6 +9,7 @@ import {
   type PlusProductId,
 } from "@/lib/native-billing";
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
+import LegalModal, { type LegalDoc } from "@/components/LegalModal";
 
 interface PremiumScreenProps {
   onBack: () => void;
@@ -93,6 +94,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [restoring, setRestoring] = useState(false);
   const [nativeAvailable, setNativeAvailable] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
+  const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
   useEffect(() => {
     setNativeAvailable(isNativeBillingAvailable());
@@ -444,7 +446,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
           <div className="flex items-center justify-center gap-3 pt-1">
             <button
-              onClick={() => { window.location.assign("/terms"); }}
+              onClick={() => setLegalDoc("terms")}
               className="text-[11px] font-sans underline"
               style={{ color: "hsl(var(--text-muted))" }}
             >
@@ -454,7 +456,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
               ·
             </span>
             <button
-              onClick={() => { window.location.assign("/privacy"); }}
+              onClick={() => setLegalDoc("privacy")}
               className="text-[11px] font-sans underline"
               style={{ color: "hsl(var(--text-muted))" }}
             >
@@ -545,6 +547,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
           </motion.button>
         </motion.div>
       )}
+      <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
     </motion.div>
   );
 };

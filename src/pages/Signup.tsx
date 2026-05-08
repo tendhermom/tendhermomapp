@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/authStore";
 import heroMumImg from "@/assets/auth-signup-hero.png";
 import logo from "@/assets/logo.jpeg";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import LegalModal, { type LegalDoc } from "@/components/LegalModal";
 
 const SPARKLES_GREEN = [
   { top: "12%", left: "-5%", delay: 0, dur: 2.4 },
@@ -29,6 +30,7 @@ const Signup = () => {
   const [otpCode, setOtpCode] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
   const [formStatus, setFormStatus] = useState<InlineStatusMsg | null>(null);
   const [otpStatus, setOtpStatus] = useState<InlineStatusMsg | null>(null);
 
@@ -316,9 +318,9 @@ const Signup = () => {
                 </button>
                 <span className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
                   I agree to TendherMom's{" "}
-                  <Link to="/terms" target="_blank" className="font-semibold underline" style={{ color: "hsl(var(--green))" }}>Terms of Service</Link>
+                  <button type="button" onClick={() => setLegalDoc("terms")} className="font-semibold underline" style={{ color: "hsl(var(--green))" }}>Terms of Service</button>
                   {" "}and{" "}
-                  <Link to="/privacy" target="_blank" className="font-semibold underline" style={{ color: "hsl(var(--green))" }}>Privacy Policy</Link>.
+                  <button type="button" onClick={() => setLegalDoc("privacy")} className="font-semibold underline" style={{ color: "hsl(var(--green))" }}>Privacy Policy</button>.
                 </span>
               </motion.label>
 
@@ -341,6 +343,7 @@ const Signup = () => {
           </motion.div>
         </div>
       </div>
+      <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
     </div>
   );
 };
