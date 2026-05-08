@@ -61,17 +61,20 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
 
   const openMail = (addr: string) => {
     hapticLight();
-    window.location.href = `mailto:${addr}?subject=TendherMom%20Support%20Request`;
+    window.open(`mailto:${addr}?subject=TendherMom%20Support%20Request`, "_blank");
   };
   const openTel = () => {
     hapticLight();
-    window.location.href = `tel:${SUPPORT_PHONE_TEL}`;
+    window.open(`tel:${SUPPORT_PHONE_TEL}`, "_blank");
   };
   const openWhatsApp = () => {
     hapticLight();
-    window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      "Hi TendherMom team, I need help with…",
-    )}`;
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+        "Hi TendherMom team, I need help with…",
+      )}`,
+      "_blank",
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
