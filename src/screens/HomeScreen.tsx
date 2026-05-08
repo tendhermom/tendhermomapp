@@ -248,22 +248,9 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Medical disclaimer footer */}
+      {/* Footer */}
       <motion.div variants={fadeUp} className="pt-2">
-        <div
-          className="rounded-[14px] p-4 flex items-start gap-2.5"
-          style={{ background: "hsl(var(--light-coral))" }}
-        >
-          <IonIcon name="shield-checkmark-outline" size={14} style={{ color: "hsl(var(--coral))", marginTop: 2, flexShrink: 0 }} />
-          <p className="text-[10px] font-sans leading-[1.6]" style={{ color: "hsl(var(--text-muted))" }}>
-            <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>Disclaimer: </span>
-            TendherMom is not a medical device. Information provided by TENDHERMOM LTD, including AI Chat and Symptom
-            Triage, is for educational purposes only and does not replace professional medical advice, diagnosis, or
-            treatment. In a medical emergency, contact a doctor or visit the nearest hospital immediately. Use of the
-            SOS feature does not guarantee an emergency response.
-          </p>
-        </div>
-        <p className="text-center text-[10px] font-sans mt-3" style={{ color: "hsl(var(--text-muted))" }}>
+        <p className="text-center text-[10px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
           © {new Date().getFullYear()} TENDHERMOM LTD
         </p>
       </motion.div>
