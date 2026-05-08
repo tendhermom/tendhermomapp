@@ -136,13 +136,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
       </div>
 
       {/* Disclaimer */}
-      <div className="rounded-[12px] px-3 py-2 mb-3 flex items-start gap-2"
-        style={{ background: "hsl(var(--light-coral))" }}>
-        <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--coral))", marginTop: 2, flexShrink: 0 }} />
-        <p className="text-[10px] font-sans leading-[1.5]" style={{ color: "hsl(var(--coral))" }}>
-          This tool does not replace professional medical advice.
-        </p>
-      </div>
+      <MedicalDisclaimer variant="card" className="mb-3" />
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 hide-scrollbar pb-3">

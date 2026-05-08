@@ -405,13 +405,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Medical disclaimer */}
-      <div className="flex items-start gap-2.5 px-1">
-        <IonIcon name="shield-checkmark" size={14} style={{ color: "hsl(var(--green))" }} />
-        <p className="text-[10px] font-sans leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-          This tool does not replace professional medical advice.
-        </p>
-      </div>
+      <MedicalDisclaimer />
 
       {/* Confirm Bottom Sheet */}
       <AnimatePresence>
