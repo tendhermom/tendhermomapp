@@ -9,6 +9,7 @@ import {
   type PlusProductId,
 } from "@/lib/native-billing";
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
+import LegalModal, { type LegalDoc } from "@/components/LegalModal";
 
 interface PremiumScreenProps {
   onBack: () => void;
