@@ -883,6 +883,7 @@ export type Database = {
       increment_comments: { Args: { p_post_id: string }; Returns: undefined }
       increment_likes: { Args: { p_post_id: string }; Returns: undefined }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
+      purge_user_data: { Args: { _user_id: string }; Returns: undefined }
       touch_last_active: { Args: never; Returns: undefined }
     }
     Enums: {
