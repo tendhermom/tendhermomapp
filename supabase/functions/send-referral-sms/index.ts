@@ -90,6 +90,7 @@ serve(async (req) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(termiiPayload),
+      signal: AbortSignal.timeout(8000),
     });
 
     const result = await response.json();

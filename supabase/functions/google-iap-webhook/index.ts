@@ -79,6 +79,7 @@ async function getGoogleAccessToken(): Promise<string | null> {
         grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
         assertion: jwt,
       }),
+      signal: AbortSignal.timeout(8000),
     });
     const data = await tokenRes.json();
     return data.access_token ?? null;
@@ -97,7 +98,7 @@ async function fetchSubscriptionInfo(
   const accessToken = await getGoogleAccessToken();
   if (!accessToken) return null;
   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pkg}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(8000) });
   if (!res.ok) {
     console.error("[google-iap-webhook] subscriptions.get failed", res.status, await res.text());
     return null;

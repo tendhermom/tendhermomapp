@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     if (pagetoken) params.set('pagetoken', pagetoken)
 
     const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?${params}`
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) })
     const data = await response.json()
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {

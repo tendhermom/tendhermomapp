@@ -54,6 +54,7 @@ async function sendTermiiSMS(
         channel: "dnd",
         api_key: apiKey,
       }),
+      signal: AbortSignal.timeout(8000),
     });
     const data = await resp.json();
     if (!resp.ok) {
