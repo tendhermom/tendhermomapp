@@ -246,7 +246,6 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
             <source src="/videos/explainer.mp4" type="video/mp4" />
           </video>
         </div>
-        </div>
       </motion.div>
 
       {/* Medical disclaimer footer */}
