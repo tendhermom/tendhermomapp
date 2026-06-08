@@ -86,14 +86,27 @@ const Signup = () => {
       if (verifyErr) throw verifyErr;
       if (verifyData?.error) throw new Error(verifyData.error);
 
-      const { error: signupErr } = await supabase.auth.signUp({
+      const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: { full_name: fullName.trim(), phone: phone.replace(/\s/g, ""), user_type: "mother" },
         },
       });
       if (signupErr) throw signupErr;
+
+      // Ensure a session exists so the new user lands directly on Home,
+      // not the signup screen. Email is already verified via our OTP flow.
+      if (!signupData.session) {
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (signInErr) throw signInErr;
+      }
+
+      localStorage.setItem("has_logged_in", "true");
       setOtpStatus({ kind: "success", text: "Account created — taking you in…" });
     } catch (err: any) {
       setOtpStatus({ kind: "error", text: err.message || "Verification failed" });
