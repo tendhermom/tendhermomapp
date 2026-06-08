@@ -1,73 +1,138 @@
-# Welcome to your Lovable project
+# TendherMom
 
-## Project info
+> **Your partner from bump to baby — and beyond.**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+TendherMom is a **personalized pregnancy and maternal care app** designed for every mom, at every moment. From the first kick to the first steps, we provide **AI guidance, emergency rescue, and a supportive community** that truly understands your journey.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🌟 **Features**
 
-**Use Lovable**
+### **Core Experience**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Smart Triage**: Clinically-informed answers, instantly.
+- **Instant Guidance**: Your AI companion is always one tap away.
+- **Trusted Community**: Mothers supporting mothers, every day.
 
-Changes made via Lovable will be committed automatically to this repo.
+### **App Dashboard**
 
-**Use your preferred IDE**
+A warm, welcoming home for your pregnancy journey:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Weekly Updates**: Track your pregnancy week-by-week.
+- **Baby’s Size**: Visualize your baby’s growth (e.g., "Week 24: Size of a mango").
+- **Daily Tips**: Personalized advice for each stage.
+- **Quick Actions**: One-tap access to **Triage, SOS, and AI Chat**.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 📱 **Inside the App**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### **Designed to Feel Like a Hug**
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Every screen, every tap, every word — crafted with **tender intention** to make your journey smoother.
 
-# Step 3: Install the necessary dependencies.
-npm i
+### **Key Screens**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+#### **🏠 Daily Dashboard**
 
-**Edit a file directly in GitHub**
+- See your current week, baby’s size, today’s tip, and quick actions.
+- A calm, intuitive space to start your day.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+#### **🩺 Symptom Triage**
 
-**Use GitHub Codespaces**
+- Describe what you’re feeling.
+- Gentle, clinically-informed questions guide you to the right next steps.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### **🚨 Reduced Fetal Movement**
 
-## What technologies are used for this project?
+- When kicks slow down, get **clear, reassuring steps**.
+- Direct path to emergency support if needed.
 
-This project is built with:
+#### **👥 Communities**
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Join **trimester-specific groups** or groups by experience/interest.
+- Real moms. Real conversations. Real warmth.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 🌿 **Everything You Need**
 
-## Can I connect a custom domain to my Lovable project?
+### **9 Thoughtful Features for Every Chapter**
 
-Yes, you can!
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+| #   | Feature                 | Description                                                             |
+| --- | ----------------------- | ----------------------------------------------------------------------- |
+| 01  | **Personalized Plans**  | Week-by-week guidance tailored to your trimester, body, and goals.      |
+| 02  | **Growth Tracking**     | Follow baby’s development and your milestones with rich insights.       |
+| 03  | **Emergency SOS**       | One tap alerts your trusted circle with your location, instantly.       |
+| 04  | **AI Chat Assistant**   | Ask anything, anytime. Compassionate answers grounded in maternal care. |
+| 05  | **Community Support**   | Private groups with mothers walking the same journey as you.            |
+| 06  | **Baby Shower Section** | Plan registries, invites, and celebrations all in one place.            |
+| 07  | **Rescue Map**          | Find the nearest hospital fast when every second matters.               |
+| 08  | **Symptom Triage**      | Smart guidance on what’s normal — and when to seek urgent care.         |
+| 09  | **Milestone Moments**   | Capture kicks, cravings, and tender memories worth keeping.             |
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+---
+
+## 🇳🇬 **Why TendHerMom?**
+
+### **Built for the Nigerian Mother**
+
+We designed every feature around the **real challenges, cultural context, and healthcare realities** faced by mothers in Nigeria.
+
+
+| #   | Benefit                   | Details                                                                                         |
+| --- | ------------------------- | ----------------------------------------------------------------------------------------------- |
+| 01  | **Localized for Nigeria** | Hospital rescue maps for Nigerian cities. Paystack payments. Phone number OTP.                  |
+| 02  | **Clinically Informed**   | Every health tip, triage question, and milestone is validated by maternal health professionals. |
+| 03  | **Safety First**          | One-tap SOS to emergency contacts. Location sharing. Nearest hospital mapping.                  |
+| 04  | **Data Private & Secure** | Your health data is **encrypted, NDPR-compliant, and never sold**.                              |
+| 05  | **Community Powered**     | Join trimester-specific groups with thousands of Nigerian moms.                                 |
+| 06  | **AI + Human Care**       | 24/7 AI health chat + book real doctors for 15-minute video consultations.                      |
+
+
+---
+
+## ❓ **FAQ**
+
+### **Questions, Answered**
+
+- **Is TendherMom a replacement for medical care?**  
+No. TendherMom is a **support tool**, not a replacement for professional medical advice.
+- **Is the app free to download?**  
+Yes! TendherMom is **free to download** with optional premium features.
+- **How does Emergency SOS work?**  
+One tap sends your location and an alert to your trusted contacts.
+- **How private is my data?**  
+Your data is **encrypted and NDPR-compliant**. We never sell your information.
+- **Can I use TendherMom after my baby is born?**  
+Absolutely! TendherMom supports you **from pregnancy to parenthood**.
+- **Which devices are supported?**  
+Available on **iOS and Android**.
+
+---
+
+## 📲 **Get the App**
+
+**Care that travels with you.**
+
+Download TendherMom today — and carry **confidence, comfort, and community** in your pocket.
+
+[Download on the App Store](https://apps.apple.com)  
+[Get it on Google Play](https://play.google.com)
+
+> **Free to download · Private by design · Built with love for moms**
+
+---
+
+## 💬 **Join the Community**
+
+We’re here for you. **Reach out with questions, feedback, or just to say hello!**
+
+📧 **Contact**: [support@tendhermom.com](mailto:support@tendhermom.com)  
+🌐 **Website**: [tendhermom.com](https://tendhermom.com)
+
+---
+
+*© 2026 TendherMom. All rights reserved.*
