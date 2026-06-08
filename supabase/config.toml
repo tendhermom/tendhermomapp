@@ -6,3 +6,12 @@ verify_jwt = false
 
 [functions.google-iap-webhook]
 verify_jwt = false
+
+[functions.create-verified-user]
+verify_jwt = false
+
+[functions.send-verification-code]
+verify_jwt = false
+
+[functions.verify-email-code]
+verify_jwt = false
