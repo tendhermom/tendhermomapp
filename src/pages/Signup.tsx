@@ -80,31 +80,26 @@ const Signup = () => {
     }
     setVerifying(true);
     try {
-      const { data: verifyData, error: verifyErr } = await supabase.functions.invoke("verify-email-code", {
-        body: { email: email.trim(), code: otpCode },
-      });
-      if (verifyErr) throw verifyErr;
-      if (verifyData?.error) throw new Error(verifyData.error);
-
-      const { data: signupData, error: signupErr } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: { full_name: fullName.trim(), phone: phone.replace(/\s/g, ""), user_type: "mother" },
-        },
-      });
-      if (signupErr) throw signupErr;
-
-      // Ensure a session exists so the new user lands directly on Home,
-      // not the signup screen. Email is already verified via our OTP flow.
-      if (!signupData.session) {
-        const { error: signInErr } = await supabase.auth.signInWithPassword({
+      // Create the account with email already confirmed (server-side, via service role).
+      // This uses the OTP we just sent as proof of email ownership.
+      const { data: createData, error: createErr } = await supabase.functions.invoke("create-verified-user", {
+        body: {
           email: email.trim(),
           password,
-        });
-        if (signInErr) throw signInErr;
-      }
+          code: otpCode,
+          full_name: fullName.trim(),
+          phone: phone.replace(/\s/g, ""),
+        },
+      });
+      if (createErr) throw createErr;
+      if (createData?.error) throw new Error(createData.error);
+
+      // Sign in immediately so the user lands on Home, not back on the signup screen.
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInErr) throw signInErr;
 
       localStorage.setItem("has_logged_in", "true");
       setOtpStatus({ kind: "success", text: "Account created — taking you in…" });
