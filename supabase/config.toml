@@ -15,3 +15,7 @@ verify_jwt = false
 
 [functions.verify-email-code]
 verify_jwt = false
+
+[functions.seed-demo-user]
+verify_jwt = false
+
