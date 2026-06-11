@@ -57,7 +57,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           lmp_date: data.lmp_date,
           birth_date: data.birth_date,
           baby_name: data.baby_name,
-          plan_type: data.plan_type as "free" | "premium",
+          // TEMP: Unlock all premium features for Google Play review.
+          // Revert to `data.plan_type as "free" | "premium"` once review is complete.
+          plan_type: "premium",
           current_stage: data.current_stage as UserProfile["current_stage"],
           phone: data.phone,
           can_post: data.can_post,

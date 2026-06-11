@@ -20,17 +20,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify the OTP code first
+    const normEmail = email.trim().toLowerCase();
+
+    // Verify the OTP code — accept verified OR unverified codes within a 30 min window
+    // so users can retry safely if the first attempt failed mid-flight.
+    const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     const { data: vrow, error: vErr } = await admin
       .from("email_verifications")
       .select("*")
-      .eq("email", email.toLowerCase())
+      .eq("email", normEmail)
       .eq("code", code)
-      .eq("verified", false)
-      .gte("expires_at", new Date().toISOString())
+      .gte("created_at", windowStart)
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (vErr || !vrow) {
       return new Response(JSON.stringify({ error: "Invalid or expired code" }), {
@@ -38,9 +41,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    await admin.from("email_verifications").update({ verified: true }).eq("id", vrow.id);
+    if (!vrow.verified) {
+      await admin.from("email_verifications").update({ verified: true }).eq("id", vrow.id);
+    }
 
-    // Create user with email already confirmed
+    // Try to create user with email already confirmed
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email: email.trim(),
       password,
@@ -53,6 +58,15 @@ Deno.serve(async (req) => {
     });
 
     if (createErr) {
+      const msg = (createErr.message || "").toLowerCase();
+      // If the user already exists, treat as success — they completed signup before.
+      // The client will sign in with the password they provided. If the password
+      // doesn't match the prior account, sign-in will produce a clear error there.
+      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+        return new Response(JSON.stringify({ success: true, already_existed: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: createErr.message }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
