@@ -661,6 +661,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          referred_contact_masked: string | null
           referred_email: string | null
           referred_id: string | null
           referred_phone: string | null
@@ -671,6 +672,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          referred_contact_masked?: string | null
           referred_email?: string | null
           referred_id?: string | null
           referred_phone?: string | null
@@ -681,6 +683,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          referred_contact_masked?: string | null
           referred_email?: string | null
           referred_id?: string | null
           referred_phone?: string | null

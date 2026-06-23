@@ -15,11 +15,12 @@ interface ReferralScreenProps {
 
 interface Referral {
   id: string;
-  referred_email: string | null;
-  referred_phone: string | null;
+  referred_contact_masked: string | null;
   status: string;
   created_at: string;
 }
+
+const REFERRAL_SELECT = "id, referred_contact_masked, status, created_at";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -39,7 +40,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
     if (!user?.id) return;
     supabase
       .from("referrals")
-      .select("*")
+      .select(REFERRAL_SELECT)
       .eq("referrer_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -78,20 +79,21 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
       data: { phoneLength: formatted.length },
     });
     try {
-      const existing = referrals.find((r) => r.referred_phone === formatted);
-      if (existing) {
-        toast.error("You've already invited this number");
-        setSending(false);
-        return;
-      }
-
-      // Insert referral record
+      // Insert referral record. Server-side unique index (referrer_id, referred_phone)
+      // enforces dedup since the client can no longer read raw referred_phone values.
       const { error } = await supabase.from("referrals").insert({
         referrer_id: user.id,
         referred_email: "",
         referred_phone: formatted,
       });
-      if (error) throw error;
+      if (error) {
+        if ((error as any).code === "23505") {
+          toast.error("You've already invited this number");
+          setSending(false);
+          return;
+        }
+        throw error;
+      }
 
       // Send SMS via edge function
       const { data: session } = await supabase.auth.getSession();
@@ -110,7 +112,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
       // Refresh list
       const { data } = await supabase
         .from("referrals")
-        .select("*")
+        .select(REFERRAL_SELECT)
         .eq("referrer_id", user.id)
         .order("created_at", { ascending: false });
       setReferrals((data as Referral[]) || []);
@@ -128,7 +130,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
   };
 
   const getDisplayName = (ref: Referral) => {
-    return ref.referred_phone || ref.referred_email || "—";
+    return ref.referred_contact_masked || "—";
   };
 
   return (
