@@ -227,26 +227,6 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Video Explainer */}
-      <motion.div variants={fadeUp}>
-        <h2 className="font-serif text-[20px] mb-2" style={{ color: "hsl(var(--dark))" }}>How Triage Works</h2>
-        <div
-          className="rounded-[18px] overflow-hidden"
-          style={{
-            boxShadow: "0 1px 3px hsla(0,0%,0%,0.04), 0 4px 16px -2px hsla(0,0%,0%,0.06)",
-          }}
-        >
-          <video
-            className="w-full"
-            controls
-            playsInline
-            preload="metadata"
-            style={{ borderRadius: "18px" }}
-          >
-            <source src="/videos/explainer.mp4" type="video/mp4" />
-          </video>
-        </div>
-      </motion.div>
 
     </motion.div>
   );
