@@ -153,10 +153,14 @@ const AppContent = () => {
 
 const IntroScreen = lazy(() => import("./screens/IntroScreen"));
 
+const safeLocalGet = (key: string): string | null => {
+  try { return localStorage.getItem(key); } catch (_) { return null; }
+};
+
 const App = () => {
-  const hasLoggedInBefore = localStorage.getItem("has_logged_in") === "true";
+  const hasLoggedInBefore = safeLocalGet("has_logged_in") === "true";
   const [splashDone, setSplashDone] = useState(hasLoggedInBefore);
-  const [introDone, setIntroDone] = useState(() => hasLoggedInBefore || localStorage.getItem("intro_completed") === "true");
+  const [introDone, setIntroDone] = useState(() => hasLoggedInBefore || safeLocalGet("intro_completed") === "true");
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
   const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
