@@ -23,6 +23,7 @@ export type Database = {
           message: string | null
           post_id: string
           sender_email: string | null
+          sender_email_masked: string | null
           sender_name: string
           status: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           message?: string | null
           post_id: string
           sender_email?: string | null
+          sender_email_masked?: string | null
           sender_name: string
           status?: string
         }
@@ -45,6 +47,7 @@ export type Database = {
           message?: string | null
           post_id?: string
           sender_email?: string | null
+          sender_email_masked?: string | null
           sender_name?: string
           status?: string
         }
