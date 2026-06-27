@@ -48,7 +48,7 @@ const AuthListener = () => {
     const touchActivity = () => {
       supabase.rpc("touch_last_active").then(({ error }) => {
         if (error) console.warn("[activity] touch failed:", error.message);
-      });
+      }).catch((err) => console.warn("[activity] touch exception:", err));
     };
 
     // If the user signs back in within the 7-day grace window, auto-cancel the pending deletion.
@@ -79,7 +79,7 @@ const AuthListener = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          localStorage.setItem("has_logged_in", "true");
+          try { localStorage.setItem("has_logged_in", "true"); } catch (_) {}
           fetchProfile(session.user.id);
           touchActivity();
           cancelPendingDeletionIfAny(session.user.id);
@@ -104,6 +104,9 @@ const AuthListener = () => {
       } else {
         setLoading(false);
       }
+    }).catch((err) => {
+      console.warn("[auth] getSession failed:", err);
+      setLoading(false);
     });
 
     // Re-touch when the app returns to foreground (covers long sessions kept open in background).
