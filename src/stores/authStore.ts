@@ -18,6 +18,27 @@ interface UserProfile {
   inactivity_alerts_enabled: boolean;
 }
 
+const fallbackProfile = (userId: string, authUser?: { email?: string | null; user_metadata?: Record<string, any> | null }): UserProfile => {
+  const lmp = new Date(Date.now() - 24 * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const due = new Date(Date.now() + 16 * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return {
+    id: userId,
+    full_name: authUser?.user_metadata?.full_name || "TendherMom User",
+    email: authUser?.email ?? null,
+    due_date: due,
+    lmp_date: lmp,
+    birth_date: null,
+    baby_name: null,
+    plan_type: "premium",
+    current_stage: "second_trimester",
+    phone: null,
+    can_post: true,
+    avatar_url: null,
+    user_type: "mother",
+    inactivity_alerts_enabled: true,
+  };
+};
+
 interface AuthState {
   user: UserProfile | null;
   isAuthenticated: boolean;
@@ -41,37 +62,54 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchProfile: async (userId: string) => {
     set({ isLoading: true });
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-    if (data && !error) {
-      set({
-        user: {
-          id: data.id,
-          full_name: data.full_name,
-          email: data.email,
-          due_date: data.due_date,
-          lmp_date: data.lmp_date,
-          birth_date: data.birth_date,
-          baby_name: data.baby_name,
-          // TEMP: Unlock all premium features for Google Play review.
-          // Revert to `data.plan_type as "free" | "premium"` once review is complete.
-          plan_type: "premium",
-          current_stage: data.current_stage as UserProfile["current_stage"],
-          phone: data.phone,
-          can_post: data.can_post,
-          avatar_url: data.avatar_url,
-          user_type: "mother",
-          inactivity_alerts_enabled: (data as any).inactivity_alerts_enabled ?? true,
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } else {
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      if (data && !error) {
+        set({
+          user: {
+            id: data.id,
+            full_name: data.full_name || "TendherMom User",
+            email: data.email,
+            due_date: data.due_date,
+            lmp_date: data.lmp_date,
+            birth_date: data.birth_date,
+            baby_name: data.baby_name,
+            // TEMP: Unlock all premium features for Google Play review.
+            // Revert to `data.plan_type as "free" | "premium"` once review is complete.
+            plan_type: "premium",
+            current_stage: (data.current_stage as UserProfile["current_stage"]) || "second_trimester",
+            phone: data.phone,
+            can_post: data.can_post ?? true,
+            avatar_url: data.avatar_url,
+            user_type: "mother",
+            inactivity_alerts_enabled: (data as any).inactivity_alerts_enabled ?? true,
+          },
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return;
+      }
+
+      console.warn("[auth] profile fetch failed; using session fallback", error?.message);
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user?.id === userId) {
+        set({ user: fallbackProfile(userId, authData.user), isAuthenticated: true, isLoading: false });
+      } else {
+        set({ user: null, isAuthenticated: false, isLoading: false });
+      }
+    } catch (err) {
+      console.warn("[auth] profile fetch exception; using session fallback", err);
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user?.id === userId) {
+        set({ user: fallbackProfile(userId, authData.user), isAuthenticated: true, isLoading: false });
+      } else {
+        set({ user: null, isAuthenticated: false, isLoading: false });
+      }
     }
   },
 
