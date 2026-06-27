@@ -46,9 +46,11 @@ const AuthListener = () => {
   useEffect(() => {
     // Refresh last_active_at so the inactivity check-in safety net knows the user is active.
     const touchActivity = () => {
-      supabase.rpc("touch_last_active").then(({ error }) => {
-        if (error) console.warn("[activity] touch failed:", error.message);
-      }).catch((err) => console.warn("[activity] touch exception:", err));
+      Promise.resolve(supabase.rpc("touch_last_active"))
+        .then(({ error }) => {
+          if (error) console.warn("[activity] touch failed:", error.message);
+        })
+        .catch((err) => console.warn("[activity] touch exception:", err));
     };
 
     // If the user signs back in within the 7-day grace window, auto-cancel the pending deletion.
