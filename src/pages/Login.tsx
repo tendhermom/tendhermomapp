@@ -19,6 +19,30 @@ const transientAuthError = (message: string) => {
   return normalized.includes("server") || normalized.includes("network") || normalized.includes("fetch") || normalized.includes("timeout");
 };
 
+const directPasswordLogin = async (email: string, password: string) => {
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password, gotrue_meta_security: {} }),
+  });
+
+  const payload = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(payload?.msg || payload?.message || payload?.error_description || payload?.error || "Unable to sign in");
+  }
+
+  const accessToken = payload?.access_token;
+  const refreshToken = payload?.refresh_token;
+  if (!accessToken || !refreshToken) throw new Error("Unable to start your session. Please try again.");
+
+  const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+  if (error) throw error;
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -52,6 +76,15 @@ const Login = () => {
       }
       if (!error || !transientAuthError(error.message || "")) break;
       await new Promise((resolve) => setTimeout(resolve, 700));
+    }
+
+    if (error && transientAuthError(error.message || "")) {
+      try {
+        await directPasswordLogin(credentials.email, credentials.password);
+        error = null;
+      } catch (fallbackErr) {
+        error = fallbackErr;
+      }
     }
 
     setLoading(false);
