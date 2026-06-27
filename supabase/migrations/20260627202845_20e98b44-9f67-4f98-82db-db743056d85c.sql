@@ -1,0 +1,1 @@
+UPDATE public.profiles SET full_name = 'Tester' WHERE email = 'tendhermomtest@gmail.com';
