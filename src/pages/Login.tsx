@@ -14,6 +14,11 @@ const SPARKLES = [
   { top: "80%", left: "-4%", delay: 1, dur: 2.2 },
 ];
 
+const transientAuthError = (message: string) => {
+  const normalized = message.toLowerCase();
+  return normalized.includes("server") || normalized.includes("network") || normalized.includes("fetch") || normalized.includes("timeout");
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -35,12 +40,29 @@ const Login = () => {
     setLoading(true);
     setShowResend(false);
     setStatus(null);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const credentials = { email: email.trim(), password };
+    let error: any = null;
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const result = await supabase.auth.signInWithPassword(credentials);
+        error = result.error;
+      } catch (err) {
+        error = err;
+      }
+      if (!error || !transientAuthError(error.message || "")) break;
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    }
+
     setLoading(false);
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) setShowResend(true);
-      setStatus({ kind: "error", text: error.message });
+      const message = transientAuthError(error.message || "")
+        ? "We could not reach the login server. Please check your connection and try again."
+        : error.message;
+      setStatus({ kind: "error", text: message });
     } else {
+      try { localStorage.setItem("has_logged_in", "true"); } catch (_) {}
       navigate("/");
     }
   };
