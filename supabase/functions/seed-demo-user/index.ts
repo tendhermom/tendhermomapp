@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       const { data: upd, error: updErr } = await admin.auth.admin.updateUserById(existing.id, {
         password: DEMO_PASSWORD,
         email_confirm: true,
-        user_metadata: { ...existing.user_metadata, full_name: "Google Reviewer", user_type: "mother" },
+        user_metadata: { ...existing.user_metadata, full_name: "Tester", user_type: "mother" },
       });
       if (updErr) throw updErr;
       userId = upd.user!.id;
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
         email: DEMO_EMAIL,
         password: DEMO_PASSWORD,
         email_confirm: true,
-        user_metadata: { full_name: "Google Reviewer", user_type: "mother" },
+        user_metadata: { full_name: "Tester", user_type: "mother" },
       });
       if (createErr) throw createErr;
       userId = created.user!.id;
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 
     await admin.from("profiles").upsert({
       id: userId,
-      full_name: "Google Reviewer",
+      full_name: "Tester",
       email: DEMO_EMAIL,
       phone: "+2348000000000",
       user_type: "mother",
