@@ -96,6 +96,10 @@ const Login = () => {
       setStatus({ kind: "error", text: message });
     } else {
       try { localStorage.setItem("has_logged_in", "true"); } catch (_) {}
+      try {
+        const { clearStaleCache } = await import("@/lib/clearStaleCache");
+        await clearStaleCache();
+      } catch (_) {}
       navigate("/");
     }
   };
