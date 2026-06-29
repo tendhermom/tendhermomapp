@@ -12,6 +12,22 @@ initSentry();
 initOneSignal();
 initDespia();
 
+// One-time stale-cache purge for users on outdated builds (e.g. removed
+// "How Triage Works" video, old welcome name). Bump RELEASE_TAG whenever
+// shipping a release that must invalidate workbox precaches.
+const RELEASE_TAG = "2026-06-29-no-triage-video";
+try {
+  if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
+    if (typeof caches !== "undefined" && caches?.keys) {
+      caches.keys().then((names) => {
+        names.forEach((n) => caches.delete(n).catch(() => {}));
+      }).catch(() => {});
+    }
+    localStorage.setItem("release_tag", RELEASE_TAG);
+  }
+} catch (_) {}
+
+
 // Auto-update PWA: reload immediately when a new service worker takes control
 // so users never get stuck on a stale build.
 registerSW({
