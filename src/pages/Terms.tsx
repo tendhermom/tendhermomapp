@@ -105,7 +105,6 @@ const Terms = ({ onBack }: TermsProps = {}) => {
                 key={idx}
                 variants={fadeUp}
                 className="tend-card overflow-hidden"
-                style={section.highlight ? { borderLeft: "3px solid hsl(var(--coral))" } : undefined}
               >
                 <div className="flex items-center gap-3 px-5 pt-5 pb-3">
                   <div className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center flex-shrink-0"
