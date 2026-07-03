@@ -186,7 +186,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
               >
                 <IonIcon name={item.icon} size={24} style={{ color: item.color }} />
               </div>
-              <span className="text-[10px] font-sans font-semibold text-center leading-tight tracking-wide" style={{ color: "hsl(var(--dark))" }}>
+              <span className="text-[10px] font-sans font-semibold text-center leading-tight tracking-wide min-h-[2.4em] flex items-center justify-center" style={{ color: "hsl(var(--dark))" }}>
                 {item.label}
               </span>
             </motion.button>
