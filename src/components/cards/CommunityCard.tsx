@@ -219,11 +219,30 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
 
         <motion.button
           whileTap={{ scale: 0.9 }}
+          onClick={async () => {
+            hapticLight();
+            const excerpt = (post.content || "").slice(0, 140).trim();
+            const ok = await nativeShare({
+              title: "TendherMom Community",
+              text: excerpt ? `"${excerpt}${(post.content || "").length > 140 ? "…" : ""}" — via TendherMom` : "Check out this post on TendherMom",
+              url: "https://tendhermom.lovable.app",
+            });
+            if (!ok) {
+              try {
+                await navigator.clipboard.writeText(`${excerpt}\n\nhttps://tendhermom.lovable.app`);
+                setCardStatus({ kind: "success", text: "Post copied to clipboard" });
+              } catch {
+                setCardStatus({ kind: "error", text: "Sharing isn't supported on this device" });
+              }
+              setTimeout(() => setCardStatus(null), 2500);
+            }
+          }}
           className="flex items-center gap-1.5 ml-auto pt-2"
         >
           <IonIcon name="share-outline" size={16} style={{ color: "hsl(var(--text-muted))" }} />
         </motion.button>
       </div>
+
 
       {/* Report Sheet */}
       <AnimatePresence>
