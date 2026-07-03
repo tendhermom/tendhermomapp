@@ -266,15 +266,8 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
             {WEEKLY_TIPS.find((t) => t.week === currentWeek)?.title || "Your journey continues"}
           </p>
         </div>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => handleSelectTrimester(currentTrimesterIndex, currentWeek)}
-          className="px-3 py-1.5 rounded-xl text-[11px] font-sans font-semibold"
-          style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
-        >
-          View →
-        </motion.button>
       </motion.div>
+
 
       {/* Trimester Carousel Cards */}
       <div>
