@@ -139,6 +139,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
             return (
               <motion.div
                 key={tip.week}
+                id={`insights-week-${tip.week}`}
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
