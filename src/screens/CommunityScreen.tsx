@@ -21,11 +21,16 @@ interface CommunityScreenProps {
 }
 
 const COMMUNITIES = [
-  { id: "first_trimester" as ChannelId, label: "1st Trimester", subtitle: "Weeks 1–13", image: img1st, members: "2.1k" },
-  { id: "second_trimester" as ChannelId, label: "2nd Trimester", subtitle: "Weeks 14–26", image: img2nd, members: "1.8k" },
-  { id: "third_trimester" as ChannelId, label: "3rd Trimester", subtitle: "Weeks 27–40", image: img3rd, members: "1.5k" },
-  { id: "postpartum" as ChannelId, label: "Postpartum", subtitle: "After birth", image: imgPost, members: "3.2k" },
+  { id: "first_trimester" as ChannelId, label: "1st Trimester", subtitle: "Weeks 1–13", image: img1st },
+  { id: "second_trimester" as ChannelId, label: "2nd Trimester", subtitle: "Weeks 14–26", image: img2nd },
+  { id: "third_trimester" as ChannelId, label: "3rd Trimester", subtitle: "Weeks 27–40", image: img3rd },
+  { id: "postpartum" as ChannelId, label: "Postpartum", subtitle: "After birth", image: imgPost },
 ];
+
+const formatMemberCount = (n: number): string => {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
+  return String(n);
+};
 
 const db = supabase as any;
 
@@ -35,6 +40,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
 
   // Membership state
   const [memberships, setMemberships] = useState<string[]>([]);
+  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
   const [loadingMemberships, setLoadingMemberships] = useState(true);
   const [activeCommunity, setActiveCommunity] = useState<ChannelId | null>(null);
 
@@ -60,10 +66,23 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const [feedStatus, setFeedStatus] = useState<InlineStatusMsg | null>(null);
   const [joinStatus, setJoinStatus] = useState<InlineStatusMsg | null>(null);
 
-  // Fetch memberships
+  // Fetch memberships + real member counts per community
   useEffect(() => {
     const fetch = async () => {
-      if (!user) return;
+      // Real per-community member counts (visible to everyone, even signed-out)
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        COMMUNITIES.map(async (c) => {
+          const { count } = await db
+            .from("community_memberships")
+            .select("user_id", { count: "exact", head: true })
+            .eq("community", c.id);
+          counts[c.id] = count || 0;
+        })
+      );
+      setMemberCounts(counts);
+
+      if (!user) { setLoadingMemberships(false); return; }
       const { data } = await db
         .from("community_memberships")
         .select("community")
@@ -121,6 +140,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
 
     if (!error) {
       setMemberships([...memberships, joiningCommunity]);
+      setMemberCounts((prev) => ({ ...prev, [joiningCommunity]: (prev[joiningCommunity] || 0) + 1 }));
       setShowJoinModal(false);
       setActiveCommunity(joiningCommunity);
       setActiveChannel(joiningCommunity);
@@ -146,6 +166,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
       .eq("community", activeCommunity);
 
     setMemberships(memberships.filter(m => m !== activeCommunity));
+    setMemberCounts((prev) => ({ ...prev, [activeCommunity]: Math.max(0, (prev[activeCommunity] || 1) - 1) }));
     setShowLeaveConfirm(false);
     setActiveCommunity(null);
     setLeaving(false);
@@ -447,12 +468,14 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-white font-serif text-[18px] leading-tight">{community.label}</h3>
                   <p className="text-white/60 text-[12px] font-sans mt-0.5">{community.subtitle}</p>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <IonIcon name="people" size={12} style={{ color: "rgba(255,255,255,0.5)" }} />
-                    <span className="text-[11px] font-sans font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
-                      {community.members} members
-                    </span>
-                  </div>
+                  {(memberCounts[community.id] || 0) >= 50 && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <IonIcon name="people" size={12} style={{ color: "rgba(255,255,255,0.5)" }} />
+                      <span className="text-[11px] font-sans font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        {formatMemberCount(memberCounts[community.id])} members
+                      </span>
+                    </div>
+                  )}
                 </div>
               </motion.button>
             );
