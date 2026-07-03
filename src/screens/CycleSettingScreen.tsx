@@ -141,16 +141,20 @@ const CycleSettingScreen = ({ onBack }: Props) => {
         </p>
       </div>
 
-      {/* Cycle length */}
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+      {/* Cycle length card */}
+      <div className="tend-card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
             Cycle length
           </label>
-          <span className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>
+          <span
+            className="text-[12px] font-sans font-semibold px-2.5 py-1 rounded-full"
+            style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+          >
             {cycle} days
           </span>
         </div>
+
         <input
           type="range"
           min={MIN_CYCLE}
@@ -158,29 +162,28 @@ const CycleSettingScreen = ({ onBack }: Props) => {
           step={1}
           value={cycle}
           onChange={(e) => setCycle(Number(e.target.value))}
-          className="w-full"
-          style={{ accentColor: "hsl(var(--green))" }}
+          className="cycle-slider w-full"
         />
-        <div className="flex justify-between text-[11px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
+        <div className="flex justify-between text-[10px] font-sans mt-1.5" style={{ color: "hsl(var(--text-muted))" }}>
           <span>{MIN_CYCLE}d</span>
-          <span>Average 28d</span>
+          <span>Avg 28d</span>
           <span>{MAX_CYCLE}d</span>
         </div>
 
-        {/* Quick presets */}
-        <div className="flex gap-2 mt-3">
-          {[21, 26, 28, 30, 32].map((n) => {
+        {/* Quick presets — scroll horizontally on narrow screens so nothing clips */}
+        <div className="flex gap-1.5 mt-4 -mx-1 px-1 overflow-x-auto no-scrollbar">
+          {[21, 26, 28, 30, 32, 35].map((n) => {
             const active = cycle === n;
             return (
               <motion.button
                 key={n}
                 whileTap={{ scale: 0.94 }}
                 onClick={() => setCycle(n)}
-                className="flex-1 py-2 rounded-xl text-[12px] font-sans font-semibold"
+                className="flex-shrink-0 min-w-[52px] py-2 rounded-xl text-[12px] font-sans font-semibold transition-colors"
                 style={{
                   background: active ? "hsl(var(--green))" : "hsl(var(--surface))",
                   color: active ? "white" : "hsl(var(--dark))",
-                  border: "1.5px solid hsl(var(--border-subtle))",
+                  border: active ? "1.5px solid hsl(var(--green))" : "1.5px solid hsl(var(--border-subtle))",
                 }}
               >
                 {n}d
