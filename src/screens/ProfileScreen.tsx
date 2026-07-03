@@ -140,6 +140,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "compliance") {
     return <ComplianceScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "cycle-setting") {
+    return <CycleSettingScreen onBack={() => setSubScreen(null)} />;
+  }
   if (subScreen === "privacy" || subScreen === "terms" || subScreen === "technical-popups" || subScreen === "health-safety") {
     return (
       <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
