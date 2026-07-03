@@ -140,6 +140,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
 
     if (!error) {
       setMemberships([...memberships, joiningCommunity]);
+      setMemberCounts((prev) => ({ ...prev, [joiningCommunity]: (prev[joiningCommunity] || 0) + 1 }));
       setShowJoinModal(false);
       setActiveCommunity(joiningCommunity);
       setActiveChannel(joiningCommunity);
