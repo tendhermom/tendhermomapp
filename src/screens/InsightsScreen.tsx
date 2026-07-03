@@ -83,11 +83,19 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
   // Determine which trimester the user is in
   const currentTrimesterIndex = currentWeek <= 12 ? 0 : currentWeek <= 27 ? 1 : 2;
 
-  const handleSelectTrimester = (index: number) => {
+  const handleSelectTrimester = (index: number, focusWeek?: number) => {
     hapticLight();
     setSelectedTrimester(index);
-    setExpandedWeek(null);
+    setExpandedWeek(focusWeek ?? null);
+    if (focusWeek) {
+      // Wait for the trimester view to mount, then scroll the target week into view.
+      setTimeout(() => {
+        const el = document.getElementById(`insights-week-${focusWeek}`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+    }
   };
+
 
   const handleBackToCategories = () => {
     hapticLight();
