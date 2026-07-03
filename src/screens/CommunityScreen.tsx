@@ -166,6 +166,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
       .eq("community", activeCommunity);
 
     setMemberships(memberships.filter(m => m !== activeCommunity));
+    setMemberCounts((prev) => ({ ...prev, [activeCommunity]: Math.max(0, (prev[activeCommunity] || 1) - 1) }));
     setShowLeaveConfirm(false);
     setActiveCommunity(null);
     setLeaving(false);
