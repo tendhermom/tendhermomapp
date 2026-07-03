@@ -5,6 +5,7 @@ import type { CommunityPost } from "@/stores/communityStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
+import { nativeShare, hapticLight } from "@/lib/despia";
 
 interface CommunityCardProps {
   post: CommunityPost;
