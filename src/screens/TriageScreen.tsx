@@ -520,7 +520,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
             </div>
             <div className="flex-1 text-left">
               <p className="text-[14px] font-bold font-sans text-white">Alert your emergency contacts</p>
-              <p className="text-[11px] font-sans text-white/70">Tap to send SOS via SMS, WhatsApp & call</p>
+              <p className="text-[11px] font-sans text-white/70">Tap to send SOS now</p>
             </div>
             <IonIcon name="chevron-forward" size={16} style={{ color: "rgba(255,255,255,0.5)" }} />
           </motion.button>

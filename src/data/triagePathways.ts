@@ -82,7 +82,7 @@ const PATHWAYS: TriagePathway[] = [
         text: "Is there any change in the strength or type of movement compared to normal?",
         options: [
           { label: "Movement feels normal, just less frequent", next: "rm4" },
-          { label: "Movement feels much weaker than normal", outcome: { severity: "red", title: "Go to hospital today", message: "Weaker movements — even if the count is adequate — can indicate fetal compromise. Same-day assessment is required.", action: "Go to hospital today — same day, not tomorrow. Bring your ANC card. Tell the midwife about the change in movement quality." } },
+          { label: "Movement feels much weaker than normal", outcome: { severity: "red", title: "Go to a hospital today", message: "Weaker movements — even if the count is adequate — can indicate fetal compromise. Same-day assessment is required.", action: "Go to a hospital today — same day, not tomorrow. Bring your ANC card. Tell the midwife about the change in movement quality." } },
         ],
       },
       {
@@ -152,7 +152,7 @@ const PATHWAYS: TriagePathway[] = [
         text: "Do you feel dizzy, faint, or is your heart racing?",
         options: [
           { label: "No, I feel okay otherwise", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Bright red period-like bleeding needs urgent evaluation. Possible placenta praevia or abruption.", action: "Go to the nearest hospital. Tell the nurse if there is pain or no pain — this changes the diagnosis." } },
-          { label: "Yes — I feel dizzy or faint", outcome: { severity: "red", title: "Go to hospital NOW — URGENT", message: "Bleeding with dizziness or fainting indicates you are losing blood volume. You may need a transfusion.", action: "Hospital immediately. Alert family about your blood type. Nigeria has limited blood supplies — family may need to donate." } },
+          { label: "Yes — I feel dizzy or faint", outcome: { severity: "red", title: "Go to a hospital NOW — URGENT", message: "Bleeding with dizziness or fainting indicates you are losing blood volume. You may need a transfusion.", action: "Hospital immediately. Alert family about your blood type. Nigeria has limited blood supplies — family may need to donate." } },
         ],
       },
       {
@@ -205,17 +205,17 @@ const PATHWAYS: TriagePathway[] = [
         options: [
           { label: "No other symptoms", outcome: { severity: "yellow", title: "See your doctor today", message: "A first-time headache after 20 weeks needs same-day blood pressure check. It could indicate preeclampsia.", action: "Contact your doctor within 2 hours for a BP check. Rest in a darkened room while waiting." } },
           { label: "Mild ankle swelling", outcome: { severity: "yellow", title: "BP check needed today", message: "Headache with swelling needs blood pressure assessment. Reduce salt intake.", action: "See your doctor today. Elevate your feet. Avoid suya and processed foods high in sodium." } },
-          { label: "Blurry vision or seeing spots", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Headache with vision changes is a warning sign of preeclampsia, which needs urgent care.", action: "Go to hospital immediately. Tell the nurse: 'I have a severe headache and my vision is affected.' Magnesium sulphate may be needed." } },
+          { label: "Blurry vision or seeing spots", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Headache with vision changes is a warning sign of preeclampsia, which needs urgent care.", action: "Go to a hospital immediately. Tell the nurse: 'I have a severe headache and my vision is affected.' Magnesium sulphate may be needed." } },
         ],
       },
       {
         id: "sh5",
         text: "Do you also have any of these warning signs?",
         options: [
-          { label: "Vision changes or flashing lights", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Severe headache with vision changes is a medical emergency — possible imminent eclampsia.", action: "Go to hospital immediately. Do NOT take herbs. Magnesium sulphate is the only effective intervention." } },
+          { label: "Vision changes or flashing lights", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Severe headache with vision changes is a medical emergency — possible imminent eclampsia.", action: "Go to a hospital immediately. Do NOT take herbs. Magnesium sulphate is the only effective intervention." } },
           { label: "Pain under right ribs", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Headache with right upper abdominal pain may indicate HELLP syndrome — a life-threatening complication.", action: "Hospital urgently. Insist on full blood count and liver function tests. HELLP is often misdiagnosed as gastritis." } },
-          { label: "Sudden face or hand swelling", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Headache + sudden swelling = classic preeclampsia. All three symptoms together = hospital immediately.", action: "Go to hospital now. Do not wait for morning. Do not drive yourself." } },
-          { label: "Headache not responding to paracetamol", outcome: { severity: "red", title: "Go to hospital today", message: "A headache that doesn't respond to paracetamol after 20 weeks is hypertensive until proven otherwise.", action: "Go to hospital same day. Bring your ANC card. Request blood pressure check on arrival." } },
+          { label: "Sudden face or hand swelling", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Headache + sudden swelling = classic preeclampsia. All three symptoms together = hospital immediately.", action: "Go to a hospital now. Do not wait for morning. Do not drive yourself." } },
+          { label: "Headache not responding to paracetamol", outcome: { severity: "red", title: "Go to a hospital today", message: "A headache that doesn't respond to paracetamol after 20 weeks is hypertensive until proven otherwise.", action: "Go to a hospital same day. Bring your ANC card. Request blood pressure check on arrival." } },
         ],
       },
     ],
@@ -277,7 +277,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "sw3",
         text: "Do you have a headache or vision changes alongside the swelling?",
         options: [
-          { label: "Yes — headache and/or blurry vision", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Sudden swelling + headache + vision changes = preeclampsia triad. This is an imminent eclampsia warning.", action: "Go to hospital immediately. This is urgent. Use the SOS button if needed. Two emergencies are occurring simultaneously." } },
+          { label: "Yes — headache and/or blurry vision", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Sudden swelling + headache + vision changes = preeclampsia triad. This is an imminent eclampsia warning.", action: "Go to a hospital immediately. This is urgent. Use the SOS button if needed. Two emergencies are occurring simultaneously." } },
           { label: "No other symptoms", outcome: { severity: "yellow", title: "See your doctor today", message: "Sudden swelling in the hands or face should be evaluated by your doctor today for blood pressure and urine protein.", action: "Contact your doctor today. If no doctor reachable within 2 hours, go to hospital." } },
         ],
       },
@@ -307,7 +307,7 @@ const PATHWAYS: TriagePathway[] = [
         options: [
           { label: "Mild stretching or pulling feeling", outcome: { severity: "green", title: "Monitor at home", message: "Round ligament pain and stretching sensations are normal as your uterus grows.", action: "Rest, use a warm (not hot) compress, and change positions slowly. If pain worsens, contact your doctor." } },
           { label: "Coming and going like contractions", next: "ap4" },
-          { label: "Constant and getting worse", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Constant worsening abdominal pain needs immediate evaluation. Could indicate abruption or uterine rupture.", action: "Go to hospital immediately. If you have had a previous caesarean section, this is especially urgent." } },
+          { label: "Constant and getting worse", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Constant worsening abdominal pain needs immediate evaluation. Could indicate abruption or uterine rupture.", action: "Go to a hospital immediately. If you have had a previous caesarean section, this is especially urgent." } },
         ],
       },
       {
@@ -322,7 +322,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "ap4",
         text: "How many weeks pregnant are you?",
         options: [
-          { label: "Less than 37 weeks", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Contraction-like pain before 37 weeks could indicate preterm labour. Tocolysis may be needed.", action: "Go to hospital immediately. Time the contractions if you can. Do NOT take herbs." } },
+          { label: "Less than 37 weeks", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Contraction-like pain before 37 weeks could indicate preterm labour. Tocolysis may be needed.", action: "Go to a hospital immediately. Time the contractions if you can. Do NOT take herbs." } },
           { label: "37 weeks or more", outcome: { severity: "yellow", title: "Contact your doctor", message: "You may be in early labour. Time your contractions and monitor their pattern.", action: "Call your hospital. Go in if contractions are 5 minutes apart and lasting 1 minute for 1 hour." } },
         ],
       },
@@ -357,8 +357,8 @@ const PATHWAYS: TriagePathway[] = [
         id: "cl3",
         text: "How often are contractions coming, and how long does each one last?",
         options: [
-          { label: "5 minutes apart, lasting 1 minute each", outcome: { severity: "yellow", title: "Go to hospital", message: "You are likely in active labour (5-1-1 rule). Time to go to hospital.", action: "Call your hospital and head in. If you have given birth before, go sooner — multigravida women dilate faster." } },
-          { label: "More than 10 minutes apart, mild", outcome: { severity: "green", title: "Early labour — monitor", message: "This sounds like early (latent) labour. Stay home, walk around, eat lightly.", action: "Go to hospital when contractions are 5 minutes apart or your waters break. Stay hydrated." } },
+          { label: "5 minutes apart, lasting 1 minute each", outcome: { severity: "yellow", title: "Go to a hospital", message: "You are likely in active labour (5-1-1 rule). Time to go to hospital.", action: "Call your hospital and head in. If you have given birth before, go sooner — multigravida women dilate faster." } },
+          { label: "More than 10 minutes apart, mild", outcome: { severity: "green", title: "Early labour — monitor", message: "This sounds like early (latent) labour. Stay home, walk around, eat lightly.", action: "Go to a hospital when contractions are 5 minutes apart or your waters break. Stay hydrated." } },
           { label: "I feel the urge to push or bear down", outcome: { severity: "red", title: "EMERGENCY — imminent birth", message: "The urge to push means your baby may come very soon. This is a birth emergency.", action: "Call 112. If you cannot get to hospital, prepare for delivery. Do NOT try to hold the baby in." } },
         ],
       },
@@ -386,7 +386,7 @@ const PATHWAYS: TriagePathway[] = [
         text: "How many weeks pregnant are you?",
         options: [
           { label: "Less than 34 weeks", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Preterm rupture of membranes requires urgent assessment. Steroids and antibiotics may be needed.", action: "Hospital immediately. Neonatal preparation is required. Wear a clean pad and note the time your waters broke." } },
-          { label: "34–36 weeks", outcome: { severity: "yellow", title: "Go to hospital within 2 hours", message: "Ruptured membranes at this stage need assessment and a management plan.", action: "Go to hospital within 2 hours. No vaginal examination before ultrasound. Note time of rupture." } },
+          { label: "34–36 weeks", outcome: { severity: "yellow", title: "Go to a hospital within 2 hours", message: "Ruptured membranes at this stage need assessment and a management plan.", action: "Go to a hospital within 2 hours. No vaginal examination before ultrasound. Note time of rupture." } },
           { label: "37 weeks or more", next: "wb3" },
         ],
       },
@@ -394,7 +394,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "wb3",
         text: "Do you have a fever or does the fluid smell bad?",
         options: [
-          { label: "No fever, fluid smells normal", outcome: { severity: "yellow", title: "Go to hospital within 4 hours", message: "Term rupture without signs of infection. Labour usually starts within 24 hours.", action: "Hospital within 4 hours. Use a clean pad (not tampon). No intercourse. Nothing vaginally." } },
+          { label: "No fever, fluid smells normal", outcome: { severity: "yellow", title: "Go to a hospital within 4 hours", message: "Term rupture without signs of infection. Labour usually starts within 24 hours.", action: "Hospital within 4 hours. Use a clean pad (not tampon). No intercourse. Nothing vaginally." } },
           { label: "Yes — fever or bad smell", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Ruptured membranes with fever = possible chorioamnionitis. IV antibiotics are urgently needed.", action: "Hospital immediately. Risk of sepsis is very high without treatment. Tell nurse about the fever and discharge." } },
         ],
       },
@@ -458,7 +458,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "se1",
         text: "Are you feeling confused, drowsy, or not thinking clearly?",
         options: [
-          { label: "Yes — confused or very drowsy", outcome: { severity: "red", title: "Go to hospital NOW — URGENT", message: "Confusion + fever + fast breathing = septic shock. ICU-level care may be needed.", action: "Call 112 immediately. Lie flat. Keep warm. IV access, blood cultures, and antibiotics are needed within 1 hour." } },
+          { label: "Yes — confused or very drowsy", outcome: { severity: "red", title: "Go to a hospital NOW — URGENT", message: "Confusion + fever + fast breathing = septic shock. ICU-level care may be needed.", action: "Call 112 immediately. Lie flat. Keep warm. IV access, blood cultures, and antibiotics are needed within 1 hour." } },
           { label: "No — alert but feel very unwell", next: "se2" },
         ],
       },
@@ -467,7 +467,7 @@ const PATHWAYS: TriagePathway[] = [
         text: "Do you have two or more of these: fever, racing heart, fast breathing, not passing much urine?",
         options: [
           { label: "Yes — two or more of these", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Two or more sepsis warning signs = sepsis criteria met. IV antibiotics are needed within 1 hour.", action: "Hospital immediately. Request sepsis bundle: blood cultures, IV antibiotics, IV fluids, oxygen. Ask for a senior doctor." } },
-          { label: "Only one symptom", outcome: { severity: "yellow", title: "Go to hospital within 2 hours", message: "A single warning sign with feeling unwell needs prompt assessment.", action: "Hospital within 2 hours. Report: 'I have a fever and feel very unwell.' Request blood tests (WBC and CRP)." } },
+          { label: "Only one symptom", outcome: { severity: "yellow", title: "Go to a hospital within 2 hours", message: "A single warning sign with feeling unwell needs prompt assessment.", action: "Hospital within 2 hours. Report: 'I have a fever and feel very unwell.' Request blood tests (WBC and CRP)." } },
         ],
       },
     ],
@@ -495,7 +495,7 @@ const PATHWAYS: TriagePathway[] = [
         text: "Do you have any of these alongside the breathlessness?",
         options: [
           { label: "Chest pain or recent leg swelling", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Breathlessness + chest pain + leg swelling = high probability of pulmonary embolism.", action: "Hospital immediately. Do NOT massage the leg. Lie flat during transport. Request D-dimer and CT-PA scan." } },
-          { label: "Very pale gums or fingernails", outcome: { severity: "red", title: "Go to hospital today", message: "Breathlessness with pallor suggests severe anaemia (Hb likely below 7). Blood transfusion may be needed.", action: "Hospital same day. Request full blood count. Blood transfusion may be required." } },
+          { label: "Very pale gums or fingernails", outcome: { severity: "red", title: "Go to a hospital today", message: "Breathlessness with pallor suggests severe anaemia (Hb likely below 7). Blood transfusion may be needed.", action: "Hospital same day. Request full blood count. Blood transfusion may be required." } },
           { label: "Ankle swelling, worse when lying flat", outcome: { severity: "yellow", title: "Assessment needed urgently", message: "These signs could indicate peripartum cardiomyopathy, which is more common in Nigerian women.", action: "Assessment within 24 hours. Echocardiogram is needed to check heart function." } },
         ],
       },
@@ -702,10 +702,10 @@ const PATHWAYS: TriagePathway[] = [
         id: "ja2",
         text: "Do you have any of these alongside the jaundice?",
         options: [
-          { label: "Confusion or feeling very drowsy", outcome: { severity: "red", title: "Go to hospital NOW — URGENT", message: "Jaundice + confusion = hepatic failure. ICU-level care may be needed. Delivery may be required to save the mother.", action: "Call 112. Hepatic encephalopathy has high mortality in pregnancy." } },
+          { label: "Confusion or feeling very drowsy", outcome: { severity: "red", title: "Go to a hospital NOW — URGENT", message: "Jaundice + confusion = hepatic failure. ICU-level care may be needed. Delivery may be required to save the mother.", action: "Call 112. Hepatic encephalopathy has high mortality in pregnancy." } },
           { label: "Abdominal pain and/or fever", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Jaundice + pain + fever = possible Hepatitis E or acute fatty liver of pregnancy.", action: "Hospital immediately. Hepatitis E carries 25% maternal mortality in pregnancy. Supportive care + delivery is the treatment." } },
           { label: "Severe pain with sickle cell disease", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Sickle cell crisis with jaundice = acute haemolytic crisis. Exchange transfusion may be needed.", action: "Hospital immediately. Request haematology team. High-risk pathway." } },
-          { label: "No other symptoms — just yellow colour", outcome: { severity: "red", title: "Go to hospital TODAY", message: "All jaundice in pregnancy requires same-day assessment. Every cause is potentially life-threatening.", action: "Hospital today. Request LFTs, FBC, and viral hepatitis screen. Do not wait." } },
+          { label: "No other symptoms — just yellow colour", outcome: { severity: "red", title: "Go to a hospital TODAY", message: "All jaundice in pregnancy requires same-day assessment. Every cause is potentially life-threatening.", action: "Hospital today. Request LFTs, FBC, and viral hepatitis screen. Do not wait." } },
         ],
       },
     ],
@@ -739,7 +739,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "dv3",
         text: "Do you have any breathlessness or chest pain alongside the leg symptoms?",
         options: [
-          { label: "Yes — breathless or chest pain", outcome: { severity: "red", title: "Go to hospital NOW — URGENT", message: "DVT + breathlessness = probable pulmonary embolism. This is a medical emergency.", action: "Hospital immediately. Do NOT massage the leg. Lie still during transport. Emergency anticoagulation is needed." } },
+          { label: "Yes — breathless or chest pain", outcome: { severity: "red", title: "Go to a hospital NOW — URGENT", message: "DVT + breathlessness = probable pulmonary embolism. This is a medical emergency.", action: "Hospital immediately. Do NOT massage the leg. Lie still during transport. Emergency anticoagulation is needed." } },
           { label: "No — just the leg symptoms", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "Classic DVT signs (one leg: swollen, red, warm, tender) require urgent anticoagulation.", action: "Hospital immediately. LMWH (low-molecular-weight heparin) is safe in pregnancy. Request Doppler ultrasound." } },
         ],
       },
@@ -802,7 +802,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "an2",
         text: "Are you short of breath when walking or doing light activity?",
         options: [
-          { label: "Yes — breathless at rest or minimal exertion", outcome: { severity: "red", title: "Go to hospital today", message: "Pale + breathless at rest = likely severe anaemia (Hb below 7). Blood transfusion may be urgently needed.", action: "Hospital same day. Request full blood count. Family member may need to donate blood — Nigeria has limited supply." } },
+          { label: "Yes — breathless at rest or minimal exertion", outcome: { severity: "red", title: "Go to a hospital today", message: "Pale + breathless at rest = likely severe anaemia (Hb below 7). Blood transfusion may be urgently needed.", action: "Hospital same day. Request full blood count. Family member may need to donate blood — Nigeria has limited supply." } },
           { label: "Mild breathlessness on exertion only", outcome: { severity: "yellow", title: "See your doctor this week", message: "Moderate anaemia needs treatment with iron and folic acid. A blood test will confirm the level.", action: "See your doctor for FBC. Iron-rich foods: liver, dark leafy vegetables (ofe onugbu). Vitamin C enhances iron absorption. Avoid tea with meals." } },
         ],
       },
@@ -838,7 +838,7 @@ const PATHWAYS: TriagePathway[] = [
         id: "ep2",
         text: "Do you have any shoulder tip pain or feeling dizzy/faint?",
         options: [
-          { label: "Yes — shoulder pain or dizziness", outcome: { severity: "red", title: "Go to hospital NOW — URGENT", message: "One-sided pain + shoulder tip pain + dizziness = ruptured ectopic pregnancy until proven otherwise. This is a surgical emergency.", action: "Hospital immediately. Call 112. Tell nurse: 'I am pregnant and have severe abdominal and shoulder pain.' Surgery may be within the hour." } },
+          { label: "Yes — shoulder pain or dizziness", outcome: { severity: "red", title: "Go to a hospital NOW — URGENT", message: "One-sided pain + shoulder tip pain + dizziness = ruptured ectopic pregnancy until proven otherwise. This is a surgical emergency.", action: "Hospital immediately. Call 112. Tell nurse: 'I am pregnant and have severe abdominal and shoulder pain.' Surgery may be within the hour." } },
           { label: "No — just one-sided pain", outcome: { severity: "red", title: "Go to a hospital NOW!", message: "One-sided pain in early pregnancy must exclude ectopic pregnancy. Same-day ultrasound is required.", action: "Hospital same day. Ectopic pregnancy is the leading cause of first-trimester maternal death in Nigeria." } },
         ],
       },

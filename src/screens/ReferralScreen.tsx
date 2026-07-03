@@ -181,9 +181,9 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
           <p className="text-[12px] font-sans mb-3" style={{ color: "hsl(var(--text-muted))" }}>
             Enter your friend's phone number and we'll send them a text with the download link.
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-stretch">
             <div
-              className="flex items-center gap-2 flex-1 px-3 py-2.5 rounded-xl"
+              className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2.5 rounded-xl"
               style={{ background: "hsl(var(--muted))" }}
             >
               <IonIcon name="call-outline" size={16} style={{ color: "hsl(var(--green))" }} />
@@ -192,7 +192,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
                 placeholder="+234 801 234 5678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="flex-1 text-[13px] font-sans border-none outline-none bg-transparent"
+                className="flex-1 min-w-0 text-[13px] font-sans border-none outline-none bg-transparent"
                 style={{ color: "hsl(var(--dark))" }}
                 onKeyDown={(e) => e.key === "Enter" && handleInviteByPhone()}
               />
@@ -201,10 +201,10 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
               whileTap={{ scale: 0.96 }}
               onClick={handleInviteByPhone}
               disabled={sending}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-sans font-semibold text-white disabled:opacity-50"
+              className="shrink-0 px-3.5 rounded-xl text-[13px] font-sans font-semibold text-white disabled:opacity-50"
               style={{ background: "hsl(var(--coral))" }}
             >
-              {sending ? "…" : "Invite"}
+              {sending ? "…" : "Send"}
             </motion.button>
           </div>
         </div>
