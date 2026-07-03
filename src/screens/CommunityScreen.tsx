@@ -40,6 +40,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
 
   // Membership state
   const [memberships, setMemberships] = useState<string[]>([]);
+  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
   const [loadingMemberships, setLoadingMemberships] = useState(true);
   const [activeCommunity, setActiveCommunity] = useState<ChannelId | null>(null);
 
