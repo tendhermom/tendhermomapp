@@ -66,10 +66,23 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const [feedStatus, setFeedStatus] = useState<InlineStatusMsg | null>(null);
   const [joinStatus, setJoinStatus] = useState<InlineStatusMsg | null>(null);
 
-  // Fetch memberships
+  // Fetch memberships + real member counts per community
   useEffect(() => {
     const fetch = async () => {
-      if (!user) return;
+      // Real per-community member counts (visible to everyone, even signed-out)
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        COMMUNITIES.map(async (c) => {
+          const { count } = await db
+            .from("community_memberships")
+            .select("user_id", { count: "exact", head: true })
+            .eq("community", c.id);
+          counts[c.id] = count || 0;
+        })
+      );
+      setMemberCounts(counts);
+
+      if (!user) { setLoadingMemberships(false); return; }
       const { data } = await db
         .from("community_memberships")
         .select("community")
