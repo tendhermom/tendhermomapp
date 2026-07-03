@@ -96,10 +96,9 @@ const Login = () => {
       setStatus({ kind: "error", text: message });
     } else {
       try { localStorage.setItem("has_logged_in", "true"); } catch (_) {}
-      try {
-        const { clearStaleCache } = await import("@/lib/clearStaleCache");
-        await clearStaleCache();
-      } catch (_) {}
+      // Note: per-login cache purge intentionally removed — it destroyed the
+      // PWA precache on every session and made the app feel slow. Release
+      // invalidation is handled by the RELEASE_TAG guard in src/main.tsx.
       navigate("/");
     }
   };
