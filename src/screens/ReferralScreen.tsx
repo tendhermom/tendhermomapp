@@ -135,7 +135,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
 
   return (
     <motion.div
-      className="space-y-5 pb-4"
+      className="space-y-5 pb-[max(env(safe-area-inset-bottom,24px),24px)]"
       initial="hidden"
       animate="show"
       variants={{ show: { transition: { staggerChildren: 0.07 } } }}
