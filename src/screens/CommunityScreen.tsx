@@ -468,12 +468,14 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-white font-serif text-[18px] leading-tight">{community.label}</h3>
                   <p className="text-white/60 text-[12px] font-sans mt-0.5">{community.subtitle}</p>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <IonIcon name="people" size={12} style={{ color: "rgba(255,255,255,0.5)" }} />
-                    <span className="text-[11px] font-sans font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
-                      {community.members} members
-                    </span>
-                  </div>
+                  {(memberCounts[community.id] || 0) >= 50 && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <IonIcon name="people" size={12} style={{ color: "rgba(255,255,255,0.5)" }} />
+                      <span className="text-[11px] font-sans font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        {formatMemberCount(memberCounts[community.id])} members
+                      </span>
+                    </div>
+                  )}
                 </div>
               </motion.button>
             );
