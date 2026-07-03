@@ -43,6 +43,13 @@ const FEATURES = [
     premium: "Full Access",
   },
   {
+    icon: "shield-checkmark",
+    title: "Safety Net",
+    desc: "48h inactivity check-in alerts your emergency contacts",
+    free: "—",
+    premium: "Included",
+  },
+  {
     icon: "ribbon",
     title: "Exclusive Badges",
     desc: "Stand out in the community with premium badges",
