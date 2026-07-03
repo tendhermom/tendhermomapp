@@ -24,6 +24,9 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
 const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.plan_type === "premium";
+  const storageKey = user ? `tendher_ai_chat_${user.id}` : null;
+  const countKey = user ? `tendher_ai_chat_count_${user.id}` : null;
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,9 +36,49 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
 
   const canAsk = isPremium || weeklyCount < WEEKLY_LIMIT_FREE;
 
+  // Restore chat history + weekly count from localStorage (per user)
+  useEffect(() => {
+    if (!storageKey || !countKey) return;
+    try {
+      const rawMsgs = localStorage.getItem(storageKey);
+      if (rawMsgs) {
+        const parsed = JSON.parse(rawMsgs) as Message[];
+        if (Array.isArray(parsed)) setMessages(parsed.slice(-50)); // cap for memory
+      }
+      const rawCount = localStorage.getItem(countKey);
+      if (rawCount) {
+        const { count, weekStart } = JSON.parse(rawCount) as { count: number; weekStart: number };
+        // Reset weekly count if 7 days have passed
+        if (Date.now() - weekStart < 7 * 24 * 60 * 60 * 1000) setWeeklyCount(count);
+        else localStorage.removeItem(countKey);
+      }
+    } catch { /* ignore corrupt cache */ }
+  }, [storageKey, countKey]);
+
+  // Persist messages whenever they change (cap at 50 to bound storage)
+  useEffect(() => {
+    if (!storageKey) return;
+    try { localStorage.setItem(storageKey, JSON.stringify(messages.slice(-50))); } catch {}
+  }, [messages, storageKey]);
+
+  // Persist weekly count with a week-start timestamp
+  useEffect(() => {
+    if (!countKey) return;
+    try {
+      const existing = localStorage.getItem(countKey);
+      const weekStart = existing ? (JSON.parse(existing).weekStart || Date.now()) : Date.now();
+      localStorage.setItem(countKey, JSON.stringify({ count: weeklyCount, weekStart }));
+    } catch {}
+  }, [weeklyCount, countKey]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  const handleClearChat = () => {
+    setMessages([]);
+    if (storageKey) { try { localStorage.removeItem(storageKey); } catch {} }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading || !canAsk) return;
