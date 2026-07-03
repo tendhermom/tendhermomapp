@@ -268,7 +268,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
         </div>
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => handleSelectTrimester(currentTrimesterIndex)}
+          onClick={() => handleSelectTrimester(currentTrimesterIndex, currentWeek)}
           className="px-3 py-1.5 rounded-xl text-[11px] font-sans font-semibold"
           style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
         >
@@ -430,7 +430,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
               ))}
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => handleSelectTrimester(currentTrimesterIndex)}
+                onClick={() => handleSelectTrimester(currentTrimesterIndex, currentWeek)}
                 className="w-full py-2.5 rounded-xl text-[12px] font-sans font-semibold"
                 style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
               >
