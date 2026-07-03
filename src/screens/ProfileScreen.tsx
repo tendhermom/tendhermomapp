@@ -8,6 +8,7 @@ import NotificationsScreen from "@/screens/NotificationsScreen";
 import HelpSupportScreen from "@/screens/HelpSupportScreen";
 import SafetySettingsScreen from "@/screens/SafetySettingsScreen";
 import ComplianceScreen from "@/screens/ComplianceScreen";
+import CycleSettingScreen from "@/screens/CycleSettingScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight, screenShield } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
