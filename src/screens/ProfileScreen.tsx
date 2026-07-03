@@ -27,6 +27,7 @@ const menuSections = [
   {
     items: [
       { icon: "diamond-outline", label: "TendherMom Plus", route: "premium" },
+      { icon: "sync-outline", label: "Cycle Setting", route: "cycle-setting" },
       { icon: "people-outline", label: "Refer & Earn", route: "referrals" },
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
       { icon: "shield-checkmark-outline", label: "Safety Net", route: "safety" },
