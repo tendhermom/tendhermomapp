@@ -96,7 +96,7 @@ const CycleSettingScreen = ({ onBack }: Props) => {
   };
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-6 pb-[max(env(safe-area-inset-bottom,24px),24px)] pt-1">
       {/* Header */}
       <div className="flex items-center gap-3">
         <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
