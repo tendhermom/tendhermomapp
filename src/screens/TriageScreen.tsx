@@ -507,7 +507,10 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => onNavigate("sos")}
+            onClick={() => {
+              try { sessionStorage.setItem("tendher_sos_auto", "1"); } catch {}
+              onNavigate("sos");
+            }}
             className="w-full rounded-[18px] p-4 flex items-center gap-3 ios-press relative overflow-hidden"
             style={{
               background: "linear-gradient(135deg, hsl(0 72% 50%), hsl(0 72% 42%))",
