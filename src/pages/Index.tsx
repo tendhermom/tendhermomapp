@@ -216,7 +216,7 @@ const Index = () => {
             </div>
           </motion.div>
         </AnimatePresence>
-        <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabBar activeTab={activeTab} onTabChange={handleNavigate} />
       </div>
     </div>
   );
