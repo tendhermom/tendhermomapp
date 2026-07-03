@@ -214,7 +214,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
           </h2>
           <p className="text-white/55 text-[14px] font-sans mt-2 leading-relaxed max-w-[260px]">
             {isPremium
-              ? "You have access to all Plus features. Thank you for your support!"
+              ? "You have access to all Plus features."
               : "Unlock the full power of TendherMom for you and your baby's safety."}
           </p>
         </div>
