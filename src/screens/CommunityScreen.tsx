@@ -21,11 +21,16 @@ interface CommunityScreenProps {
 }
 
 const COMMUNITIES = [
-  { id: "first_trimester" as ChannelId, label: "1st Trimester", subtitle: "Weeks 1–13", image: img1st, members: "2.1k" },
-  { id: "second_trimester" as ChannelId, label: "2nd Trimester", subtitle: "Weeks 14–26", image: img2nd, members: "1.8k" },
-  { id: "third_trimester" as ChannelId, label: "3rd Trimester", subtitle: "Weeks 27–40", image: img3rd, members: "1.5k" },
-  { id: "postpartum" as ChannelId, label: "Postpartum", subtitle: "After birth", image: imgPost, members: "3.2k" },
+  { id: "first_trimester" as ChannelId, label: "1st Trimester", subtitle: "Weeks 1–13", image: img1st },
+  { id: "second_trimester" as ChannelId, label: "2nd Trimester", subtitle: "Weeks 14–26", image: img2nd },
+  { id: "third_trimester" as ChannelId, label: "3rd Trimester", subtitle: "Weeks 27–40", image: img3rd },
+  { id: "postpartum" as ChannelId, label: "Postpartum", subtitle: "After birth", image: imgPost },
 ];
+
+const formatMemberCount = (n: number): string => {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
+  return String(n);
+};
 
 const db = supabase as any;
 
