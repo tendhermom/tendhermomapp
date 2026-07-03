@@ -184,7 +184,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
           <div className="flex gap-2 items-stretch">
             <div
               className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2.5 rounded-xl"
-              style={{ background: "hsl(var(--muted))" }}
+              style={{ background: "hsl(var(--surface))", border: "1.5px solid hsl(var(--border-subtle))" }}
             >
               <IonIcon name="call-outline" size={16} style={{ color: "hsl(var(--green))" }} />
               <input
