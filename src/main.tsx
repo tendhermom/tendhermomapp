@@ -6,11 +6,40 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { initSentry } from "./lib/sentry";
 import { initOneSignal } from "./lib/onesignal";
 import { initDespia } from "./lib/despia";
+import { reportError } from "./lib/errorMessage";
 
 // Initialize production services
 initSentry();
 initOneSignal();
 initDespia();
+
+// Global safety net — catch unhandled JS runtime errors and promise rejections
+// so mums get a friendly toast + we still get Sentry events instead of silent crashes.
+const isNoise = (msg: string, filename?: string) => {
+  const s = (msg || "").toLowerCase();
+  if (filename?.includes("extension://")) return true;
+  if (s.includes("resizeobserver loop")) return true;
+  if (s === "script error." || s === "script error") return true;
+  return false;
+};
+
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (e) => {
+    if (isNoise(e.message, e.filename)) return;
+    reportError(e.error ?? new Error(e.message), {
+      feature: "window.onerror",
+      context: { filename: e.filename, lineno: e.lineno, colno: e.colno },
+    });
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    const reason: any = e.reason;
+    const msg = (reason?.message || String(reason || "")).toLowerCase();
+    if (isNoise(msg)) return;
+    reportError(reason ?? new Error("Unhandled promise rejection"), {
+      feature: "unhandledrejection",
+    });
+  });
+}
 
 // One-time stale-cache purge for users on outdated builds (e.g. removed
 // "How Triage Works" video, old welcome name). Bump RELEASE_TAG whenever

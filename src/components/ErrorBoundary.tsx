@@ -1,4 +1,5 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
+import { Sentry } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -36,6 +37,12 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Surface for Sentry / console diagnostics during Apple review.
     console.error("[ErrorBoundary]", error, errorInfo);
+    try {
+      Sentry.captureException(error, {
+        tags: { feature: "error-boundary" },
+        extra: { componentStack: errorInfo.componentStack },
+      });
+    } catch { /* never let logging throw */ }
 
     // Attempt a one-time silent recovery from stale-cache / stale-SW situations.
     let lastRecovery = 0;
