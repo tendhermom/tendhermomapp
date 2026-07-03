@@ -174,8 +174,13 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
         {!isPremium && (
           <span className="text-[10px] font-sans font-semibold px-2 py-1 rounded-full"
             style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}>
-            {WEEKLY_LIMIT_FREE - weeklyCount} left
+            {Math.max(0, WEEKLY_LIMIT_FREE - weeklyCount)} left
           </span>
+        )}
+        {messages.length > 0 && (
+          <button onClick={handleClearChat} className="ios-press ml-1" aria-label="Clear chat">
+            <IonIcon name="trash-outline" size={18} style={{ color: "hsl(var(--text-muted))" }} />
+          </button>
         )}
       </div>
 
