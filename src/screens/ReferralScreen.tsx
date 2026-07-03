@@ -251,15 +251,15 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
 
       {/* Referral List */}
       <motion.div variants={fadeUp}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
           <p className="label-caps text-text-muted">
             YOUR REFERRALS ({referrals.length})
           </p>
-          <div className="flex gap-3">
-            <span className="text-[10px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-sans font-semibold whitespace-nowrap" style={{ color: "hsl(var(--green))" }}>
               {completedCount} joined
             </span>
-            <span className="text-[10px] font-sans font-semibold" style={{ color: "hsl(var(--coral))" }}>
+            <span className="text-[10px] font-sans font-semibold whitespace-nowrap" style={{ color: "hsl(var(--coral))" }}>
               {pendingCount} pending
             </span>
           </div>
