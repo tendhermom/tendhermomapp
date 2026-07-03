@@ -83,11 +83,19 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
   // Determine which trimester the user is in
   const currentTrimesterIndex = currentWeek <= 12 ? 0 : currentWeek <= 27 ? 1 : 2;
 
-  const handleSelectTrimester = (index: number) => {
+  const handleSelectTrimester = (index: number, focusWeek?: number) => {
     hapticLight();
     setSelectedTrimester(index);
-    setExpandedWeek(null);
+    setExpandedWeek(focusWeek ?? null);
+    if (focusWeek) {
+      // Wait for the trimester view to mount, then scroll the target week into view.
+      setTimeout(() => {
+        const el = document.getElementById(`insights-week-${focusWeek}`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+    }
   };
+
 
   const handleBackToCategories = () => {
     hapticLight();
@@ -131,6 +139,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
             return (
               <motion.div
                 key={tip.week}
+                id={`insights-week-${tip.week}`}
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -259,7 +268,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
         </div>
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => handleSelectTrimester(currentTrimesterIndex)}
+          onClick={() => handleSelectTrimester(currentTrimesterIndex, currentWeek)}
           className="px-3 py-1.5 rounded-xl text-[11px] font-sans font-semibold"
           style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
         >
@@ -421,7 +430,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
               ))}
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => handleSelectTrimester(currentTrimesterIndex)}
+                onClick={() => handleSelectTrimester(currentTrimesterIndex, currentWeek)}
                 className="w-full py-2.5 rounded-xl text-[12px] font-sans font-semibold"
                 style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
               >

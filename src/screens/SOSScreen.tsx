@@ -103,6 +103,18 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     setShowConfirm(true);
   }, [contacts]);
 
+  // Auto-trigger the confirm sheet when arriving from a red triage outcome.
+  useEffect(() => {
+    if (loading) return;
+    let flag: string | null = null;
+    try { flag = sessionStorage.getItem("tendher_sos_auto"); } catch {}
+    if (flag !== "1") return;
+    try { sessionStorage.removeItem("tendher_sos_auto"); } catch {}
+    // Small delay so the screen paints first
+    const t = setTimeout(() => handleSOSTap(), 250);
+    return () => clearTimeout(t);
+  }, [loading, handleSOSTap]);
+
   const handleSendSOS = async () => {
     setIsSending(true);
     setSosError(null);
