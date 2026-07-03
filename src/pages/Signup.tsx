@@ -102,10 +102,8 @@ const Signup = () => {
       if (signInErr) throw signInErr;
 
       localStorage.setItem("has_logged_in", "true");
-      try {
-        const { clearStaleCache } = await import("@/lib/clearStaleCache");
-        await clearStaleCache();
-      } catch (_) {}
+      // Note: per-signup cache purge intentionally removed — see src/main.tsx
+      // RELEASE_TAG guard for release-time invalidation.
       setOtpStatus({ kind: "success", text: "Account created — taking you in…" });
     } catch (err: any) {
       setOtpStatus({ kind: "error", text: err.message || "Verification failed" });
