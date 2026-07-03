@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
@@ -46,12 +46,42 @@ const ScreenFallback = () => (
   </div>
 );
 
+// Tabs live at the root of the stack — tapping a tab resets the stack.
+const ROOT_TABS = new Set(["home", "triage", "sos", "community", "profile"]);
+const NAV_STORAGE_KEY = "tendher_nav_v1";
+const NAV_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+const readPersistedStack = (): string[] | null => {
+  try {
+    const raw = localStorage.getItem(NAV_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { stack?: string[]; ts?: number };
+    if (!parsed?.stack?.length || typeof parsed.ts !== "number") return null;
+    if (Date.now() - parsed.ts > NAV_TTL_MS) return null;
+    return parsed.stack;
+  } catch {
+    return null;
+  }
+};
+
 const Index = () => {
   const user = useAuthStore((s) => s.user);
-  const [activeTab, setActiveTab] = useState("home");
+  const [stack, setStack] = useState<string[]>(() => readPersistedStack() ?? ["home"]);
+  const stackRef = useRef(stack);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const activeTab = stack[stack.length - 1] ?? "home";
+
+  useEffect(() => { stackRef.current = stack; }, [stack]);
 
   useEffect(() => { prefetchScreens(); }, []);
+
+  // Persist the nav stack (with timestamp) so resuming within 15 min lands
+  // on the same screen instead of being reset to Home.
+  useEffect(() => {
+    try {
+      localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify({ stack, ts: Date.now() }));
+    } catch {}
+  }, [stack]);
 
   useEffect(() => {
     if (!user || localStorage.getItem("onboarding_completed")) return;
@@ -75,9 +105,47 @@ const Index = () => {
     }
   }, [activeTab]);
 
+  const pushBrowserHistory = useCallback(() => {
+    try { window.history.pushState({ tendher: true }, ""); } catch {}
+  }, []);
+
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
-    setActiveTab(screen);
+    setStack((prev) => {
+      const current = prev[prev.length - 1];
+      if (screen === current) return prev;
+      // Tabs are roots — tapping a tab resets the stack to that tab.
+      if (ROOT_TABS.has(screen)) return [screen];
+      return [...prev, screen];
+    });
+    pushBrowserHistory();
+  }, [pushBrowserHistory]);
+
+  const handleBack = useCallback(() => {
+    setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }, []);
+
+  // Hardware / browser back button — pop our stack instead of exiting the app.
+  useEffect(() => {
+    // Seed a history entry we own so the first back press fires popstate
+    // instead of leaving the app.
+    try { window.history.pushState({ tendher: true, seed: true }, ""); } catch {}
+
+    const onPop = () => {
+      if (stackRef.current.length > 1) {
+        setStack((prev) => prev.slice(0, -1));
+        // Re-seed so the next back press also fires popstate.
+        try { window.history.pushState({ tendher: true }, ""); } catch {}
+      } else {
+        // At root — confirm before letting the shell exit.
+        const shouldExit = window.confirm("Exit TendherMom?");
+        if (!shouldExit) {
+          try { window.history.pushState({ tendher: true }, ""); } catch {}
+        }
+      }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
 
   const renderScreen = () => {
@@ -91,31 +159,31 @@ const Index = () => {
       case "community":
         return <CommunityScreen onNavigate={handleNavigate} />;
       case "baby-shower":
-        return <BabyShowerScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
+        return <BabyShowerScreen onBack={handleBack} onNavigate={handleNavigate} />;
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} />;
       case "notifications":
-        return <NotificationsScreen onBack={() => setActiveTab("home")} />;
+        return <NotificationsScreen onBack={handleBack} />;
       case "emergency-contacts":
-        return <EmergencyContactsScreen onBack={() => setActiveTab("sos")} />;
+        return <EmergencyContactsScreen onBack={handleBack} />;
       case "health-tracker":
         return <HealthTrackerScreen onNavigate={handleNavigate} />;
       case "ai-chat":
-        return <AIChatScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
+        return <AIChatScreen onBack={handleBack} onNavigate={handleNavigate} />;
       case "gamification":
-        return <GamificationScreen onBack={() => setActiveTab("home")} />;
+        return <GamificationScreen onBack={handleBack} />;
       case "health-hubs":
-        return <HealthHubsScreen onBack={() => setActiveTab("home")} onNavigate={handleNavigate} />;
+        return <HealthHubsScreen onBack={handleBack} onNavigate={handleNavigate} />;
       case "premium":
-        return <PremiumScreen onBack={() => setActiveTab("profile")} />;
+        return <PremiumScreen onBack={handleBack} />;
       case "moderation":
-        return <ModerationScreen onBack={() => setActiveTab("profile")} />;
+        return <ModerationScreen onBack={handleBack} />;
       case "referrals":
-        return <ReferralScreen onBack={() => setActiveTab("profile")} />;
+        return <ReferralScreen onBack={handleBack} />;
       case "antenatal":
         return <AntenatalScreen onNavigate={handleNavigate} />;
       case "insights":
-        return <InsightsScreen onBack={() => setActiveTab("home")} />;
+        return <InsightsScreen onBack={handleBack} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
@@ -148,7 +216,7 @@ const Index = () => {
             </div>
           </motion.div>
         </AnimatePresence>
-        <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabBar activeTab={activeTab} onTabChange={handleNavigate} />
       </div>
     </div>
   );
