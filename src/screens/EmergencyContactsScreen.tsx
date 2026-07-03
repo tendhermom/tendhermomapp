@@ -38,12 +38,38 @@ const emptyContact: Omit<EmergencyContact, "id"> = {
   is_primary: false,
 };
 
+const CONTACTS_CACHE_PREFIX = "cache:emergency_contacts:";
+const FETCH_TIMEOUT_MS = 10_000;
+
+const readCachedContacts = (userId?: string): EmergencyContact[] | null => {
+  if (!userId) return null;
+  try {
+    const raw = localStorage.getItem(CONTACTS_CACHE_PREFIX + userId);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { data?: EmergencyContact[] };
+    return Array.isArray(parsed?.data) ? parsed.data : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedContacts = (userId: string, data: EmergencyContact[]) => {
+  try {
+    localStorage.setItem(
+      CONTACTS_CACHE_PREFIX + userId,
+      JSON.stringify({ data, ts: Date.now() }),
+    );
+  } catch {}
+};
+
 const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const maxContacts = 5;
 
-  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Show cached contacts immediately (stale-while-revalidate) so the screen
+  // never sits on a bare "Loading…" spinner on returning visits.
+  const [contacts, setContacts] = useState<EmergencyContact[]>(() => readCachedContacts(user?.id) ?? []);
+  const [loading, setLoading] = useState(() => readCachedContacts(user?.id) === null);
   const [editingContact, setEditingContact] = useState<Partial<EmergencyContact> | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,22 +87,44 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
 
   useEffect(() => {
     fetchContacts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchContacts = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("emergency_contacts")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("is_primary", { ascending: false });
-    if (data) {
-      setContacts(data.map((c: any) => ({
-        ...c,
-        voice_enabled: c.email_enabled ?? false, // repurpose email_enabled column for voice
-      })));
+    try {
+      const query = supabase
+        .from("emergency_contacts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("is_primary", { ascending: false });
+
+      // Hard timeout so a stalled request can't leave the UI on "Loading…"
+      const timeout = new Promise<{ data: null; error: Error }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: new Error("timeout") }), FETCH_TIMEOUT_MS),
+      );
+      const { data, error } = (await Promise.race([query, timeout])) as { data: any; error: any };
+
+      if (error) {
+        // Keep any cached data on screen; surface a soft, retryable error.
+        if (contacts.length === 0) {
+          showListStatus({ kind: "error", text: "Couldn't load contacts. Check your connection and try again." }, 5000);
+        }
+      } else if (data) {
+        const mapped: EmergencyContact[] = data.map((c: any) => ({
+          ...c,
+          voice_enabled: c.email_enabled ?? false,
+        }));
+        setContacts(mapped);
+        writeCachedContacts(user.id, mapped);
+      }
+    } catch {
+      if (contacts.length === 0) {
+        showListStatus({ kind: "error", text: "Couldn't load contacts. Check your connection and try again." }, 5000);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const validate = (c: Partial<EmergencyContact>) => {
