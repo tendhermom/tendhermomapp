@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS cycle_length integer NOT NULL DEFAULT 28 CHECK (cycle_length BETWEEN 20 AND 45);
