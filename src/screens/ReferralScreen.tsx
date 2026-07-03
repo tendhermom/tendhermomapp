@@ -135,7 +135,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
 
   return (
     <motion.div
-      className="space-y-5 pb-4"
+      className="space-y-5 pb-[max(env(safe-area-inset-bottom,24px),24px)]"
       initial="hidden"
       animate="show"
       variants={{ show: { transition: { staggerChildren: 0.07 } } }}
@@ -184,7 +184,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
           <div className="flex gap-2 items-stretch">
             <div
               className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2.5 rounded-xl"
-              style={{ background: "hsl(var(--muted))" }}
+              style={{ background: "hsl(var(--surface))", border: "1.5px solid hsl(var(--border-subtle))" }}
             >
               <IonIcon name="call-outline" size={16} style={{ color: "hsl(var(--green))" }} />
               <input
@@ -251,15 +251,15 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
 
       {/* Referral List */}
       <motion.div variants={fadeUp}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
           <p className="label-caps text-text-muted">
             YOUR REFERRALS ({referrals.length})
           </p>
-          <div className="flex gap-3">
-            <span className="text-[10px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-sans font-semibold whitespace-nowrap" style={{ color: "hsl(var(--green))" }}>
               {completedCount} joined
             </span>
-            <span className="text-[10px] font-sans font-semibold" style={{ color: "hsl(var(--coral))" }}>
+            <span className="text-[10px] font-sans font-semibold whitespace-nowrap" style={{ color: "hsl(var(--coral))" }}>
               {pendingCount} pending
             </span>
           </div>
