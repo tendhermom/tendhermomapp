@@ -121,9 +121,43 @@ const stagger = {
   show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
 };
 
+const LOCATION_CACHE_KEY = "cache:health_hubs_location";
+const LOCATION_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const RESULTS_CACHE_PREFIX = "cache:health_hubs_results:";
+const RESULTS_TTL_MS = 30 * 60 * 1000; // 30 min
+const GEO_TIMEOUT_MS = 8_000;
+const SEARCH_TIMEOUT_MS = 15_000;
+
+const readCachedLocation = (): { lat: number; lng: number } | null => {
+  try {
+    const raw = localStorage.getItem(LOCATION_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { lat?: number; lng?: number; ts?: number };
+    if (typeof parsed?.lat !== "number" || typeof parsed?.lng !== "number") return null;
+    if (typeof parsed.ts !== "number" || Date.now() - parsed.ts > LOCATION_TTL_MS) return null;
+    return { lat: parsed.lat, lng: parsed.lng };
+  } catch {
+    return null;
+  }
+};
+
+const readCachedResults = (keyword: string): Place[] | null => {
+  try {
+    const raw = localStorage.getItem(RESULTS_CACHE_PREFIX + keyword);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { data?: Place[]; ts?: number };
+    if (!Array.isArray(parsed?.data)) return null;
+    if (typeof parsed.ts !== "number" || Date.now() - parsed.ts > RESULTS_TTL_MS) return null;
+    return parsed.data;
+  } catch {
+    return null;
+  }
+};
+
 const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationLoading, setLocationLoading] = useState(true);
+  const cachedLoc = readCachedLocation();
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(cachedLoc);
+  const [locationLoading, setLocationLoading] = useState(!cachedLoc);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
@@ -133,24 +167,32 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setStatus({ kind: "warning", text: "Geolocation isn't supported on this device." });
+      if (!cachedLoc) setStatus({ kind: "warning", text: "Geolocation isn't supported on this device." });
       setLocationLoading(false);
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setLocation(next);
         setLocationLoading(false);
+        try {
+          localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({ ...next, ts: Date.now() }));
+        } catch {}
       },
       () => {
-        setStatus({
-          kind: "warning",
-          text: "Enable location access to find nearby health centers.",
-        });
+        // If we already have a cached location, silently use it — no warning.
+        if (!cachedLoc) {
+          setStatus({
+            kind: "warning",
+            text: "Enable location access to find nearby health centers.",
+          });
+        }
         setLocationLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: GEO_TIMEOUT_MS, maximumAge: LOCATION_TTL_MS }
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const searchPlaces = useCallback(async (keyword: string) => {
@@ -159,17 +201,44 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
       return;
     }
     setStatus(null);
-    setSearching(true);
-    setSearched(true);
+
+    // Stale-while-revalidate: paint cached results immediately, then refresh.
+    const cached = readCachedResults(keyword);
+    if (cached && cached.length) {
+      setPlaces(cached);
+      setSearched(true);
+      setSearching(false);
+    } else {
+      setPlaces([]);
+      setSearching(true);
+      setSearched(true);
+    }
+
     try {
-      const { data, error } = await supabase.functions.invoke("health-hubs", {
+      const invocation = supabase.functions.invoke("health-hubs", {
         body: { latitude: location.lat, longitude: location.lng, keyword, radius: 10000 },
       });
+      const timeout = new Promise<{ data: null; error: Error }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: new Error("timeout") }), SEARCH_TIMEOUT_MS),
+      );
+      const { data, error } = (await Promise.race([invocation, timeout])) as { data: any; error: any };
       if (error) throw error;
-      setPlaces(data?.results || []);
+      const results: Place[] = data?.results || [];
+      setPlaces(results);
+      try {
+        localStorage.setItem(
+          RESULTS_CACHE_PREFIX + keyword,
+          JSON.stringify({ data: results, ts: Date.now() }),
+        );
+      } catch {}
     } catch {
-      setStatus({ kind: "error", text: "Couldn't load nearby health centers. Please try again." });
-      setPlaces([]);
+      // Keep cached results on screen if we had them; otherwise show error.
+      if (!cached || cached.length === 0) {
+        setStatus({ kind: "error", text: "Couldn't load nearby health centers. Please try again." });
+        setPlaces([]);
+      } else {
+        setStatus({ kind: "warning", text: "Showing your last saved results — couldn't refresh right now." });
+      }
     } finally {
       setSearching(false);
     }
