@@ -13,7 +13,7 @@ interface BabyShowerCardProps {
   birthType?: BirthType;
   reactionsCount?: number;
   userReaction?: string | null;
-  onReaction?: (type: "congrats" | "love" | "like" | "celebrate") => void;
+  onReaction?: (type: "congrats" | "love" | "like" | "celebrate" | "gifted") => void;
   // Peer-to-peer "Give a Gift"
   giftEnabled?: boolean;
   hasAccountDetails?: boolean;
@@ -23,12 +23,17 @@ interface BabyShowerCardProps {
   onGiveGift?: () => void;
 }
 
-const REACTIONS: { type: "congrats" | "love" | "like" | "celebrate"; icon: string; activeIcon: string; label: string; color: string }[] = [
+type ReactionMeta = { type: string; icon: string; activeIcon: string; label: string; color: string };
+
+const BASE_REACTIONS: ReactionMeta[] = [
   { type: "congrats", icon: "ribbon-outline", activeIcon: "ribbon", label: "Congrats", color: "hsl(var(--coral))" },
   { type: "love", icon: "heart-outline", activeIcon: "heart", label: "Love", color: "hsl(340 75% 55%)" },
   { type: "like", icon: "thumbs-up-outline", activeIcon: "thumbs-up", label: "Like", color: "hsl(var(--green))" },
   { type: "celebrate", icon: "sparkles-outline", activeIcon: "sparkles", label: "Celebrate", color: "hsl(45 90% 50%)" },
 ];
+
+const GIFT_REACTION: ReactionMeta = { type: "gift", icon: "gift-outline", activeIcon: "gift", label: "Gift", color: "hsl(45 90% 40%)" };
+const GIFTED_META: ReactionMeta = { type: "gifted", icon: "gift", activeIcon: "gift", label: "Gifted", color: "hsl(45 90% 40%)" };
 
 const BIRTH_TYPE_LABEL: Record<BirthType, string> = {
   single: "",
@@ -68,9 +73,28 @@ const BabyShowerCard = ({
       : "hsl(var(--light-green))";
   const genderLabel = gender === "boy" ? "Boy" : gender === "girl" ? "Girl" : "Mixed";
 
-  const activeReaction = REACTIONS.find((r) => r.type === userReaction);
+  // Determine active reaction (including "gifted" pseudo-state)
+  const activeReaction: ReactionMeta | undefined =
+    userReaction === "gifted"
+      ? GIFTED_META
+      : BASE_REACTIONS.find((r) => r.type === userReaction);
+
+  // P2P gift visibility: viewers see gift-related affordances only when owner is premium AND added account details
+  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
+  // Owner sees "Add account details" CTA if premium + posted but no account yet
+  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
+
+  // Reactions to display in the picker (adds "Gift" for eligible visitors)
+  const pickerReactions: ReactionMeta[] = showGiveGiftToVisitor
+    ? [...BASE_REACTIONS, GIFT_REACTION]
+    : BASE_REACTIONS;
 
   const handleTap = () => {
+    if (userReaction === "gifted") {
+      // Tapping the "Gifted" chip re-opens the bank details sheet (no toggle-off)
+      onGiveGift?.();
+      return;
+    }
     if (userReaction) {
       onReaction?.(userReaction as any);
     } else {
@@ -78,15 +102,14 @@ const BabyShowerCard = ({
     }
   };
 
-  const handleSelect = (type: "congrats" | "love" | "like" | "celebrate") => {
-    onReaction?.(type);
+  const handleSelect = (type: string) => {
     setShowPicker(false);
+    if (type === "gift") {
+      onGiveGift?.();
+      return;
+    }
+    onReaction?.(type as any);
   };
-
-  // P2P gift visibility: viewers see "Give a Gift" only when owner is premium AND added account details
-  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
-  // Owner sees "Add account details" CTA if premium + posted but no account yet
-  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
 
   return (
     <motion.div
@@ -144,18 +167,8 @@ const BabyShowerCard = ({
           </p>
         </div>
 
-        {/* P2P gift CTA — visitors */}
-        {showGiveGiftToVisitor && (
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={onGiveGift}
-            className="w-full py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
-            style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
-          >
-            <IonIcon name="gift-outline" size={12} style={{ color: "hsl(45 90% 40%)" }} />
-            Give a Gift
-          </motion.button>
-        )}
+        {/* "Give a Gift" is now integrated into the reaction picker as a "Gift" option (visitors only, when enabled). */}
+
 
         {/* P2P gift CTA — premium owner without account yet */}
         {showAddDetailsToOwner && (
@@ -215,7 +228,7 @@ const BabyShowerCard = ({
               className="absolute bottom-[52px] left-1 right-1 z-[51] rounded-2xl p-1.5 flex items-center justify-around"
               style={{ background: "hsl(var(--surface))", boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}
             >
-              {REACTIONS.map((r) => (
+              {pickerReactions.map((r) => (
                 <motion.button
                   key={r.type}
                   whileTap={{ scale: 0.8 }}

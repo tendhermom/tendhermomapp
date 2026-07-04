@@ -153,7 +153,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleReaction = async (postId: string, type: "congrats" | "love" | "like" | "celebrate") => {
+  const handleReaction = async (postId: string, type: "congrats" | "love" | "like" | "celebrate" | "gifted") => {
     if (!user) return;
     const existing = userReactions[postId];
     if (existing === type) {
@@ -161,10 +161,10 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       setUserReactions((prev) => { const next = { ...prev }; delete next[postId]; return next; });
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: Math.max(0, p.reactions_count - 1) } : p)));
     } else if (existing) {
-      await supabase.from("reactions").update({ type }).eq("post_id", postId).eq("user_id", user.id);
+      await (supabase.from("reactions") as any).update({ type }).eq("post_id", postId).eq("user_id", user.id);
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
     } else {
-      await supabase.from("reactions").insert({ post_id: postId, user_id: user.id, type });
+      await (supabase.from("reactions") as any).insert({ post_id: postId, user_id: user.id, type });
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: p.reactions_count + 1 } : p)));
     }
@@ -382,8 +382,22 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <p className="text-[11px] font-sans mt-3 text-center" style={{ color: "hsl(var(--text-muted))" }}>
                   TendherMom does not process this transfer — your gift goes directly to the parent's bank account.
                 </p>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={async () => {
+                    const postId = giveGiftPost.id;
+                    await handleReaction(postId, "gifted");
+                    toast.success("Thank you for gifting 🎁");
+                    setGiveGiftPost(null);
+                  }}
+                  className="w-full py-[14px] mt-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
+                  style={{ background: "hsl(45 90% 50%)", color: "white" }}
+                >
+                  <IonIcon name="gift" size={18} style={{ color: "white" }} />
+                  I've Gifted
+                </motion.button>
                 <motion.button whileTap={{ scale: 0.97 }} onClick={() => setGiveGiftPost(null)}
-                  className="w-full py-[13px] mt-3 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                  className="w-full py-[13px] mt-1 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
                   Close
                 </motion.button>
               </motion.div>
