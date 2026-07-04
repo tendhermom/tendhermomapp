@@ -4,6 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import { hapticLight } from "@/lib/despia";
+import antenatalHero from "@/assets/heroes/antenatal-hero.jpg.asset.json";
 
 interface AntenatalScreenProps {
   onNavigate: (tab: string) => void;
