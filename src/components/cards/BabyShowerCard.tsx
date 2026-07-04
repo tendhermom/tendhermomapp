@@ -167,18 +167,8 @@ const BabyShowerCard = ({
           </p>
         </div>
 
-        {/* P2P gift CTA — visitors */}
-        {showGiveGiftToVisitor && (
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={onGiveGift}
-            className="w-full py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
-            style={{ background: "hsl(45 93% 92%)", color: "hsl(45 90% 40%)" }}
-          >
-            <IonIcon name="gift-outline" size={12} style={{ color: "hsl(45 90% 40%)" }} />
-            Give a Gift
-          </motion.button>
-        )}
+        {/* "Give a Gift" is now integrated into the reaction picker as a "Gift" option (visitors only, when enabled). */}
+
 
         {/* P2P gift CTA — premium owner without account yet */}
         {showAddDetailsToOwner && (
