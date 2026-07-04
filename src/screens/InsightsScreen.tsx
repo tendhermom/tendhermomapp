@@ -4,6 +4,9 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { hapticLight } from "@/lib/despia";
 import insightsHero from "@/assets/heroes/insights-hero.jpg.asset.json";
+import triImg1 from "@/assets/heroes/trimester-1.jpg.asset.json";
+import triImg2 from "@/assets/heroes/trimester-2.jpg.asset.json";
+import triImg3 from "@/assets/heroes/trimester-3.jpg.asset.json";
 
 interface InsightsScreenProps {
   onBack: () => void;
@@ -63,9 +66,9 @@ const WEEKLY_TIPS: WeeklyTip[] = [
 ];
 
 const TRIMESTERS = [
-  { id: "first", label: "1st Trimester", subtitle: "Weeks 1–12", description: "Foundation of life — organs form, heart beats, and your journey begins.", icon: "leaf-outline", range: [1, 12] as [number, number] },
-  { id: "second", label: "2nd Trimester", subtitle: "Weeks 13–27", description: "The golden period — baby grows, kicks, and you glow.", icon: "sunny-outline", range: [13, 27] as [number, number] },
-  { id: "third", label: "3rd Trimester", subtitle: "Weeks 28–40", description: "The final stretch — baby matures and prepares for arrival.", icon: "moon-outline", range: [28, 40] as [number, number] },
+  { id: "first", label: "1st Trimester", subtitle: "Weeks 1–12", description: "Foundation of life — organs form, heart beats, and your journey begins.", icon: "leaf-outline", image: triImg1.url, range: [1, 12] as [number, number] },
+  { id: "second", label: "2nd Trimester", subtitle: "Weeks 13–27", description: "The golden period — baby grows, kicks, and you glow.", icon: "sunny-outline", image: triImg2.url, range: [13, 27] as [number, number] },
+  { id: "third", label: "3rd Trimester", subtitle: "Weeks 28–40", description: "The final stretch — baby matures and prepares for arrival.", icon: "moon-outline", image: triImg3.url, range: [28, 40] as [number, number] },
 ];
 
 const SECTIONS = [
@@ -296,88 +299,75 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 24 }}
-                className="flex-shrink-0 rounded-2xl p-5 text-left relative overflow-hidden"
+                className="flex-shrink-0 relative rounded-[18px] overflow-hidden text-left ios-press"
                 style={{
                   width: "200px",
-                  background: isActive
-                    ? "linear-gradient(145deg, hsl(var(--green)), hsl(160 50% 30%))"
-                    : "hsl(var(--surface))",
+                  aspectRatio: "3/4",
                   boxShadow: isActive
-                    ? "0 8px 32px hsla(var(--green) / 0.3)"
-                    : "0 2px 8px hsla(0, 0%, 0%, 0.04)",
+                    ? "0 6px 24px -4px hsla(var(--green) / 0.45), 0 0 0 2px hsl(var(--green))"
+                    : "0 4px 20px -4px hsla(0,0%,0%,0.12)",
                 }}
               >
-                {/* Background decoration */}
+                <img
+                  src={tri.image}
+                  alt={tri.label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div
-                  className="absolute -right-4 -top-4 w-[80px] h-[80px] rounded-full"
+                  className="absolute inset-0"
                   style={{
-                    background: isActive ? "rgba(255,255,255,0.08)" : "hsl(var(--border-subtle))",
-                    opacity: 0.5,
+                    background: "linear-gradient(0deg, hsla(0,0%,0%,0.78) 0%, hsla(0,0%,0%,0.35) 50%, hsla(0,0%,0%,0.1) 100%)",
                   }}
                 />
 
+                {/* Icon chip top-left */}
                 <div
-                  className="w-[40px] h-[40px] rounded-xl flex items-center justify-center mb-3"
-                  style={{
-                    background: isActive ? "rgba(255,255,255,0.15)" : "hsl(var(--light-green))",
-                  }}
+                  className="absolute top-3 left-3 w-[34px] h-[34px] rounded-xl flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
                 >
-                  <IonIcon
-                    name={tri.icon}
-                    size={20}
-                    style={{ color: isActive ? "white" : "hsl(var(--green))" }}
-                  />
+                  <IonIcon name={tri.icon} size={18} style={{ color: "white" }} />
                 </div>
 
-                <p
-                  className="text-[16px] font-serif font-bold"
-                  style={{ color: isActive ? "white" : "hsl(var(--dark))" }}
-                >
-                  {tri.label}
-                </p>
-                <p
-                  className="text-[11px] font-sans mt-0.5"
-                  style={{ color: isActive ? "rgba(255,255,255,0.6)" : "hsl(var(--text-muted))" }}
-                >
-                  {tri.subtitle}
-                </p>
-                <p
-                  className="text-[11px] font-sans mt-2 leading-snug"
-                  style={{ color: isActive ? "rgba(255,255,255,0.7)" : "hsl(var(--text-muted))" }}
-                >
-                  {tri.description}
-                </p>
-
-                {/* Progress bar */}
-                <div className="mt-3">
-                  <div
-                    className="h-1 rounded-full overflow-hidden"
-                    style={{ background: isActive ? "rgba(255,255,255,0.15)" : "hsl(var(--border-subtle))" }}
-                  >
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPct}%` }}
-                      transition={{ duration: 0.8, delay: i * 0.1 + 0.3 }}
-                      className="h-full rounded-full"
-                      style={{ background: isActive ? "hsl(var(--coral))" : "hsl(var(--green))" }}
-                    />
-                  </div>
-                  <p
-                    className="text-[9px] font-sans font-semibold mt-1"
-                    style={{ color: isActive ? "rgba(255,255,255,0.5)" : "hsl(var(--text-muted))" }}
-                  >
-                    {progressPct}% complete
-                  </p>
-                </div>
-
+                {/* Current badge top-right */}
                 {isActive && (
                   <div
-                    className="absolute top-3 right-3 px-2 py-[2px] rounded-full text-[8px] font-sans font-bold uppercase"
-                    style={{ background: "rgba(255,255,255,0.2)", color: "white" }}
+                    className="absolute top-3 right-3 px-2 py-[3px] rounded-full text-[8px] font-sans font-bold uppercase tracking-wide"
+                    style={{ background: "hsl(var(--coral))", color: "white" }}
                   >
                     Current
                   </div>
                 )}
+
+                {/* Bottom content */}
+                <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                  <h3 className="text-white text-[16px] font-serif font-bold leading-tight">
+                    {tri.label}
+                  </h3>
+                  <p className="text-white/70 text-[10px] font-sans mt-0.5">
+                    {tri.subtitle}
+                  </p>
+                  <p className="text-white/75 text-[10.5px] font-sans mt-1.5 leading-snug line-clamp-2">
+                    {tri.description}
+                  </p>
+
+                  {/* Progress bar */}
+                  <div className="mt-2.5">
+                    <div className="h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.2)" }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progressPct}%` }}
+                        transition={{ duration: 0.8, delay: i * 0.1 + 0.3 }}
+                        className="h-full rounded-full"
+                        style={{ background: "hsl(var(--coral))" }}
+                      />
+                    </div>
+                    <p className="text-[9px] font-sans font-semibold mt-1 text-white/60">
+                      {progressPct}% complete
+                    </p>
+                  </div>
+                </div>
               </motion.button>
             );
           })}
