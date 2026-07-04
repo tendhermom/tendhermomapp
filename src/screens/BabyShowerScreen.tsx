@@ -319,9 +319,9 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
             </p>
           </motion.div>
         ) : (
-          <motion.div className="grid grid-cols-2 gap-3" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}>
+          <div className="grid grid-cols-2 gap-3">
             {monthPosts.map((post) => (
-              <motion.div key={post.id} variants={fadeUp}>
+              <div key={post.id}>
                 <BabyShowerCard
                   name={post.baby_name} parentName={post.parent_names} date={post.month_label}
                   imageUrl={post.image_url || "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop"}
@@ -337,9 +337,9 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                   onAddAccountDetails={() => openAddAccount(post)}
                   onGiveGift={() => setGiveGiftPost(post)}
                 />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         )}
 
         {/* Give a Gift Sheet — visitor sees owner's bank details to make P2P transfer */}
