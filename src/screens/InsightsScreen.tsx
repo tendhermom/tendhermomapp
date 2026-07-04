@@ -66,9 +66,9 @@ const WEEKLY_TIPS: WeeklyTip[] = [
 ];
 
 const TRIMESTERS = [
-  { id: "first", label: "1st Trimester", subtitle: "Weeks 1–12", description: "Foundation of life — organs form, heart beats, and your journey begins.", icon: "leaf-outline", range: [1, 12] as [number, number] },
-  { id: "second", label: "2nd Trimester", subtitle: "Weeks 13–27", description: "The golden period — baby grows, kicks, and you glow.", icon: "sunny-outline", range: [13, 27] as [number, number] },
-  { id: "third", label: "3rd Trimester", subtitle: "Weeks 28–40", description: "The final stretch — baby matures and prepares for arrival.", icon: "moon-outline", range: [28, 40] as [number, number] },
+  { id: "first", label: "1st Trimester", subtitle: "Weeks 1–12", description: "Foundation of life — organs form, heart beats, and your journey begins.", icon: "leaf-outline", image: triImg1.url, range: [1, 12] as [number, number] },
+  { id: "second", label: "2nd Trimester", subtitle: "Weeks 13–27", description: "The golden period — baby grows, kicks, and you glow.", icon: "sunny-outline", image: triImg2.url, range: [13, 27] as [number, number] },
+  { id: "third", label: "3rd Trimester", subtitle: "Weeks 28–40", description: "The final stretch — baby matures and prepares for arrival.", icon: "moon-outline", image: triImg3.url, range: [28, 40] as [number, number] },
 ];
 
 const SECTIONS = [
