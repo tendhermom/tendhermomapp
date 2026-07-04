@@ -228,7 +228,7 @@ const BabyShowerCard = ({
               className="absolute bottom-[52px] left-1 right-1 z-[51] rounded-2xl p-1.5 flex items-center justify-around"
               style={{ background: "hsl(var(--surface))", boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}
             >
-              {REACTIONS.map((r) => (
+              {pickerReactions.map((r) => (
                 <motion.button
                   key={r.type}
                   whileTap={{ scale: 0.8 }}
