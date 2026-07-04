@@ -73,9 +73,28 @@ const BabyShowerCard = ({
       : "hsl(var(--light-green))";
   const genderLabel = gender === "boy" ? "Boy" : gender === "girl" ? "Girl" : "Mixed";
 
-  const activeReaction = REACTIONS.find((r) => r.type === userReaction);
+  // Determine active reaction (including "gifted" pseudo-state)
+  const activeReaction: ReactionMeta | undefined =
+    userReaction === "gifted"
+      ? GIFTED_META
+      : BASE_REACTIONS.find((r) => r.type === userReaction);
+
+  // P2P gift visibility: viewers see gift-related affordances only when owner is premium AND added account details
+  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
+  // Owner sees "Add account details" CTA if premium + posted but no account yet
+  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
+
+  // Reactions to display in the picker (adds "Gift" for eligible visitors)
+  const pickerReactions: ReactionMeta[] = showGiveGiftToVisitor
+    ? [...BASE_REACTIONS, GIFT_REACTION]
+    : BASE_REACTIONS;
 
   const handleTap = () => {
+    if (userReaction === "gifted") {
+      // Tapping the "Gifted" chip re-opens the bank details sheet (no toggle-off)
+      onGiveGift?.();
+      return;
+    }
     if (userReaction) {
       onReaction?.(userReaction as any);
     } else {
@@ -83,15 +102,14 @@ const BabyShowerCard = ({
     }
   };
 
-  const handleSelect = (type: "congrats" | "love" | "like" | "celebrate") => {
-    onReaction?.(type);
+  const handleSelect = (type: string) => {
     setShowPicker(false);
+    if (type === "gift") {
+      onGiveGift?.();
+      return;
+    }
+    onReaction?.(type as any);
   };
-
-  // P2P gift visibility: viewers see "Give a Gift" only when owner is premium AND added account details
-  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
-  // Owner sees "Add account details" CTA if premium + posted but no account yet
-  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
 
   return (
     <motion.div
