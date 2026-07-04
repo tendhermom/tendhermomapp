@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { usePointsStore } from "@/stores/pointsStore";
+import levelsHero from "@/assets/heroes/levels-hero.jpg.asset.json";
 
 interface GamificationScreenProps {
   onBack: () => void;
