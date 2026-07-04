@@ -131,20 +131,30 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
+    // content is NOT NULL in DB — if user posted only an image, use a single space
+    const safeContent = content && content.length > 0 ? content : (imageUrl ? " " : "");
+    if (!safeContent && !imageUrl) return false;
+
     const { error } = await supabase.from("community_posts").insert({
       user_id: user.id,
-      content,
+      content: safeContent,
       channel,
       image_url: imageUrl || null,
     });
 
-    if (!error) {
-      // Award points for posting
-      await usePointsStore.getState().awardPost(user.id);
-      await get().fetchPosts(get().activeChannel);
-      return true;
+    if (error) {
+      console.error("[community.createPost] insert failed", error);
+      return false;
     }
-    return false;
+
+    // Award points for posting (non-blocking — a failure here must not fail the post)
+    try {
+      await usePointsStore.getState().awardPost(user.id);
+    } catch (e) {
+      console.error("[community.createPost] award points failed (ignored)", e);
+    }
+    await get().fetchPosts(get().activeChannel);
+    return true;
   },
 
   toggleLike: async (postId, userId) => {
