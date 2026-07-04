@@ -13,7 +13,7 @@ interface BabyShowerCardProps {
   birthType?: BirthType;
   reactionsCount?: number;
   userReaction?: string | null;
-  onReaction?: (type: "congrats" | "love" | "like" | "celebrate") => void;
+  onReaction?: (type: "congrats" | "love" | "like" | "celebrate" | "gifted") => void;
   // Peer-to-peer "Give a Gift"
   giftEnabled?: boolean;
   hasAccountDetails?: boolean;
@@ -23,12 +23,17 @@ interface BabyShowerCardProps {
   onGiveGift?: () => void;
 }
 
-const REACTIONS: { type: "congrats" | "love" | "like" | "celebrate"; icon: string; activeIcon: string; label: string; color: string }[] = [
+type ReactionMeta = { type: string; icon: string; activeIcon: string; label: string; color: string };
+
+const BASE_REACTIONS: ReactionMeta[] = [
   { type: "congrats", icon: "ribbon-outline", activeIcon: "ribbon", label: "Congrats", color: "hsl(var(--coral))" },
   { type: "love", icon: "heart-outline", activeIcon: "heart", label: "Love", color: "hsl(340 75% 55%)" },
   { type: "like", icon: "thumbs-up-outline", activeIcon: "thumbs-up", label: "Like", color: "hsl(var(--green))" },
   { type: "celebrate", icon: "sparkles-outline", activeIcon: "sparkles", label: "Celebrate", color: "hsl(45 90% 50%)" },
 ];
+
+const GIFT_REACTION: ReactionMeta = { type: "gift", icon: "gift-outline", activeIcon: "gift", label: "Gift", color: "hsl(45 90% 40%)" };
+const GIFTED_META: ReactionMeta = { type: "gifted", icon: "gift", activeIcon: "gift", label: "Gifted", color: "hsl(45 90% 40%)" };
 
 const BIRTH_TYPE_LABEL: Record<BirthType, string> = {
   single: "",
