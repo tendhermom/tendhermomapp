@@ -101,7 +101,19 @@ const BabyShowerCard = ({
     >
       {/* Image */}
       <div className="w-full h-[130px] relative" style={{ background: accentBg }}>
-        <img src={imageUrl} alt={name} className="w-full h-full object-cover" loading="lazy" />
+        <img
+          src={imageUrl}
+          alt={name}
+          className="w-full h-full object-cover"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            const t = e.currentTarget;
+            if (t.src.indexOf("unsplash.com") === -1) {
+              t.src = "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop";
+            }
+          }}
+        />
         <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full" style={{ background: accentColor }}>
           <span className="text-[10px] font-bold text-white font-sans uppercase tracking-wider">
             {genderLabel}
