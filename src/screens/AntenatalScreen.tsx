@@ -4,6 +4,7 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import { hapticLight } from "@/lib/despia";
+import antenatalHero from "@/assets/heroes/antenatal-hero.jpg.asset.json";
 
 interface AntenatalScreenProps {
   onNavigate: (tab: string) => void;
@@ -265,66 +266,41 @@ const AntenatalScreen = ({ onNavigate }: AntenatalScreenProps) => {
 
   return (
     <motion.div className="space-y-5 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate("home")} className="p-1">
-          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>Antenatal Care</h1>
-      </div>
-
-      {/* Premium Hero — Current Week Card */}
+      {/* Image-backed Hero — Rescue Map style */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-5 relative overflow-hidden"
-        style={{ background: "linear-gradient(145deg, hsl(var(--green)), hsl(160 40% 22%))" }}
+        className="relative rounded-[20px] overflow-hidden"
+        style={{ marginTop: 4 }}
       >
-        {/* Decorative circle */}
-        <div className="absolute -left-6 -bottom-6 w-[120px] h-[120px] rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
-        <div className="absolute right-4 top-4 w-[60px] h-[60px] rounded-full" style={{ background: "rgba(255,255,255,0.04)" }} />
+        <img src={antenatalHero.url} alt="Antenatal Care" className="w-full h-[200px] object-cover" width={1280} height={768} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, hsla(153,42%,15%,0.85) 0%, hsla(153,42%,20%,0.45) 55%, hsla(0,0%,0%,0.15) 100%)" }} />
 
-        <div className="flex items-center gap-4 relative z-10">
-          {/* Week circle */}
-          <div
-            className="w-[60px] h-[60px] rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(255,255,255,0.12)", border: "2px solid rgba(255,255,255,0.2)" }}
-          >
-            <span className="text-white text-[24px] font-serif font-bold">{currentWeek}</span>
-          </div>
-
-          <div className="flex-1">
-            <p className="text-[10px] font-sans font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>
-              You are at
-            </p>
-            <p className="text-white text-[22px] font-serif font-bold mt-0.5">Week {currentWeek}</p>
-            <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--coral))" }}>
-              {nextUp?.title || "Your journey continues"}
-            </p>
-          </div>
-
-          {/* View button → opens Insights */}
+        {/* Back chip */}
+        <div className="absolute top-3 left-3">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => { hapticLight(); onNavigate("insights"); }}
-            className="px-4 py-2 rounded-xl text-[12px] font-sans font-semibold"
-            style={{ background: "rgba(255,255,255,0.15)", color: "white", backdropFilter: "blur(8px)" }}
+            onClick={() => onNavigate("home")}
+            className="flex items-center gap-0.5 ios-press px-2 py-1 rounded-full"
+            style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
           >
-            View →
+            <IonIcon name="chevron-back" size={18} style={{ color: "white" }} />
+            <span className="text-[13px] font-sans font-medium text-white">Back</span>
           </motion.button>
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-4 relative z-10">
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)" }}>
-              Progress
-            </p>
-            <p className="text-[12px] font-sans font-bold" style={{ color: "rgba(255,255,255,0.8)" }}>
-              {completedCount}/{schedule.length}
-            </p>
-          </div>
-          <div className="h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+        {/* Week chip top-right */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(10px)" }}>
+          <span className="text-white text-[11px] font-sans font-semibold tracking-wide">WEEK {currentWeek}</span>
+        </div>
+
+        {/* Bottom title block */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <h1 className="font-serif text-[26px] text-white leading-tight">Antenatal Care</h1>
+          <p className="text-white/70 text-[12px] font-sans mt-1">{nextUp?.title || "Your journey continues"} · {completedCount}/{schedule.length} visits</p>
+
+          {/* Slim progress bar */}
+          <div className="mt-2.5 h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.18)" }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
