@@ -903,7 +903,7 @@ export type Database = {
         | "second_trimester"
         | "third_trimester"
         | "postpartum"
-      reaction_type: "congrats" | "love" | "like" | "celebrate"
+      reaction_type: "congrats" | "love" | "like" | "celebrate" | "gifted"
       reminder_type: "medication" | "appointment" | "hydration"
       user_type: "mother"
     }
@@ -1041,7 +1041,7 @@ export const Constants = {
         "third_trimester",
         "postpartum",
       ],
-      reaction_type: ["congrats", "love", "like", "celebrate"],
+      reaction_type: ["congrats", "love", "like", "celebrate", "gifted"],
       reminder_type: ["medication", "appointment", "hydration"],
       user_type: ["mother"],
     },
