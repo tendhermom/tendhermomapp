@@ -44,40 +44,95 @@ const GamificationScreen = ({ onBack }: GamificationScreenProps) => {
 
   return (
     <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.07 } } }}>
-      {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center gap-3">
-        <button onClick={onBack} className="ios-press">
-          <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>Levels & Rewards</h1>
-      </motion.div>
+      {/* Image-backed Hero — Rescue Map / Antenatal style */}
+      <motion.div
+        variants={fadeUp}
+        className="relative rounded-[20px] overflow-hidden"
+        style={{ marginTop: 4 }}
+      >
+        <img
+          src={levelsHero.url}
+          alt="Levels & Rewards"
+          className="w-full h-[220px] object-cover"
+          width={1280}
+          height={768}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(0deg, hsla(153,42%,15%,0.88) 0%, hsla(153,42%,20%,0.5) 55%, hsla(0,0%,0%,0.15) 100%)",
+          }}
+        />
 
-      {/* Current Level Hero */}
-      <motion.div variants={fadeUp} className="hero-card p-5 text-center">
-        <div className="text-[48px] mb-2">{currentLevel.badge}</div>
-        <h2 className="text-white text-[22px] font-serif">{currentLevel.name}</h2>
-        <p className="text-white/60 text-[12px] font-sans mt-1">{currentLevel.tagline}</p>
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <span className="text-[28px] font-serif" style={{ color: "hsl(var(--coral))" }}>{points}</span>
-          <span className="text-white/50 text-[12px] font-sans">points</span>
+        {/* Back chip */}
+        <div className="absolute top-3 left-3">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onBack}
+            className="flex items-center gap-0.5 ios-press px-2 py-1 rounded-full"
+            style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
+          >
+            <IonIcon name="chevron-back" size={18} style={{ color: "white" }} />
+            <span className="text-[13px] font-sans font-medium text-white">Back</span>
+          </motion.button>
         </div>
-        {nextLevel && (
-          <div className="mt-4 px-6">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-white/40">Progress to {nextLevel.name}</span>
-              <span className="text-[9px] font-sans font-semibold text-white/40">{nextLevel.min - points} pts to go</span>
+
+        {/* Level badge chip top-right */}
+        <div
+          className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+          style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(10px)" }}
+        >
+          <span className="text-[14px] leading-none">{currentLevel.badge}</span>
+          <span className="text-white text-[11px] font-sans font-semibold tracking-wide uppercase">
+            Level {currentLevelIdx + 1}
+          </span>
+        </div>
+
+        {/* Bottom title block */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="font-serif text-[26px] text-white leading-tight truncate">
+                {currentLevel.name}
+              </h1>
+              <p className="text-white/70 text-[12px] font-sans mt-1">{currentLevel.tagline}</p>
             </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(progressToNext, 100)}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full rounded-full"
-                style={{ background: "hsl(var(--coral))" }}
-              />
+            <div className="text-right flex-shrink-0">
+              <p className="font-serif text-[26px] leading-none" style={{ color: "hsl(var(--coral))" }}>
+                {points}
+              </p>
+              <p className="text-white/60 text-[10px] font-sans uppercase tracking-wider mt-0.5">points</p>
             </div>
           </div>
-        )}
+
+          {nextLevel && (
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-white/60">
+                  To {nextLevel.name}
+                </span>
+                <span className="text-[9px] font-sans font-semibold text-white/60">
+                  {nextLevel.min - points} pts to go
+                </span>
+              </div>
+              <div className="h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.18)" }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(progressToNext, 100)}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full rounded-full"
+                  style={{ background: "linear-gradient(90deg, hsl(45 93% 58%), hsl(var(--coral)))" }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Header row (below hero) */}
+      <motion.div variants={fadeUp} className="flex items-center gap-3 -mt-1">
+        <h2 className="text-[20px] font-serif" style={{ color: "hsl(var(--dark))" }}>Levels & Rewards</h2>
       </motion.div>
 
       {/* How to Earn */}
