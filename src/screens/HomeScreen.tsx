@@ -101,72 +101,54 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         />
       </motion.div>
 
-      {/* Premium Hero Greeting Card */}
+      {/* Hero Greeting Card */}
       <motion.div
         variants={fadeUp}
-        className="relative overflow-hidden p-5"
-        style={{
-          borderRadius: 22,
-          background:
-            "radial-gradient(120% 100% at 100% 0%, hsla(11, 74%, 63%, 0.28) 0%, hsla(11, 74%, 63%, 0) 45%), radial-gradient(120% 120% at 0% 100%, hsla(153, 55%, 40%, 0.35) 0%, hsla(153, 55%, 40%, 0) 55%), linear-gradient(150deg, hsl(153, 45%, 18%) 0%, hsl(153, 50%, 14%) 55%, hsl(160, 55%, 10%) 100%)",
-          boxShadow: "0 18px 48px -20px hsla(153, 60%, 8%, 0.55), inset 0 1px 0 hsla(0,0%,100%,0.06)",
-        }}
+        className="hero-card p-5"
       >
-        {/* Decorative orbs */}
-        <div className="absolute -top-10 -right-10 w-[160px] h-[160px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsla(11,74%,63%,0.25), transparent 70%)", filter: "blur(4px)" }} />
-        <div className="absolute -bottom-14 -left-10 w-[180px] h-[180px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsla(140,40%,60%,0.18), transparent 70%)", filter: "blur(6px)" }} />
-        {/* Fine hairline shine */}
-        <div className="absolute top-0 left-6 right-6 h-px pointer-events-none" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)" }} />
-
-        <div className="relative z-10">
-          <p className="text-white/55 text-[12px] font-sans tracking-wide">{greeting}</p>
-          <h1 className="text-white text-[28px] font-serif mt-0.5 leading-tight">
-            Hello, <span style={{ color: "hsl(var(--coral))" }}>{displayName}</span>
-          </h1>
-          {hasDueDate ? (
-            <>
-              <div className="flex items-center gap-2 mt-3.5">
-                <span
-                  className="text-[10.5px] font-sans font-semibold tracking-wider uppercase px-3 py-[5px] rounded-full inline-flex items-center gap-1.5"
-                  style={{ background: "hsla(11, 74%, 63%, 0.18)", color: "hsl(var(--coral))", border: "1px solid hsla(11, 74%, 63%, 0.35)" }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(var(--coral))", boxShadow: "0 0 8px hsl(var(--coral))" }} />
-                  Week {currentWeek} · {trimester}
-                </span>
-                <span className="text-[10.5px] font-sans font-medium px-3 py-[5px] rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today!" : `${Math.abs(daysLeft)} days past`}
-                </span>
+        <p className="text-white/50 text-[13px] font-sans">{greeting}</p>
+        <h1 className="text-white text-[26px] font-serif mt-0.5">
+          Hello, <span style={{ color: "hsl(var(--coral))" }}>{displayName}</span>
+        </h1>
+        {hasDueDate ? (
+          <>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-[11px] font-sans font-semibold tracking-wide uppercase px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "hsl(var(--coral))" }}>
+                Week {currentWeek} · {trimester}
+              </span>
+              <span className="text-[11px] font-sans font-medium px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}>
+                {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today!" : `${Math.abs(daysLeft)} days past`}
+              </span>
+            </div>
+            {/* Progress bar */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-white/40">Pregnancy Progress</span>
+                <span className="text-[9px] font-sans font-semibold text-white/40">{progressPercent}%</span>
               </div>
-              {/* Progress bar */}
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[9px] font-sans font-semibold uppercase tracking-widest text-white/45">Pregnancy Progress</span>
-                  <span className="text-[10px] font-sans font-bold text-white/80">{progressPercent}%</span>
-                </div>
-                <div className="h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.09)", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.25)" }}>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(progressPercent, 100)}%` }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                    className="h-full rounded-full"
-                    style={{ background: "linear-gradient(90deg, hsl(45 93% 60%), hsl(var(--coral)))", boxShadow: "0 0 10px hsla(11,74%,63%,0.6)" }}
-                  />
-                </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(progressPercent, 100)}%` }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  className="h-full rounded-full"
+                  style={{ background: "hsl(var(--coral))" }}
+                />
               </div>
-              <p className="text-[11.5px] font-sans mt-3" style={{ color: "rgba(255,255,255,0.6)" }}>
-                Baby is about the size of a <span className="font-semibold" style={{ color: "hsl(var(--coral))" }}>{babySize}</span>
-              </p>
-            </>
-          ) : (
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => onNavigate("profile")}
-              className="flex items-center gap-1.5 mt-3 ios-press"
-            >
-              <span className="text-[13px] font-sans font-medium" style={{ color: "hsl(var(--coral))" }}>Set your due date →</span>
-            </motion.button>
-          )}
-        </div>
+            </div>
+            <p className="text-[11px] font-sans mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Baby is about the size of a <span className="font-semibold" style={{ color: "hsl(var(--coral))" }}>{babySize}</span>
+            </p>
+          </>
+        ) : (
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onNavigate("profile")}
+            className="flex items-center gap-1.5 mt-3 ios-press"
+          >
+            <span className="text-[13px] font-sans font-medium" style={{ color: "hsl(var(--coral))" }}>Set your due date →</span>
+          </motion.button>
+        )}
       </motion.div>
 
       {/* Level Badge */}
