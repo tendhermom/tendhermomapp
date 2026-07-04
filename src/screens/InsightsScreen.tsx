@@ -4,6 +4,9 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { hapticLight } from "@/lib/despia";
 import insightsHero from "@/assets/heroes/insights-hero.jpg.asset.json";
+import triImg1 from "@/assets/heroes/trimester-1.jpg.asset.json";
+import triImg2 from "@/assets/heroes/trimester-2.jpg.asset.json";
+import triImg3 from "@/assets/heroes/trimester-3.jpg.asset.json";
 
 interface InsightsScreenProps {
   onBack: () => void;
