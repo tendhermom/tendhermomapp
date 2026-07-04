@@ -101,59 +101,31 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         />
       </motion.div>
 
-      {/* Hero Greeting Card — OPay-inspired: bold focal week, subtle top link, dark pill CTA */}
+      {/* Hero Greeting Card */}
       <motion.div
         variants={fadeUp}
         className="hero-card p-5"
       >
-        {/* Top row: greeting + top-right link (OPay "Transaction History >") */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-white/50 text-[12px] font-sans">{greeting}</p>
-            <h1 className="text-white text-[22px] font-serif mt-0.5 truncate">
-              Hello, <span style={{ color: "hsl(var(--coral))" }}>{displayName}</span>
-            </h1>
-          </div>
-          {hasDueDate && (
-            <button
-              onClick={() => onNavigate("antenatal")}
-              className="flex items-center gap-0.5 ios-press mt-1 flex-shrink-0"
-            >
-              <span className="text-[11px] font-sans font-medium text-white/70">Antenatal</span>
-              <IonIcon name="chevron-forward" size={12} style={{ color: "rgba(255,255,255,0.7)" }} />
-            </button>
-          )}
-        </div>
-
+        <p className="text-white/50 text-[13px] font-sans">{greeting}</p>
+        <h1 className="text-white text-[26px] font-serif mt-0.5">
+          Hello, <span style={{ color: "hsl(var(--coral))" }}>{displayName}</span>
+        </h1>
         {hasDueDate ? (
           <>
-            {/* Focal week — bold, OPay-style hero number */}
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-white/40 text-[11px] font-sans uppercase tracking-wider">Week</span>
-              <span
-                className="font-serif leading-none"
-                style={{ fontSize: 46, color: "white", letterSpacing: "-0.02em" }}
-              >
-                {currentWeek}
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-[11px] font-sans font-semibold tracking-wide uppercase px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "hsl(var(--coral))" }}>
+                Week {currentWeek} · {trimester}
               </span>
-              <span
-                className="text-[11px] font-sans font-semibold uppercase tracking-wide px-2.5 py-[3px] rounded-full ml-1"
-                style={{ background: "rgba(232,115,90,0.18)", color: "hsl(var(--coral))" }}
-              >
-                {trimester}
+              <span className="text-[11px] font-sans font-medium px-3 py-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}>
+                {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today!" : `${Math.abs(daysLeft)} days past`}
               </span>
             </div>
-
-            {/* Sub-line: baby size + days left, in the OPay "sub-status" spot */}
-            <p className="text-[12px] font-sans mt-2" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Baby is the size of a{" "}
-              <span className="font-semibold" style={{ color: "white" }}>{babySize}</span>
-              <span className="mx-1.5 text-white/25">·</span>
-              {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today" : `${Math.abs(daysLeft)} days past`}
-            </p>
-
             {/* Progress bar */}
             <div className="mt-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-white/40">Pregnancy Progress</span>
+                <span className="text-[9px] font-sans font-semibold text-white/40">{progressPercent}%</span>
+              </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
                 <motion.div
                   initial={{ width: 0 }}
@@ -164,23 +136,9 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
                 />
               </div>
             </div>
-
-            {/* Bottom action row: OPay "+ Add Money" style dark pill */}
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-white/40">Progress</span>
-                <span className="text-white text-[14px] font-serif leading-tight">{progressPercent}%</span>
-              </div>
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavigate("health-tracker")}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full ios-press"
-                style={{ background: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                <IonIcon name="add" size={14} style={{ color: "white" }} />
-                <span className="text-[12px] font-sans font-semibold text-white">Log today</span>
-              </motion.button>
-            </div>
+            <p className="text-[11px] font-sans mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Baby is about the size of a <span className="font-semibold" style={{ color: "hsl(var(--coral))" }}>{babySize}</span>
+            </p>
           </>
         ) : (
           <motion.button
