@@ -153,7 +153,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleReaction = async (postId: string, type: "congrats" | "love" | "like" | "celebrate") => {
+  const handleReaction = async (postId: string, type: "congrats" | "love" | "like" | "celebrate" | "gifted") => {
     if (!user) return;
     const existing = userReactions[postId];
     if (existing === type) {
@@ -161,10 +161,10 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       setUserReactions((prev) => { const next = { ...prev }; delete next[postId]; return next; });
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: Math.max(0, p.reactions_count - 1) } : p)));
     } else if (existing) {
-      await supabase.from("reactions").update({ type }).eq("post_id", postId).eq("user_id", user.id);
+      await (supabase.from("reactions") as any).update({ type }).eq("post_id", postId).eq("user_id", user.id);
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
     } else {
-      await supabase.from("reactions").insert({ post_id: postId, user_id: user.id, type });
+      await (supabase.from("reactions") as any).insert({ post_id: postId, user_id: user.id, type });
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: p.reactions_count + 1 } : p)));
     }
