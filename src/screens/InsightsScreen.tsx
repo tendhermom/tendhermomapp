@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { hapticLight } from "@/lib/despia";
+import insightsHero from "@/assets/heroes/insights-hero.jpg.asset.json";
 
 interface InsightsScreenProps {
   onBack: () => void;
