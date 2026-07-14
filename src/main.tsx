@@ -43,7 +43,7 @@ if (typeof window !== "undefined") {
 
 // One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
 // whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-07-05-fresh-preview";
+const RELEASE_TAG = "2026-07-14-sw-kill-switch";
 try {
   if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
     if (typeof caches !== "undefined" && caches?.keys) {
@@ -55,9 +55,8 @@ try {
   }
 } catch (_) {}
 
-// Guarded PWA setup: registers the service worker ONLY on the published app.
-// In dev / Lovable preview / iframes it unregisters stale workers and purges
-// caches so the preview always shows the latest version.
+// Stale PWA cleanup: unregisters previous app-shell workers in dev / preview /
+// iframes / ?sw=off so old builds stop hijacking the latest app.
 setupPwa();
 
 createRoot(document.getElementById("root")!).render(
