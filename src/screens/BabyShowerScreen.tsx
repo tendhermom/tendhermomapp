@@ -25,11 +25,12 @@ interface BabyShowerPost {
   reactions_count: number;
   user_id: string;
   created_at: string;
-  gift_enabled: boolean;
-  gift_total: number;
-  account_name: string | null;
-  account_number: string | null;
-  bank_name: string | null;
+}
+
+interface GiftAccount {
+  account_name: string;
+  account_number: string;
+  bank_name: string;
 }
 
 interface BabyShowerScreenProps {
