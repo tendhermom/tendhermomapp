@@ -173,7 +173,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       setSubScreen(route);
       return;
     }
-    if (["edit-profile", "notifications", "safety", "cycle-setting"].includes(route)) {
+    if (["edit-profile", "notifications", "safety", "cycle-setting", "gift-settings"].includes(route)) {
       setSubScreen(route);
     } else if (route === "premium" || route === "emergency-contacts") {
       onNavigate(route);
