@@ -5,6 +5,7 @@ import SmartGuidance from "@/components/health/SmartGuidance";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
+import { classifyBP, type BPCategory } from "@/lib/bpClassification";
 
 interface HealthTrackerScreenProps {
   onNavigate: (screen: string) => void;
