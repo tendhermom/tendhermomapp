@@ -40,17 +40,12 @@ const Signup = () => {
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus(null);
-    if (!fullName.trim() || !email.trim() || !phone.trim() || !password || password.length < 6) {
+    if (!fullName.trim() || !email.trim() || !password || password.length < 6) {
       setFormStatus({ kind: "error", text: "Please fill all fields. Password must be at least 6 characters." });
       return;
     }
     if (!acceptTerms) {
       setFormStatus({ kind: "error", text: "Please accept our Terms of Service and Privacy Policy to continue." });
-      return;
-    }
-    const cleanPhone = phone.replace(/\s/g, "");
-    if (!PHONE_REGEX.test(cleanPhone)) {
-      setFormStatus({ kind: "error", text: "Phone must be in format +234XXXXXXXXXX" });
       return;
     }
     setLoading(true);
