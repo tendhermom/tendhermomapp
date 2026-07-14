@@ -137,7 +137,7 @@ serve(async (req) => {
           user_id: profile.id,
           type: "checkin",
           title: "We miss you 💚",
-          body: `Hi ${firstName}, tap to check in — we're here whenever you need us.`,
+          body: `Hi ${firstName}, we are here for you!`,
           data: { kind: "self-checkin", inactive_hours: inactiveHours },
         });
 
