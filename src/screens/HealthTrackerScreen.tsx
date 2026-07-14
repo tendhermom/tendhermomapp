@@ -176,11 +176,17 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
                 {entries[0]?.systolic ? `${entries[0].systolic}/${entries[0].diastolic}` : "—/—"}
               </p>
               {entries[0]?.systolic && (() => {
-                const status = getBPStatus(entries[0].systolic, entries[0].diastolic);
+                const status = classifyBP(entries[0].systolic, entries[0].diastolic);
                 return status ? (
-                  <span className="text-[9px] font-sans font-semibold px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: status.bg, color: status.color }}>
-                    {status.label}
-                  </span>
+                  <button
+                    onClick={() => setDetailsCategory(status)}
+                    className="mt-1.5 inline-flex items-center gap-1 text-[9px] font-sans font-semibold px-2 py-0.5 rounded-full ios-press"
+                    style={{ background: status.bg, color: status.color }}
+                    aria-label={`Blood pressure status: ${status.label}. Tap for details.`}
+                  >
+                    <span>{status.label}</span>
+                    <IonIcon name="chevron-forward" size={10} style={{ color: status.color }} />
+                  </button>
                 ) : null;
               })()}
             </div>
