@@ -107,24 +107,26 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
       return;
     }
 
-    const isHighBP = systolic && parseInt(systolic) > 140;
+    const bp = classifyBP(
+      systolic ? parseInt(systolic) : undefined,
+      diastolic ? parseInt(diastolic) : undefined,
+    );
+    const kind: InlineStatusMsg["kind"] =
+      bp?.severity === "emergency"
+        ? "error"
+        : bp?.severity === "warning" || bp?.severity === "caution"
+          ? "warning"
+          : "success";
     setLogStatus({
-      kind: isHighBP ? "warning" : "success",
-      text: isHighBP
-        ? "Saved. Your blood pressure is elevated — please consult your doctor."
+      kind,
+      text: bp
+        ? `Saved · ${bp.label}`
         : "Health metrics saved!",
     });
     setSystolic(""); setDiastolic(""); setHeartRate(""); setWeight("");
     setShowInput(false);
     fetchEntries();
-    setTimeout(() => setLogStatus(null), 5000);
-  };
-
-  const getBPStatus = (sys?: number, dia?: number) => {
-    if (!sys || !dia) return null;
-    if (sys >= 140 || dia >= 90) return { label: "High — See your doctor", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" };
-    if (sys >= 120 || dia >= 80) return { label: "Elevated — Monitor closely", color: "hsl(45 93% 45%)", bg: "hsl(45 93% 92%)" };
-    return { label: "Normal — Looking good!", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" };
+    setTimeout(() => setLogStatus(null), 6000);
   };
 
   return (
