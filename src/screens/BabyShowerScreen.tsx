@@ -112,28 +112,11 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   }, []);
 
   const fetchPosts = async () => {
-    // Public list uses the safe view (no bank fields). Owner-side bank editing
-    // still queries baby_shower_posts directly via RLS-scoped owner SELECT.
-    const { data: publicData } = await (supabase as any)
+    const { data } = await (supabase as any)
       .from("baby_shower_posts_public")
       .select("*")
       .order("created_at", { ascending: false });
-
-    let merged: any[] = publicData || [];
-
-    // If signed in, fetch the user's own rows (with bank fields) and merge.
-    if (user) {
-      const { data: ownData } = await supabase
-        .from("baby_shower_posts")
-        .select("*")
-        .eq("user_id", user.id);
-      if (ownData?.length) {
-        const ownMap = new Map(ownData.map((p: any) => [p.id, p]));
-        merged = merged.map((p: any) => ownMap.get(p.id) || p);
-      }
-    }
-
-    setPosts(merged as any);
+    setPosts((data || []) as any);
     setLoading(false);
   };
 
@@ -150,7 +133,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleReaction = async (postId: string, type: "congrats" | "love" | "like" | "celebrate" | "gifted") => {
+  const handleReaction = async (postId: string, type: "congrats" | "love" | "gifted") => {
     if (!user) return;
     const existing = userReactions[postId];
     if (existing === type) {
@@ -167,46 +150,28 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
-  const handleSaveAccount = async () => {
-    if (!user || !editAccountPost) return;
-    if (!accountName.trim() || !accountNumber.trim() || !bankName.trim()) {
-      toast.error("Please fill in account name, number and bank");
-      return;
-    }
-    setSavingAccount(true);
-    const { error } = await supabase
-      .from("baby_shower_posts")
-      .update({
-        account_name: accountName.trim(),
-        account_number: accountNumber.trim(),
-        bank_name: bankName.trim(),
-        gift_enabled: true,
-      } as any)
-      .eq("id", editAccountPost.id)
-      .eq("user_id", user.id);
-    setSavingAccount(false);
+  const openGiveGift = async (post: BabyShowerPost) => {
+    setGiveGiftPost(post);
+    setGiftAccount(null);
+    setLoadingGift(true);
+    const { data, error } = await (supabase as any).rpc("get_gift_account", { _user_id: post.user_id });
+    setLoadingGift(false);
     if (error) {
-      toast.error("Failed to save account details");
+      toast.error("Couldn't load gift details");
       return;
     }
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === editAccountPost.id
-          ? { ...p, account_name: accountName.trim(), account_number: accountNumber.trim(), bank_name: bankName.trim(), gift_enabled: true }
-          : p
-      )
-    );
-    toast.success("Account details saved — friends can now Give a Gift 🎁");
-    setEditAccountPost(null);
-    setAccountName(""); setAccountNumber(""); setBankName("");
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      setGiftAccount(null);
+      return;
+    }
+    setGiftAccount({
+      account_name: row.account_name,
+      account_number: row.account_number,
+      bank_name: row.bank_name,
+    });
   };
 
-  const openAddAccount = (post: BabyShowerPost) => {
-    setEditAccountPost(post);
-    setAccountName(post.account_name || user?.full_name || "");
-    setAccountNumber(post.account_number || "");
-    setBankName(post.bank_name || "");
-  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
