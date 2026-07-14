@@ -135,15 +135,19 @@ const ForgotPassword = () => {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="text-[12px] font-sans font-semibold mb-1.5 block tracking-wide uppercase" style={{ color: "hsl(var(--text-muted))" }}>Email</label>
-                  <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
-                      <IonIcon name="mail-outline" size={18} style={{ color: "hsl(var(--text-muted))" }} />
+                  <label className="text-[11px] font-sans font-semibold mb-2 block tracking-[0.14em] uppercase" style={{ color: "hsl(var(--text-muted))" }}>Email</label>
+                  <div
+                    className="group relative rounded-2xl p-[1.5px] transition-all focus-within:shadow-[0_10px_30px_-12px_hsla(153,42%,30%,0.35)]"
+                    style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.18), hsla(153,42%,30%,0.04) 55%, transparent)" }}
+                  >
+                    <div className="relative rounded-[15px]" style={{ background: "#FFFFFF" }}>
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.10), hsla(153,42%,30%,0.04))" }}>
+                        <IonIcon name="mail-outline" size={16} style={{ color: "hsl(var(--green))" }} />
+                      </div>
+                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} autoComplete="email"
+                        className="w-full pl-[52px] pr-4 py-[15px] rounded-[15px] text-[15px] font-sans font-medium bg-transparent outline-none tracking-[-0.005em]"
+                        style={{ color: "hsl(var(--dark))" }} />
                     </div>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" required
-                      className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-[15px] font-sans outline-none transition-all focus:ring-2"
-                      style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", boxShadow: "inset 0 1px 3px hsla(var(--dark), 0.04)", "--tw-ring-color": "hsla(var(--green), 0.3)" } as any}
-                    />
                   </div>
                 </div>
                 <InlineStatus status={status} spacing="" />
