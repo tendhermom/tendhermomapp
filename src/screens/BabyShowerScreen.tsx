@@ -77,14 +77,10 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [userReactions, setUserReactions] = useState<Record<string, string>>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // P2P Give-a-Gift sheet (visitor sees owner's bank account details)
+  // P2P Give-a-Gift sheet (visitor sees poster's bank account details from their Gift Settings)
   const [giveGiftPost, setGiveGiftPost] = useState<BabyShowerPost | null>(null);
-  // Owner — add/edit bank account details sheet
-  const [editAccountPost, setEditAccountPost] = useState<BabyShowerPost | null>(null);
-  const [accountName, setAccountName] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [savingAccount, setSavingAccount] = useState(false);
+  const [giftAccount, setGiftAccount] = useState<GiftAccount | null>(null);
+  const [loadingGift, setLoadingGift] = useState(false);
 
   // Create form state
   const [babyName, setBabyName] = useState("");
