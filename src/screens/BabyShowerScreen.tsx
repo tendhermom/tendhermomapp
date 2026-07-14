@@ -292,12 +292,8 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                   reactionsCount={post.reactions_count}
                   userReaction={userReactions[post.id] || null}
                   onReaction={(type) => handleReaction(post.id, type)}
-                  giftEnabled={post.gift_enabled}
-                  hasAccountDetails={!!(post.account_name && post.account_number && post.bank_name)}
-                  isPremium={isPremium}
                   isOwner={user?.id === post.user_id}
-                  onAddAccountDetails={() => openAddAccount(post)}
-                  onGiveGift={() => setGiveGiftPost(post)}
+                  onGiveGift={() => openGiveGift(post)}
                 />
               </div>
             ))}
