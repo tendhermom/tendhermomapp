@@ -9,9 +9,9 @@ import heroImg from "@/assets/auth-login-hero.png";
 import logo from "@/assets/logo.jpeg";
 
 const SPARKLES = [
-  { top: "15%", left: "-6%", delay: 0, dur: 2.4 },
-  { top: "55%", left: "96%", delay: 0.5, dur: 2.8 },
-  { top: "80%", left: "-4%", delay: 1, dur: 2.2 },
+  { top: "12%", left: "-5%", delay: 0, dur: 2.4 },
+  { top: "50%", left: "97%", delay: 0.5, dur: 2.8 },
+  { top: "82%", left: "-3%", delay: 1, dur: 2.2 },
 ];
 
 const transientAuthError = (message: string) => {
@@ -121,22 +121,20 @@ const Login = () => {
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 22 }}
-          className="relative flex items-center justify-center pt-6 pb-2"
+          className="relative flex items-center justify-center pt-6 pb-1"
         >
-          {/* Radial glow */}
           <div
             className="absolute rounded-full blur-[60px] opacity-30"
             style={{
-              width: 220, height: 220,
+              width: 200, height: 200,
               background: "radial-gradient(circle, hsl(var(--green)), transparent 70%)",
               transform: "scale(1.3)",
             }}
           />
-          {/* Floating illustration */}
           <motion.img
             src={heroImg}
             alt=""
-            className="relative w-[180px] h-[180px] object-contain drop-shadow-lg"
+            className="relative w-[150px] h-[150px] object-contain drop-shadow-lg"
             animate={{ y: [0, -8, 0], rotate: [0, -1.5, 0, 1.5, 0] }}
             transition={{
               y: { duration: 3.5, repeat: Infinity, ease: "easeInOut" },
@@ -144,7 +142,6 @@ const Login = () => {
             }}
             draggable={false}
           />
-          {/* Sparkle particles */}
           {SPARKLES.map((s, i) => (
             <motion.div
               key={i}
@@ -165,13 +162,13 @@ const Login = () => {
           >
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="flex items-center justify-center gap-2 mb-1.5">
                 <img src={logo} alt="" className="w-7 h-7 rounded-lg object-contain" />
                 <span className="text-[12px] font-sans font-medium tracking-wide uppercase" style={{ color: "hsl(var(--text-muted))" }}>
                   TendherMom
                 </span>
               </div>
-              <h1 className="font-serif text-[28px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
+              <h1 className="font-serif text-[26px] leading-tight tracking-[-0.01em]" style={{ color: "hsl(var(--dark))" }}>
                 Welcome back
               </h1>
               <p className="text-[14px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
@@ -183,7 +180,7 @@ const Login = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
+              transition={{ delay: 0.22 }}
               className="flex justify-center gap-2 mb-6"
             >
               {[
@@ -205,31 +202,39 @@ const Login = () => {
             {/* Form */}
             <form onSubmit={handleLogin} className="space-y-4">
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <label className="text-[12px] font-sans font-semibold mb-1.5 block tracking-wide uppercase" style={{ color: "hsl(var(--text-muted))" }}>Email</label>
-                <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
-                    <IonIcon name="mail-outline" size={18} style={{ color: "hsl(var(--text-muted))" }} />
+                <label className="text-[11px] font-sans font-semibold mb-2 block tracking-[0.14em] uppercase" style={{ color: "hsl(var(--text-muted))" }}>Email</label>
+                <div
+                  className="group relative rounded-2xl p-[1.5px] transition-all focus-within:shadow-[0_10px_30px_-12px_hsla(153,42%,30%,0.35)]"
+                  style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.18), hsla(153,42%,30%,0.04) 55%, transparent)" }}
+                >
+                  <div className="relative rounded-[15px]" style={{ background: "#FFFFFF" }}>
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.10), hsla(153,42%,30%,0.04))" }}>
+                      <IonIcon name="mail-outline" size={16} style={{ color: "hsl(var(--green))" }} />
+                    </div>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} autoComplete="email"
+                      className="w-full pl-[52px] pr-4 py-[15px] rounded-[15px] text-[15px] font-sans font-medium bg-transparent outline-none tracking-[-0.005em]"
+                      style={{ color: "hsl(var(--dark))" }} />
                   </div>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" required
-                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-[15px] font-sans outline-none transition-all focus:ring-2"
-                    style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", boxShadow: "inset 0 1px 3px hsla(var(--dark), 0.04)", "--tw-ring-color": "hsla(var(--green), 0.3)" } as any}
-                  />
                 </div>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-                <label className="text-[12px] font-sans font-semibold mb-1.5 block tracking-wide uppercase" style={{ color: "hsl(var(--text-muted))" }}>Password</label>
-                <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
-                    <IonIcon name="lock-closed-outline" size={18} style={{ color: "hsl(var(--text-muted))" }} />
+                <label className="text-[11px] font-sans font-semibold mb-2 block tracking-[0.14em] uppercase" style={{ color: "hsl(var(--text-muted))" }}>Password</label>
+                <div
+                  className="group relative rounded-2xl p-[1.5px] transition-all focus-within:shadow-[0_10px_30px_-12px_hsla(153,42%,30%,0.35)]"
+                  style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.18), hsla(153,42%,30%,0.04) 55%, transparent)" }}
+                >
+                  <div className="relative rounded-[15px]" style={{ background: "#FFFFFF" }}>
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.10), hsla(153,42%,30%,0.04))" }}>
+                      <IonIcon name="lock-closed-outline" size={16} style={{ color: "hsl(var(--green))" }} />
+                    </div>
+                    <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password"
+                      className="w-full pl-[52px] pr-12 py-[15px] rounded-[15px] text-[15px] font-sans font-medium bg-transparent outline-none tracking-[-0.005em]"
+                      style={{ color: "hsl(var(--dark))" }} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-[hsla(153,42%,30%,0.06)]">
+                      <IonIcon name={showPassword ? "eye-off-outline" : "eye-outline"} size={18} style={{ color: "hsl(var(--text-muted))" }} />
+                    </button>
                   </div>
-                  <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required
-                    className="w-full pl-10 pr-12 py-3.5 rounded-2xl text-[15px] font-sans outline-none transition-all focus:ring-2"
-                    style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", boxShadow: "inset 0 1px 3px hsla(var(--dark), 0.04)", "--tw-ring-color": "hsla(var(--green), 0.3)" } as any}
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5">
-                    <IonIcon name={showPassword ? "eye-off-outline" : "eye-outline"} size={18} style={{ color: "hsl(var(--text-muted))" }} />
-                  </button>
                 </div>
               </motion.div>
 
