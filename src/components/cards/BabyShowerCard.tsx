@@ -45,11 +45,7 @@ const BabyShowerCard = ({
   reactionsCount = 0,
   userReaction,
   onReaction,
-  giftEnabled = false,
-  hasAccountDetails = false,
-  isPremium = false,
   isOwner = false,
-  onAddAccountDetails,
   onGiveGift,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
@@ -73,13 +69,9 @@ const BabyShowerCard = ({
       ? GIFTED_META
       : BASE_REACTIONS.find((r) => r.type === userReaction);
 
-  // P2P gift visibility: viewers see gift-related affordances only when owner is premium AND added account details
-  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
-  // Owner sees "Add account details" CTA if premium + posted but no account yet
-  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
-
-  // Reactions to display in the picker (adds "Gift" for eligible visitors)
-  const pickerReactions: ReactionMeta[] = showGiveGiftToVisitor
+  // Gift is always available to visitors — availability of account details is
+  // resolved when they tap Gift (fetched from the poster's Gift Settings).
+  const pickerReactions: ReactionMeta[] = !isOwner
     ? [...BASE_REACTIONS, GIFT_REACTION]
     : BASE_REACTIONS;
 
