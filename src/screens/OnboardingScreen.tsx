@@ -143,13 +143,16 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="w-[80px] h-[80px] rounded-[22px] flex items-center justify-center mx-auto mb-6"
+          className="w-[88px] h-[88px] rounded-[24px] mx-auto mb-6 overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, hsl(153 42% 30%), hsl(153 42% 22%))",
-            boxShadow: "0 8px 32px -8px hsla(153,42%,30%,0.5)",
+            boxShadow: "0 12px 36px -10px hsla(153,42%,30%,0.35), 0 4px 12px -4px hsla(var(--dark), 0.08)",
           }}
         >
-          <IonIcon name="heart" size={36} style={{ color: "white" }} />
+          <img
+            src={logo}
+            alt="TendherMom"
+            className="w-full h-full object-cover"
+          />
         </motion.div>
 
         <h1
