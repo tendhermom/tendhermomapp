@@ -81,7 +81,6 @@ const Signup = () => {
           password,
           code: otpCode,
           full_name: fullName.trim(),
-          phone: phone.replace(/\s/g, ""),
         },
       });
       if (createErr) throw createErr;
