@@ -27,13 +27,6 @@ const FEATURES = [
     color: "hsl(var(--coral))",
     bg: "hsl(var(--light-coral))",
   },
-  {
-    icon: "chatbubbles-outline",
-    title: "Community",
-    desc: "Connect with mothers in your trimester for support and advice.",
-    color: "hsl(var(--green))",
-    bg: "hsl(var(--light-green))",
-  },
 ];
 
 const PHONE_REGEX = /^\+234[0-9]{10}$/;
