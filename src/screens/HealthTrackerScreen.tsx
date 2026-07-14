@@ -58,6 +58,7 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const [entries, setEntries] = useState<HealthEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [logStatus, setLogStatus] = useState<InlineStatusMsg | null>(null);
+  const [detailsCategory, setDetailsCategory] = useState<BPCategory | null>(null);
 
   const fetchEntries = useCallback(async () => {
     if (!user?.id) return;
