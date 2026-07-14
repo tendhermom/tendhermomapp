@@ -21,10 +21,8 @@ const Signup = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const PHONE_REGEX = /^\+234[0-9]{10}$/;
   const [showPassword, setShowPassword] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
