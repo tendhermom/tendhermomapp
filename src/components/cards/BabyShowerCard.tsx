@@ -13,13 +13,9 @@ interface BabyShowerCardProps {
   birthType?: BirthType;
   reactionsCount?: number;
   userReaction?: string | null;
-  onReaction?: (type: "congrats" | "love" | "like" | "celebrate" | "gifted") => void;
+  onReaction?: (type: "congrats" | "love" | "gifted") => void;
   // Peer-to-peer "Give a Gift"
-  giftEnabled?: boolean;
-  hasAccountDetails?: boolean;
-  isPremium?: boolean;
   isOwner?: boolean;
-  onAddAccountDetails?: () => void;
   onGiveGift?: () => void;
 }
 
@@ -28,8 +24,6 @@ type ReactionMeta = { type: string; icon: string; activeIcon: string; label: str
 const BASE_REACTIONS: ReactionMeta[] = [
   { type: "congrats", icon: "ribbon-outline", activeIcon: "ribbon", label: "Congrats", color: "hsl(var(--coral))" },
   { type: "love", icon: "heart-outline", activeIcon: "heart", label: "Love", color: "hsl(340 75% 55%)" },
-  { type: "like", icon: "thumbs-up-outline", activeIcon: "thumbs-up", label: "Like", color: "hsl(var(--green))" },
-  { type: "celebrate", icon: "sparkles-outline", activeIcon: "sparkles", label: "Celebrate", color: "hsl(45 90% 50%)" },
 ];
 
 const GIFT_REACTION: ReactionMeta = { type: "gift", icon: "gift-outline", activeIcon: "gift", label: "Gift", color: "hsl(45 90% 40%)" };
@@ -51,11 +45,7 @@ const BabyShowerCard = ({
   reactionsCount = 0,
   userReaction,
   onReaction,
-  giftEnabled = false,
-  hasAccountDetails = false,
-  isPremium = false,
   isOwner = false,
-  onAddAccountDetails,
   onGiveGift,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
@@ -79,13 +69,9 @@ const BabyShowerCard = ({
       ? GIFTED_META
       : BASE_REACTIONS.find((r) => r.type === userReaction);
 
-  // P2P gift visibility: viewers see gift-related affordances only when owner is premium AND added account details
-  const showGiveGiftToVisitor = !isOwner && giftEnabled && hasAccountDetails;
-  // Owner sees "Add account details" CTA if premium + posted but no account yet
-  const showAddDetailsToOwner = isOwner && isPremium && !hasAccountDetails;
-
-  // Reactions to display in the picker (adds "Gift" for eligible visitors)
-  const pickerReactions: ReactionMeta[] = showGiveGiftToVisitor
+  // Gift is always available to visitors — availability of account details is
+  // resolved when they tap Gift (fetched from the poster's Gift Settings).
+  const pickerReactions: ReactionMeta[] = !isOwner
     ? [...BASE_REACTIONS, GIFT_REACTION]
     : BASE_REACTIONS;
 
@@ -167,21 +153,9 @@ const BabyShowerCard = ({
           </p>
         </div>
 
-        {/* "Give a Gift" is now integrated into the reaction picker as a "Gift" option (visitors only, when enabled). */}
+        {/* "Give a Gift" is integrated into the reaction picker as a "Gift" option (visitors only). */}
 
 
-        {/* P2P gift CTA — premium owner without account yet */}
-        {showAddDetailsToOwner && (
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={onAddAccountDetails}
-            className="w-full py-1.5 rounded-xl text-[10px] font-semibold font-sans flex items-center justify-center gap-1"
-            style={{ background: "hsl(var(--bg))", color: "hsl(var(--text-muted))", border: "1px dashed hsl(var(--border-subtle))" }}
-          >
-            <IonIcon name="card-outline" size={11} style={{ color: "hsl(var(--text-muted))" }} />
-            Enable "Give a Gift"
-          </motion.button>
-        )}
 
         {/* Reaction button */}
         <div className="flex items-center justify-between">

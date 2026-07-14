@@ -538,6 +538,9 @@ export type Database = {
           due_date: string | null
           email: string | null
           full_name: string
+          gift_account_name: string | null
+          gift_account_number: string | null
+          gift_bank_name: string | null
           id: string
           inactivity_alerts_enabled: boolean
           last_active_at: string
@@ -563,6 +566,9 @@ export type Database = {
           due_date?: string | null
           email?: string | null
           full_name?: string
+          gift_account_name?: string | null
+          gift_account_number?: string | null
+          gift_bank_name?: string | null
           id: string
           inactivity_alerts_enabled?: boolean
           last_active_at?: string
@@ -588,6 +594,9 @@ export type Database = {
           due_date?: string | null
           email?: string | null
           full_name?: string
+          gift_account_name?: string | null
+          gift_account_number?: string | null
+          gift_bank_name?: string | null
           id?: string
           inactivity_alerts_enabled?: boolean
           last_active_at?: string
@@ -882,6 +891,14 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       decrement_likes: { Args: { p_post_id: string }; Returns: undefined }
+      get_gift_account: {
+        Args: { _user_id: string }
+        Returns: {
+          account_name: string
+          account_number: string
+          bank_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

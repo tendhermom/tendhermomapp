@@ -9,6 +9,7 @@ import HelpSupportScreen from "@/screens/HelpSupportScreen";
 import SafetySettingsScreen from "@/screens/SafetySettingsScreen";
 import ComplianceScreen from "@/screens/ComplianceScreen";
 import CycleSettingScreen from "@/screens/CycleSettingScreen";
+import GiftSettingsScreen from "@/screens/GiftSettingsScreen";
 import { useAuthStore } from "@/stores/authStore";
 import { nativeShare, hapticLight, screenShield } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ const menuSections = [
     items: [
       { icon: "diamond-outline", label: "TendherMom Plus", route: "premium" },
       { icon: "sync-outline", label: "Cycle Setting", route: "cycle-setting" },
+      { icon: "gift-outline", label: "Gift Settings", route: "gift-settings" },
       { icon: "people-outline", label: "Refer & Earn", route: "referrals" },
       { icon: "alert-circle-outline", label: "Emergency Contacts", route: "emergency-contacts" },
       { icon: "shield-checkmark-outline", label: "Safety Net", route: "safety" },
@@ -143,6 +145,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   if (subScreen === "cycle-setting") {
     return <CycleSettingScreen onBack={() => setSubScreen(null)} />;
   }
+  if (subScreen === "gift-settings") {
+    return <GiftSettingsScreen onBack={() => setSubScreen(null)} />;
+  }
   if (subScreen === "privacy" || subScreen === "terms" || subScreen === "technical-popups" || subScreen === "health-safety") {
     return (
       <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} /></div>}>
@@ -168,7 +173,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       setSubScreen(route);
       return;
     }
-    if (["edit-profile", "notifications", "safety", "cycle-setting"].includes(route)) {
+    if (["edit-profile", "notifications", "safety", "cycle-setting", "gift-settings"].includes(route)) {
       setSubScreen(route);
     } else if (route === "premium" || route === "emergency-contacts") {
       onNavigate(route);
