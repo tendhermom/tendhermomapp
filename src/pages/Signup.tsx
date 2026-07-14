@@ -274,15 +274,8 @@ const Signup = () => {
                 </div>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
-                <label className="text-[12px] font-sans font-semibold mb-1.5 block tracking-wide uppercase" style={{ color: "hsl(var(--text-muted))" }}>Phone Number</label>
-                <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2"><IonIcon name="call-outline" size={18} style={{ color: "hsl(var(--text-muted))" }} /></div>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+234XXXXXXXXXX" required maxLength={20} inputMode="tel"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-[15px] font-sans outline-none transition-all focus:ring-2"
-                    style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))", boxShadow: "inset 0 1px 3px hsla(var(--dark), 0.04)", "--tw-ring-color": `hsla(var(${accentVar}), 0.3)` } as any} />
-                </div>
-              </motion.div>
+
+
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
                 <label className="text-[12px] font-sans font-semibold mb-1.5 block tracking-wide uppercase" style={{ color: "hsl(var(--text-muted))" }}>Password</label>
