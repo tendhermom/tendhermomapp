@@ -5,6 +5,7 @@ import SmartGuidance from "@/components/health/SmartGuidance";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
+import { classifyBP, type BPCategory } from "@/lib/bpClassification";
 
 interface HealthTrackerScreenProps {
   onNavigate: (screen: string) => void;
@@ -57,6 +58,7 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const [entries, setEntries] = useState<HealthEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [logStatus, setLogStatus] = useState<InlineStatusMsg | null>(null);
+  const [detailsCategory, setDetailsCategory] = useState<BPCategory | null>(null);
 
   const fetchEntries = useCallback(async () => {
     if (!user?.id) return;
@@ -105,24 +107,26 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
       return;
     }
 
-    const isHighBP = systolic && parseInt(systolic) > 140;
+    const bp = classifyBP(
+      systolic ? parseInt(systolic) : undefined,
+      diastolic ? parseInt(diastolic) : undefined,
+    );
+    const kind: InlineStatusMsg["kind"] =
+      bp?.severity === "emergency"
+        ? "error"
+        : bp?.severity === "warning" || bp?.severity === "caution"
+          ? "warning"
+          : "success";
     setLogStatus({
-      kind: isHighBP ? "warning" : "success",
-      text: isHighBP
-        ? "Saved. Your blood pressure is elevated — please consult your doctor."
+      kind,
+      text: bp
+        ? `Saved · ${bp.label}`
         : "Health metrics saved!",
     });
     setSystolic(""); setDiastolic(""); setHeartRate(""); setWeight("");
     setShowInput(false);
     fetchEntries();
-    setTimeout(() => setLogStatus(null), 5000);
-  };
-
-  const getBPStatus = (sys?: number, dia?: number) => {
-    if (!sys || !dia) return null;
-    if (sys >= 140 || dia >= 90) return { label: "High — See your doctor", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" };
-    if (sys >= 120 || dia >= 80) return { label: "Elevated — Monitor closely", color: "hsl(45 93% 45%)", bg: "hsl(45 93% 92%)" };
-    return { label: "Normal — Looking good!", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" };
+    setTimeout(() => setLogStatus(null), 6000);
   };
 
   return (
@@ -172,11 +176,17 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
                 {entries[0]?.systolic ? `${entries[0].systolic}/${entries[0].diastolic}` : "—/—"}
               </p>
               {entries[0]?.systolic && (() => {
-                const status = getBPStatus(entries[0].systolic, entries[0].diastolic);
+                const status = classifyBP(entries[0].systolic, entries[0].diastolic);
                 return status ? (
-                  <span className="text-[9px] font-sans font-semibold px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: status.bg, color: status.color }}>
-                    {status.label}
-                  </span>
+                  <button
+                    onClick={() => setDetailsCategory(status)}
+                    className="mt-1.5 inline-flex items-center gap-1 text-[9px] font-sans font-semibold px-2 py-0.5 rounded-full ios-press"
+                    style={{ background: status.bg, color: status.color }}
+                    aria-label={`Blood pressure status: ${status.label}. Tap for details.`}
+                  >
+                    <span>{status.label}</span>
+                    <IonIcon name="chevron-forward" size={10} style={{ color: status.color }} />
+                  </button>
                 ) : null;
               })()}
             </div>
@@ -375,8 +385,165 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
           )}
         </>
       )}
+
+      {/* BP Details Modal */}
+      <AnimatePresence>
+        {detailsCategory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(15, 23, 20, 0.55)" }}
+            onClick={() => setDetailsCategory(null)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[430px] rounded-t-[24px] overflow-hidden flex flex-col"
+              style={{
+                background: "hsl(var(--surface))",
+                maxHeight: "88vh",
+                paddingBottom: "var(--safe-area-bottom, 0px)",
+                boxShadow: "0 -20px 60px -10px rgba(0,0,0,0.25)",
+              }}
+            >
+              {/* Header */}
+              <div
+                className="px-5 pt-4 pb-4"
+                style={{ background: detailsCategory.bg }}
+              >
+                <div className="mx-auto mb-3 h-1 w-10 rounded-full opacity-40" style={{ background: detailsCategory.color }} />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p
+                      className="text-[10px] font-sans font-semibold uppercase tracking-wider"
+                      style={{ color: detailsCategory.color }}
+                    >
+                      {detailsCategory.range}
+                    </p>
+                    <h3
+                      className="text-[18px] font-serif mt-0.5"
+                      style={{ color: "hsl(var(--dark))" }}
+                    >
+                      {detailsCategory.label}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setDetailsCategory(null)}
+                    className="ios-press w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(255,255,255,0.6)" }}
+                    aria-label="Close details"
+                  >
+                    <IonIcon name="close" size={16} style={{ color: "hsl(var(--dark))" }} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+                <section>
+                  <p className="text-[10px] font-sans font-semibold uppercase tracking-wider mb-1" style={{ color: "hsl(var(--text-muted))" }}>
+                    Clinical Remark
+                  </p>
+                  <p className="text-[13px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                    {detailsCategory.clinicalRemark}
+                  </p>
+                </section>
+
+                <DetailList
+                  title="Do now"
+                  color="hsl(var(--green))"
+                  icon="checkmark-circle"
+                  items={detailsCategory.doNow}
+                />
+                {detailsCategory.doNot && (
+                  <DetailList
+                    title="Do not"
+                    color="hsl(var(--coral))"
+                    icon="close-circle"
+                    items={detailsCategory.doNot}
+                  />
+                )}
+                {detailsCategory.eat && (
+                  <DetailList
+                    title="Eat"
+                    color="hsl(var(--green))"
+                    icon="restaurant"
+                    items={detailsCategory.eat}
+                  />
+                )}
+                {detailsCategory.avoid && (
+                  <DetailList
+                    title="Avoid"
+                    color="hsl(45 90% 35%)"
+                    icon="alert-circle"
+                    items={detailsCategory.avoid}
+                  />
+                )}
+                {detailsCategory.redFlags && (
+                  <DetailList
+                    title="Red flags — seek care"
+                    color="hsl(var(--coral))"
+                    icon="warning"
+                    items={detailsCategory.redFlags}
+                  />
+                )}
+                {detailsCategory.followUp && (
+                  <div
+                    className="rounded-2xl p-3"
+                    style={{ background: "hsl(var(--bg))", border: "1px solid hsl(var(--border-subtle))" }}
+                  >
+                    <p className="text-[10px] font-sans font-semibold uppercase tracking-wider mb-1" style={{ color: "hsl(var(--text-muted))" }}>
+                      Follow-up
+                    </p>
+                    <p className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+                      {detailsCategory.followUp}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-[10px] font-sans italic pt-2" style={{ color: "hsl(var(--text-muted))" }}>
+                  This guidance is educational and does not replace professional medical advice.
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
+
+interface DetailListProps {
+  title: string;
+  color: string;
+  icon: string;
+  items: string[];
+}
+
+const DetailList = ({ title, color, icon, items }: DetailListProps) => (
+  <section>
+    <div className="flex items-center gap-1.5 mb-2">
+      <IonIcon name={icon} size={14} style={{ color }} />
+      <p className="text-[10px] font-sans font-semibold uppercase tracking-wider" style={{ color }}>
+        {title}
+      </p>
+    </div>
+    <ul className="space-y-1.5">
+      {items.map((it, i) => (
+        <li key={i} className="flex items-start gap-2">
+          <span className="mt-1.5 w-1 h-1 rounded-full flex-shrink-0" style={{ background: color }} />
+          <span className="text-[12px] font-sans leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
+            {it}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+);
 
 export default HealthTrackerScreen;

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import MedicalDisclaimer from "@/components/MedicalDisclaimer";
+import { classifyBP } from "@/lib/bpClassification";
 
 interface HealthEntry {
   id: string;
@@ -35,39 +36,38 @@ const SmartGuidance = ({ entries, currentWeek }: SmartGuidanceProps) => {
     const tips: Guidance[] = [];
     const recent = entries.slice(0, 5);
 
-    // BP analysis
+    // BP analysis — use the same classification as the tracker card
     const bpEntries = recent.filter((e) => e.systolic && e.diastolic);
     if (bpEntries.length >= 2) {
-      const avgSys = bpEntries.reduce((s, e) => s + (e.systolic || 0), 0) / bpEntries.length;
-      const avgDia = bpEntries.reduce((s, e) => s + (e.diastolic || 0), 0) / bpEntries.length;
+      const avgSys = Math.round(bpEntries.reduce((s, e) => s + (e.systolic || 0), 0) / bpEntries.length);
+      const avgDia = Math.round(bpEntries.reduce((s, e) => s + (e.diastolic || 0), 0) / bpEntries.length);
+      const category = classifyBP(avgSys, avgDia);
 
-      if (avgSys >= 140 || avgDia >= 90) {
+      if (category) {
+        const severityMap: Record<typeof category.severity, Guidance["severity"]> = {
+          emergency: "alert",
+          warning: "alert",
+          caution: "warning",
+          normal: "info",
+        };
+        const icon =
+          category.severity === "emergency"
+            ? "warning"
+            : category.severity === "warning"
+              ? "alert-circle"
+              : category.severity === "caution"
+                ? "alert-circle"
+                : "checkmark-circle";
+        const pregnancyNote =
+          (category.key === "stage1" || category.key === "stage2" || category.key === "crisis") &&
+          currentWeek >= 20
+            ? " Preeclampsia risk rises after week 20 — flag any headache, visual changes or swelling."
+            : "";
         tips.push({
-          icon: "warning",
-          title: "High Blood Pressure Detected",
-          message: `Your average BP is ${Math.round(avgSys)}/${Math.round(avgDia)} mmHg. This is above the safe range. Please consult your doctor immediately, especially ${currentWeek >= 20 ? "as preeclampsia risk increases after week 20" : "at this stage of pregnancy"}.`,
-          severity: "alert",
-        });
-      } else if (avgSys >= 120 || avgDia >= 80) {
-        tips.push({
-          icon: "alert-circle",
-          title: "Blood Pressure Slightly Elevated",
-          message: `Your BP trend shows ${Math.round(avgSys)}/${Math.round(avgDia)} mmHg. Try reducing salt intake, staying hydrated, and resting with your feet elevated. Monitor daily.`,
-          severity: "warning",
-        });
-      } else if (avgSys < 90 || avgDia < 60) {
-        tips.push({
-          icon: "alert-circle",
-          title: "Low Blood Pressure",
-          message: "Your BP is below normal. Stay hydrated, avoid standing up too quickly, and eat small, frequent meals. If you feel dizzy, sit or lie down immediately.",
-          severity: "warning",
-        });
-      } else {
-        tips.push({
-          icon: "checkmark-circle",
-          title: "Blood Pressure Looking Great!",
-          message: "Your BP is within the healthy range. Keep up the good work with your diet and activity!",
-          severity: "info",
+          icon,
+          title: `${category.shortTag} · ${avgSys}/${avgDia} mmHg`,
+          message: `${category.clinicalRemark}${pregnancyNote} Tap the BP status on your card above for full guidance.`,
+          severity: severityMap[category.severity],
         });
       }
 
