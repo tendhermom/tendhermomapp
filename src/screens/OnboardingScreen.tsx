@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
+import logo from "@/assets/logo.jpeg";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
