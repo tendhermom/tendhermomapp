@@ -300,13 +300,13 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
           </div>
         )}
 
-        {/* Give a Gift Sheet — visitor sees owner's bank details to make P2P transfer */}
+        {/* Give a Gift Sheet — visitor sees poster's bank details (from Gift Settings) to make P2P transfer */}
         <AnimatePresence>
           {giveGiftPost && (
             <>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[100]" style={{ background: "rgba(0,0,0,0.5)" }}
-                onClick={() => setGiveGiftPost(null)} />
+                onClick={() => { setGiveGiftPost(null); setGiftAccount(null); }} />
               <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
                 className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-[max(env(safe-area-inset-bottom,40px),40px)] no-scrollbar"
@@ -315,47 +315,68 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <p className="text-[13px] font-sans mb-5" style={{ color: "hsl(var(--text-muted))" }}>
                   Send your gift directly to {giveGiftPost.parent_names} via bank transfer.
                 </p>
-                <div className="tend-card p-5 space-y-3">
-                  <div>
-                    <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Account Name</p>
-                    <p className="text-[15px] font-semibold font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{giveGiftPost.account_name}</p>
+
+                {loadingGift ? (
+                  <div className="flex justify-center py-10">
+                    <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--coral))", borderTopColor: "transparent" }} />
                   </div>
-                  <div>
-                    <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Account Number</p>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p className="text-[18px] font-bold font-sans tracking-wider" style={{ color: "hsl(var(--dark))" }}>{giveGiftPost.account_number}</p>
-                      <motion.button whileTap={{ scale: 0.9 }}
-                        onClick={() => { navigator.clipboard.writeText(giveGiftPost.account_number || ""); toast.success("Account number copied"); }}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold font-sans"
-                        style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>
-                        Copy
-                      </motion.button>
+                ) : giftAccount ? (
+                  <>
+                    <div className="tend-card p-5 space-y-3">
+                      <div>
+                        <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Account Name</p>
+                        <p className="text-[15px] font-semibold font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{giftAccount.account_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Account Number</p>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <p className="text-[18px] font-bold font-sans tracking-wider" style={{ color: "hsl(var(--dark))" }}>{giftAccount.account_number}</p>
+                          <motion.button whileTap={{ scale: 0.9 }}
+                            onClick={() => { navigator.clipboard.writeText(giftAccount.account_number || ""); toast.success("Account number copied"); }}
+                            className="px-3 py-1.5 rounded-full text-[11px] font-semibold font-sans"
+                            style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>
+                            Copy
+                          </motion.button>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Bank</p>
+                        <p className="text-[15px] font-semibold font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{giftAccount.bank_name}</p>
+                      </div>
                     </div>
+                    <p className="text-[11px] font-sans mt-3 text-center" style={{ color: "hsl(var(--text-muted))" }}>
+                      TendherMom does not process this transfer — your gift goes directly to the parent's bank account.
+                    </p>
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={async () => {
+                        const postId = giveGiftPost.id;
+                        await handleReaction(postId, "gifted");
+                        toast.success("Thank you for gifting 🎁");
+                        setGiveGiftPost(null);
+                        setGiftAccount(null);
+                      }}
+                      className="w-full py-[14px] mt-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
+                      style={{ background: "hsl(45 90% 50%)", color: "white" }}
+                    >
+                      <IonIcon name="gift" size={18} style={{ color: "white" }} />
+                      I've Gifted
+                    </motion.button>
+                  </>
+                ) : (
+                  <div className="tend-card p-6 text-center">
+                    <div className="w-[52px] h-[52px] rounded-full mx-auto flex items-center justify-center mb-3" style={{ background: "hsl(var(--bg))" }}>
+                      <IonIcon name="card-outline" size={24} style={{ color: "hsl(var(--text-muted))" }} />
+                    </div>
+                    <h4 className="font-serif text-[16px] mb-1" style={{ color: "hsl(var(--dark))" }}>Gift details not set</h4>
+                    <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                      {giveGiftPost.parent_names} hasn't added their account details yet. Please check back later.
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-sans uppercase tracking-wider" style={{ color: "hsl(var(--text-muted))" }}>Bank</p>
-                    <p className="text-[15px] font-semibold font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{giveGiftPost.bank_name}</p>
-                  </div>
-                </div>
-                <p className="text-[11px] font-sans mt-3 text-center" style={{ color: "hsl(var(--text-muted))" }}>
-                  TendherMom does not process this transfer — your gift goes directly to the parent's bank account.
-                </p>
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={async () => {
-                    const postId = giveGiftPost.id;
-                    await handleReaction(postId, "gifted");
-                    toast.success("Thank you for gifting 🎁");
-                    setGiveGiftPost(null);
-                  }}
-                  className="w-full py-[14px] mt-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
-                  style={{ background: "hsl(45 90% 50%)", color: "white" }}
-                >
-                  <IonIcon name="gift" size={18} style={{ color: "white" }} />
-                  I've Gifted
-                </motion.button>
-                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setGiveGiftPost(null)}
-                  className="w-full py-[13px] mt-1 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                )}
+
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => { setGiveGiftPost(null); setGiftAccount(null); }}
+                  className="w-full py-[13px] mt-2 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
                   Close
                 </motion.button>
               </motion.div>
@@ -363,54 +384,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
           )}
         </AnimatePresence>
 
-        {/* Owner — Add bank account details */}
-        <AnimatePresence>
-          {editAccountPost && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100]" style={{ background: "rgba(0,0,0,0.5)" }}
-                onClick={() => !savingAccount && setEditAccountPost(null)} />
-              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-[max(env(safe-area-inset-bottom,40px),40px)] no-scrollbar"
-                style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "85vh", overflowY: "auto" }}>
-                <h3 className="font-serif text-[20px] mb-1" style={{ color: "hsl(var(--dark))" }}>Enable "Give a Gift"</h3>
-                <p className="text-[13px] font-sans mb-5" style={{ color: "hsl(var(--text-muted))" }}>
-                  Add your bank account so friends & family can send P2P gifts directly to you.
-                </p>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Account Name</label>
-                    <input type="text" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. Ngozi Okafor"
-                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
-                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
-                  </div>
-                  <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Account Number</label>
-                    <input type="text" inputMode="numeric" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, ""))} placeholder="10-digit account number" maxLength={10}
-                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
-                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
-                  </div>
-                  <div>
-                    <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>Bank Name</label>
-                    <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. GTBank"
-                      className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
-                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }} />
-                  </div>
-                  <motion.button whileTap={{ scale: 0.97 }} onClick={handleSaveAccount} disabled={savingAccount}
-                    className="w-full py-[15px] rounded-2xl text-white text-[16px] font-semibold font-sans disabled:opacity-60"
-                    style={{ background: "hsl(var(--green))" }}>
-                    {savingAccount ? "Saving…" : "Save & Enable Gifts"}
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => setEditAccountPost(null)} disabled={savingAccount}
-                    className="w-full py-[13px] text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                    Cancel
-                  </motion.button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+
 
         {/* Create Post Sheet */}
         <AnimatePresence>
