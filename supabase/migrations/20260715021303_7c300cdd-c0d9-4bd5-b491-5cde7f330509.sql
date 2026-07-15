@@ -1,0 +1,1 @@
+ALTER VIEW public.baby_shower_posts_public SET (security_invoker = true);
