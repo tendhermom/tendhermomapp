@@ -182,57 +182,201 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
     }
   };
 
+  const isPremium = user?.plan_type === "premium";
+  const clampedWeek = Math.max(1, Math.min(week, 40));
+  const trimesterIndex = clampedWeek <= 13 ? 0 : clampedWeek <= 27 ? 1 : 2;
+  const trimesterLabel = ["1st Trimester", "2nd Trimester", "3rd Trimester"][trimesterIndex];
+  const RING_C = 2 * Math.PI * 42; // ≈ 263.89
+  const ringOffset = RING_C * (1 - clampedWeek / 40);
+
   return (
     <div className="space-y-6 pb-4 pt-1">
       <TopBar onNotificationsPress={() => setSubScreen("notifications")} />
 
-      {/* Profile hero card */}
+      {/* Profile hero card — premium membership header */}
       <motion.div
         initial={{ opacity: 0, y: 16, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.05 }}
-        className="hero-card p-5"
+        className="relative overflow-hidden rounded-[28px] p-5"
+        style={{
+          background: "white",
+          border: "1px solid hsl(var(--border-subtle))",
+          boxShadow: "0 8px 30px hsl(var(--green) / 0.06)",
+        }}
       >
-        <div className="relative z-10 flex items-center gap-4">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setSubScreen("edit-profile")}
-            className="w-[64px] h-[64px] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.15)" }}
-          >
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-white text-[22px] font-bold font-sans">{initials}</span>
-            )}
-          </motion.button>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white text-[20px] font-serif truncate">{user?.full_name || "User"}</h3>
-            <p className="text-white/60 text-[13px] font-sans mt-0.5 truncate">{user?.email || ""}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className="label-caps px-2.5 py-[3px] rounded-full"
-                style={{ background: "hsl(var(--coral))", color: "white" }}
+        {/* Decorative background accent */}
+        <div
+          className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full"
+          style={{ background: "hsl(var(--green) / 0.05)", filter: "blur(40px)" }}
+        />
+
+        {/* Edit — top right */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setSubScreen("edit-profile")}
+          className="absolute top-3 right-3 p-2 z-10"
+          aria-label="Edit profile"
+        >
+          <IonIcon name="create-outline" size={20} style={{ color: "hsl(var(--text-muted))" }} />
+        </motion.button>
+
+        <div className="relative flex items-center gap-5">
+          {/* Avatar wrapped in week-progress ring */}
+          <div className="relative flex-shrink-0 w-24 h-24">
+            <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
+              <circle
+                cx="48"
+                cy="48"
+                r="42"
+                fill="transparent"
+                strokeWidth="4"
+                stroke="hsl(var(--border-subtle))"
+              />
+              <motion.circle
+                cx="48"
+                cy="48"
+                r="42"
+                fill="transparent"
+                strokeWidth="4"
+                stroke="hsl(var(--green))"
+                strokeLinecap="round"
+                strokeDasharray={RING_C}
+                initial={{ strokeDashoffset: RING_C }}
+                animate={{ strokeDashoffset: ringOffset }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+              />
+            </svg>
+
+            {/* Avatar core */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSubScreen("edit-profile")}
+              className="absolute inset-0 m-auto w-[72px] h-[72px] rounded-full flex items-center justify-center overflow-hidden"
+              style={{
+                background: "hsl(var(--green))",
+                boxShadow: "0 8px 20px -8px hsl(var(--green) / 0.5)",
+              }}
+            >
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white text-[22px] font-semibold font-sans">{initials}</span>
+              )}
+            </motion.button>
+
+            {/* Floating week badge */}
+            <div
+              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full uppercase tracking-wider"
+              style={{
+                background: "hsl(var(--coral))",
+                color: "white",
+                fontSize: "10px",
+                fontWeight: 700,
+                boxShadow: "0 2px 6px hsl(var(--coral) / 0.35)",
+                border: "2px solid white",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Week {clampedWeek}
+            </div>
+          </div>
+
+          {/* Identity */}
+          <div className="flex-1 min-w-0 pr-6">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2
+                className="font-serif text-[22px] leading-none truncate"
+                style={{ color: "hsl(var(--dark))" }}
               >
-                Week {week}
-              </span>
+                {user?.full_name || "User"}
+              </h2>
+              {isPremium ? (
+                <div
+                  className="px-2 py-0.5 rounded-md flex items-center gap-1"
+                  style={{ background: "hsl(var(--coral) / 0.12)" }}
+                >
+                  <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
+                  <span
+                    className="uppercase tracking-tight"
+                    style={{ color: "hsl(var(--coral))", fontSize: "10px", fontWeight: 700 }}
+                  >
+                    Premium
+                  </span>
+                </div>
+              ) : (
+                <div
+                  className="px-2 py-0.5 rounded-md"
+                  style={{ background: "hsl(var(--border-subtle))" }}
+                >
+                  <span
+                    className="uppercase tracking-tight"
+                    style={{ color: "hsl(var(--text-muted))", fontSize: "10px", fontWeight: 700 }}
+                  >
+                    Free
+                  </span>
+                </div>
+              )}
+            </div>
+            <p
+              className="text-[13px] font-sans mt-1 truncate"
+              style={{ color: "hsl(var(--text-muted))" }}
+            >
+              {user?.email || ""}
+            </p>
+
+            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
+              style={{ background: "hsl(var(--green) / 0.06)" }}
+            >
               <span
-                className="label-caps px-2.5 py-[3px] rounded-full capitalize"
-                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)" }}
+                className="inline-block w-1.5 h-1.5 rounded-full"
+                style={{ background: "hsl(var(--green))" }}
+              />
+              <span
+                className="uppercase tracking-wide font-sans"
+                style={{ color: "hsl(var(--green))", fontSize: "11px", fontWeight: 600 }}
               >
-                {stageName}
+                {trimesterLabel}
               </span>
             </div>
           </div>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setSubScreen("edit-profile")}
-            className="p-2"
+        </div>
+
+        {/* Milestone track — 3 trimester dots + label */}
+        <div
+          className="mt-5 pt-4 flex justify-between items-center"
+          style={{ borderTop: "1px solid hsl(var(--border-subtle) / 0.6)" }}
+        >
+          <div className="flex gap-1.5 items-center">
+            {[0, 1, 2].map((i) => {
+              const active = i <= trimesterIndex;
+              return (
+                <div
+                  key={i}
+                  className="rounded-full transition-all"
+                  style={{
+                    width: i === trimesterIndex ? 16 : 8,
+                    height: 8,
+                    background: active ? "hsl(var(--green))" : "hsl(var(--border-subtle))",
+                  }}
+                />
+              );
+            })}
+          </div>
+          <span
+            className="uppercase italic font-sans"
+            style={{
+              color: "hsl(var(--text-muted))",
+              fontSize: "10px",
+              fontWeight: 500,
+              letterSpacing: "0.2em",
+            }}
           >
-            <IonIcon name="create-outline" size={20} style={{ color: "rgba(255,255,255,0.7)" }} />
-          </motion.button>
+            Healthy Progress
+          </span>
         </div>
       </motion.div>
+
 
       {/* Menu sections */}
       {menuSections.map((section, si) => (
