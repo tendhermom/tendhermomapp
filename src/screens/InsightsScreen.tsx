@@ -85,7 +85,7 @@ const InsightsScreen = ({ onBack }: InsightsScreenProps) => {
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
 
   // Determine which trimester the user is in
-  const currentTrimesterIndex = currentWeek <= 12 ? 0 : currentWeek <= 27 ? 1 : 2;
+  const currentTrimesterIndex = currentWeek <= 13 ? 0 : currentWeek <= 27 ? 1 : 2;
 
   const handleSelectTrimester = (index: number, focusWeek?: number) => {
     hapticLight();

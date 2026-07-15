@@ -71,7 +71,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
 
   const displayName = user?.full_name?.split(" ")[0] || "there";
   const greeting = getGreeting();
-  const trimester = currentWeek <= 13 ? "1st Trimester" : currentWeek <= 26 ? "2nd Trimester" : currentWeek <= 40 ? "3rd Trimester" : "Postpartum";
+  const trimester = currentWeek <= 13 ? "1st Trimester" : currentWeek <= 27 ? "2nd Trimester" : currentWeek <= 40 ? "3rd Trimester" : "Postpartum";
   const hasDueDate = !!user?.due_date;
   const points = userPoints?.points || 0;
   const level = getGamificationLevel(points);
