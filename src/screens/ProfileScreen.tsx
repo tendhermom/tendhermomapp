@@ -265,9 +265,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               )}
             </motion.button>
 
-            {/* Floating week badge */}
+            {/* Floating week badge — animates on week change */}
             <div
-              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full uppercase tracking-wider"
+              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full uppercase tracking-wider overflow-hidden"
               style={{
                 background: "hsl(var(--coral))",
                 color: "white",
@@ -276,10 +276,25 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                 boxShadow: "0 2px 6px hsl(var(--coral) / 0.35)",
                 border: "2px solid white",
                 whiteSpace: "nowrap",
+                minWidth: 60,
+                textAlign: "center",
               }}
             >
-              Week {clampedWeek}
+              <span>Week </span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={clampedWeek}
+                  initial={{ y: 8, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -8, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="inline-block"
+                >
+                  {clampedWeek}
+                </motion.span>
+              </AnimatePresence>
             </div>
+
           </div>
 
           {/* Identity */}
@@ -292,9 +307,15 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                 {user?.full_name || "User"}
               </h2>
               {isPremium ? (
-                <div
-                  className="px-2 py-0.5 rounded-md flex items-center gap-1"
-                  style={{ background: "hsl(var(--coral) / 0.12)" }}
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="px-2 py-0.5 rounded-md flex items-center gap-1 relative overflow-hidden"
+                  style={{
+                    background: "hsl(var(--coral) / 0.12)",
+                    border: "1px solid hsl(var(--coral) / 0.25)",
+                  }}
                 >
                   <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
                   <span
@@ -303,19 +324,37 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                   >
                     Premium
                   </span>
-                </div>
+                  {/* subtle shimmer */}
+                  <motion.span
+                    aria-hidden
+                    className="absolute inset-y-0 w-6 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent, hsl(var(--coral) / 0.35), transparent)",
+                    }}
+                    initial={{ x: "-120%" }}
+                    animate={{ x: "220%" }}
+                    transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
+                  />
+                </motion.div>
               ) : (
-                <div
-                  className="px-2 py-0.5 rounded-md"
-                  style={{ background: "hsl(var(--border-subtle))" }}
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => { hapticLight(); onNavigate("premium"); }}
+                  className="px-2 py-0.5 rounded-md flex items-center gap-1"
+                  style={{
+                    background: "hsl(var(--coral))",
+                    boxShadow: "0 2px 6px hsl(var(--coral) / 0.35)",
+                  }}
                 >
+                  <IonIcon name="sparkles" size={10} style={{ color: "white" }} />
                   <span
                     className="uppercase tracking-tight"
-                    style={{ color: "hsl(var(--text-muted))", fontSize: "10px", fontWeight: 700 }}
+                    style={{ color: "white", fontSize: "10px", fontWeight: 700 }}
                   >
-                    Free
+                    Upgrade
                   </span>
-                </div>
+                </motion.button>
               )}
             </div>
             <p
@@ -325,20 +364,28 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               {user?.email || ""}
             </p>
 
-            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
+            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full overflow-hidden"
               style={{ background: "hsl(var(--green) / 0.06)" }}
             >
               <span
                 className="inline-block w-1.5 h-1.5 rounded-full"
                 style={{ background: "hsl(var(--green))" }}
               />
-              <span
-                className="uppercase tracking-wide font-sans"
-                style={{ color: "hsl(var(--green))", fontSize: "11px", fontWeight: 600 }}
-              >
-                {trimesterLabel}
-              </span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={trimesterLabel}
+                  initial={{ y: 6, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -6, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="uppercase tracking-wide font-sans inline-block"
+                  style={{ color: "hsl(var(--green))", fontSize: "11px", fontWeight: 600 }}
+                >
+                  {trimesterLabel}
+                </motion.span>
+              </AnimatePresence>
             </div>
+
           </div>
         </div>
 
@@ -350,18 +397,23 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           <div className="flex gap-1.5 items-center">
             {[0, 1, 2].map((i) => {
               const active = i <= trimesterIndex;
+              const current = i === trimesterIndex;
               return (
-                <div
+                <motion.div
                   key={i}
-                  className="rounded-full transition-all"
-                  style={{
-                    width: i === trimesterIndex ? 16 : 8,
-                    height: 8,
-                    background: active ? "hsl(var(--green))" : "hsl(var(--border-subtle))",
+                  className="rounded-full"
+                  animate={{
+                    width: current ? 16 : 8,
+                    backgroundColor: active
+                      ? "hsl(147, 41%, 30%)" // --green solid
+                      : "hsl(0, 0%, 90%)",   // --border-subtle
                   }}
+                  transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                  style={{ height: 8 }}
                 />
               );
             })}
+
           </div>
           <span
             className="uppercase italic font-sans"
