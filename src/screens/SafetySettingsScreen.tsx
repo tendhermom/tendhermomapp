@@ -222,7 +222,7 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
                 className="text-[12.5px] font-sans leading-relaxed"
                 style={{ color: "hsl(var(--text-muted))" }}
               >
-                A gentle "We miss you" notification, just for you.
+                A gentle "We are here for you" notification, just for you.
               </p>
             </div>
           </div>
