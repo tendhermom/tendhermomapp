@@ -265,9 +265,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               )}
             </motion.button>
 
-            {/* Floating week badge */}
+            {/* Floating week badge — animates on week change */}
             <div
-              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full uppercase tracking-wider"
+              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full uppercase tracking-wider overflow-hidden"
               style={{
                 background: "hsl(var(--coral))",
                 color: "white",
@@ -276,10 +276,25 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                 boxShadow: "0 2px 6px hsl(var(--coral) / 0.35)",
                 border: "2px solid white",
                 whiteSpace: "nowrap",
+                minWidth: 60,
+                textAlign: "center",
               }}
             >
-              Week {clampedWeek}
+              <span>Week </span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={clampedWeek}
+                  initial={{ y: 8, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -8, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="inline-block"
+                >
+                  {clampedWeek}
+                </motion.span>
+              </AnimatePresence>
             </div>
+
           </div>
 
           {/* Identity */}
