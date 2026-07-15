@@ -397,18 +397,23 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           <div className="flex gap-1.5 items-center">
             {[0, 1, 2].map((i) => {
               const active = i <= trimesterIndex;
+              const current = i === trimesterIndex;
               return (
-                <div
+                <motion.div
                   key={i}
-                  className="rounded-full transition-all"
-                  style={{
-                    width: i === trimesterIndex ? 16 : 8,
-                    height: 8,
-                    background: active ? "hsl(var(--green))" : "hsl(var(--border-subtle))",
+                  className="rounded-full"
+                  animate={{
+                    width: current ? 16 : 8,
+                    backgroundColor: active
+                      ? "hsl(147, 41%, 30%)" // --green solid
+                      : "hsl(0, 0%, 90%)",   // --border-subtle
                   }}
+                  transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                  style={{ height: 8 }}
                 />
               );
             })}
+
           </div>
           <span
             className="uppercase italic font-sans"
