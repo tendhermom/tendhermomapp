@@ -307,9 +307,15 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                 {user?.full_name || "User"}
               </h2>
               {isPremium ? (
-                <div
-                  className="px-2 py-0.5 rounded-md flex items-center gap-1"
-                  style={{ background: "hsl(var(--coral) / 0.12)" }}
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="px-2 py-0.5 rounded-md flex items-center gap-1 relative overflow-hidden"
+                  style={{
+                    background: "hsl(var(--coral) / 0.12)",
+                    border: "1px solid hsl(var(--coral) / 0.25)",
+                  }}
                 >
                   <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
                   <span
@@ -318,19 +324,37 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                   >
                     Premium
                   </span>
-                </div>
+                  {/* subtle shimmer */}
+                  <motion.span
+                    aria-hidden
+                    className="absolute inset-y-0 w-6 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent, hsl(var(--coral) / 0.35), transparent)",
+                    }}
+                    initial={{ x: "-120%" }}
+                    animate={{ x: "220%" }}
+                    transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
+                  />
+                </motion.div>
               ) : (
-                <div
-                  className="px-2 py-0.5 rounded-md"
-                  style={{ background: "hsl(var(--border-subtle))" }}
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => { hapticLight(); onNavigate("premium"); }}
+                  className="px-2 py-0.5 rounded-md flex items-center gap-1"
+                  style={{
+                    background: "hsl(var(--coral))",
+                    boxShadow: "0 2px 6px hsl(var(--coral) / 0.35)",
+                  }}
                 >
+                  <IonIcon name="sparkles" size={10} style={{ color: "white" }} />
                   <span
                     className="uppercase tracking-tight"
-                    style={{ color: "hsl(var(--text-muted))", fontSize: "10px", fontWeight: 700 }}
+                    style={{ color: "white", fontSize: "10px", fontWeight: 700 }}
                   >
-                    Free
+                    Upgrade
                   </span>
-                </div>
+                </motion.button>
               )}
             </div>
             <p
@@ -340,20 +364,28 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
               {user?.email || ""}
             </p>
 
-            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
+            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full overflow-hidden"
               style={{ background: "hsl(var(--green) / 0.06)" }}
             >
               <span
                 className="inline-block w-1.5 h-1.5 rounded-full"
                 style={{ background: "hsl(var(--green))" }}
               />
-              <span
-                className="uppercase tracking-wide font-sans"
-                style={{ color: "hsl(var(--green))", fontSize: "11px", fontWeight: 600 }}
-              >
-                {trimesterLabel}
-              </span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={trimesterLabel}
+                  initial={{ y: 6, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -6, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="uppercase tracking-wide font-sans inline-block"
+                  style={{ color: "hsl(var(--green))", fontSize: "11px", fontWeight: 600 }}
+                >
+                  {trimesterLabel}
+                </motion.span>
+              </AnimatePresence>
             </div>
+
           </div>
         </div>
 
