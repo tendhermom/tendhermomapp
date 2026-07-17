@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.get_gift_account(uuid) FROM anon, PUBLIC;
