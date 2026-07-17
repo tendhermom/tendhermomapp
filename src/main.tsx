@@ -51,6 +51,18 @@ try {
         names.forEach((n) => caches.delete(n).catch(() => {}));
       }).catch(() => {});
     }
+    // Unregister any leftover service workers on returning devices.
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations?.().then((regs) => {
+        regs.forEach((r) => r.unregister().catch(() => {}));
+      }).catch(() => {});
+    }
+    // Clear stale auth-related keys that could pin an old sign-in view.
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith("tendher_nav")) localStorage.removeItem(k);
+      });
+    } catch {}
     localStorage.setItem("release_tag", RELEASE_TAG);
   }
 } catch (_) {}
