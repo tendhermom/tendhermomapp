@@ -43,7 +43,7 @@ if (typeof window !== "undefined") {
 
 // One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
 // whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-07-14-sw-kill-switch";
+const RELEASE_TAG = "2026-07-17-signin-refresh";
 try {
   if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
     if (typeof caches !== "undefined" && caches?.keys) {
@@ -51,6 +51,18 @@ try {
         names.forEach((n) => caches.delete(n).catch(() => {}));
       }).catch(() => {});
     }
+    // Unregister any leftover service workers on returning devices.
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations?.().then((regs) => {
+        regs.forEach((r) => r.unregister().catch(() => {}));
+      }).catch(() => {});
+    }
+    // Clear stale auth-related keys that could pin an old sign-in view.
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith("tendher_nav")) localStorage.removeItem(k);
+      });
+    } catch {}
     localStorage.setItem("release_tag", RELEASE_TAG);
   }
 } catch (_) {}
