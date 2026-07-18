@@ -40,25 +40,45 @@ const isAppCache = (name: string) => {
   return (hasWorkboxBucket && name.endsWith(scope)) || APP_RUNTIME_CACHES.has(name);
 };
 
-/** Unregister old app service workers + delete only their caches. */
+/** Unregister ALL service workers + delete every cache on this origin. */
 const cleanupStaleSW = async () => {
   try {
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.allSettled(regs.filter(isAppWorker).map((r) => r.unregister()));
+      // Purge every registration on startup so no stale worker can hijack
+      // the sign-in screen. Messaging workers re-register on demand.
+      await Promise.allSettled(regs.map((r) => r.unregister()));
     }
     if (typeof caches !== "undefined" && caches?.keys) {
       const names = await caches.keys();
-      await Promise.allSettled(names.filter(isAppCache).map((n) => caches.delete(n)));
+      await Promise.allSettled(names.map((n) => caches.delete(n)));
     }
   } catch (_) {
     // best effort — never block app startup
   }
 };
 
-export const setupPwa = () => {
-  if (shouldClean()) {
-    // Dev / preview / iframe / ?sw=off — make sure no stale SW hijacks loads.
-    void cleanupStaleSW();
-  }
+/**
+ * Awaitable startup routine: unregister any existing service workers and
+ * clear caches before the app renders the sign-in screen. Callers should
+ * `await setupPwa()` prior to mounting React so users never see a stale UI
+ * served from an old worker.
+ */
+export const setupPwa = async () => {
+  await cleanupStaleSW();
 };
+
+/** Fire-and-forget variant for callers that cannot await. */
+export const setupPwaSync = () => {
+  void cleanupStaleSW();
+};
+
+// Keep the guarded-only helper available for legacy callers.
+export const cleanupIfPreview = () => {
+  if (shouldClean()) void cleanupStaleSW();
+};
+
+// Reference to keep tree-shaker + lints quiet if unused externally.
+void isAppWorker;
+void isAppCache;
+
