@@ -43,7 +43,7 @@ if (typeof window !== "undefined") {
 
 // One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
 // whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-07-17-signin-refresh";
+const RELEASE_TAG = "2026-07-18-signin-refresh-2";
 try {
   if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
     if (typeof caches !== "undefined" && caches?.keys) {
