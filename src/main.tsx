@@ -67,12 +67,19 @@ try {
   }
 } catch (_) {}
 
-// Stale PWA cleanup: unregisters previous app-shell workers in dev / preview /
-// iframes / ?sw=off so old builds stop hijacking the latest app.
-setupPwa();
+// Startup routine: unregister any existing service workers and clear caches
+// BEFORE mounting React so the sign-in screen is never served from a stale
+// worker or cached shell. We cap the wait so a hung browser API can never
+// block the app from rendering.
+const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+  Promise.race([p, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
 
-createRoot(document.getElementById("root")!).render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>
-);
+const mount = () =>
+  createRoot(document.getElementById("root")!).render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+
+withTimeout(setupPwa(), 1500).finally(mount);
+
