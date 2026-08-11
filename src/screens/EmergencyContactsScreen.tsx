@@ -4,7 +4,15 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
-import { pickNativeContact, isContactPickerSupported, hapticSuccess } from "@/lib/despia";
+import {
+  pickNativeContact,
+  isContactPickerSupported,
+  readDespiaContacts,
+  isDespiaNative,
+  hapticSuccess,
+  hapticSelection,
+  type NativeContact,
+} from "@/lib/despia";
 
 type StatusMsg = { kind: "error" | "success" | "info"; text: string } | null;
 
