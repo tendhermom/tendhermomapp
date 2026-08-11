@@ -161,10 +161,16 @@ const safeLocalGet = (key: string): string | null => {
   try { return localStorage.getItem(key); } catch (_) { return null; }
 };
 
+// Routes that must always render directly (auth + legal), never behind
+// the splash/intro gate — otherwise a cleared storage sends a returning user
+// back through onboarding instead of the sign-in screen.
+const DIRECT_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/privacy", "/terms", "/technical-popups", "/health-safety"];
+
 const App = () => {
   const hasLoggedInBefore = safeLocalGet("has_logged_in") === "true";
-  const [splashDone, setSplashDone] = useState(hasLoggedInBefore);
-  const [introDone, setIntroDone] = useState(() => hasLoggedInBefore || safeLocalGet("intro_completed") === "true");
+  const isDirectPath = typeof window !== "undefined" && DIRECT_PATHS.some((p) => window.location.pathname.startsWith(p));
+  const [splashDone, setSplashDone] = useState(hasLoggedInBefore || isDirectPath);
+  const [introDone, setIntroDone] = useState(() => hasLoggedInBefore || isDirectPath || safeLocalGet("intro_completed") === "true");
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
   const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
@@ -178,6 +184,7 @@ const App = () => {
       </QueryClientProvider>
     );
   }
+
 
   if (!introDone) {
     return (
