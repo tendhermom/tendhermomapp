@@ -7,11 +7,14 @@ import { initOneSignal } from "./lib/onesignal";
 import { initDespia } from "./lib/despia";
 import { reportError } from "./lib/errorMessage";
 import { setupPwa } from "./lib/registerPwa";
+import { captureLaunchDeepLink } from "./lib/deeplinks";
 
 // Initialize production services
 initSentry();
 initOneSignal();
 initDespia();
+// Capture any deep link the app was launched with before routing starts.
+captureLaunchDeepLink();
 
 // Global safety net — catch unhandled JS runtime errors and promise rejections
 // so mums get a friendly toast + we still get Sentry events instead of silent crashes.
