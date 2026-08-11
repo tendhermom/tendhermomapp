@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
-import ScreenHeader from "@/components/ScreenHeader";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
@@ -465,35 +464,43 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   return (
     <div className="space-y-5 pb-4">
       {/* Header */}
-      <ScreenHeader
-        eyebrow="Safety & Care"
-        title="Emergency Contacts"
-        onBack={onBack}
-        actions={
-          contacts.length < maxContacts ? (
-            <>
-              {/* Import from phone contacts */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={handleImportFromContacts}
-                className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-                style={{ background: "hsl(var(--light-green))" }}
-              >
-                <IonIcon name="person-circle" size={20} style={{ color: "hsl(var(--green))" }} />
-              </motion.button>
-              {/* Manual add */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setEditingContact({ ...emptyContact })}
-                className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-                style={{ background: "hsl(var(--green))" }}
-              >
-                <IonIcon name="add" size={20} style={{ color: "white" }} />
-              </motion.button>
-            </>
-          ) : null
-        }
-      />
+      <div className="flex items-center justify-between pt-2 pb-1">
+        <div className="flex items-center gap-3">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onBack}
+            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+            style={{ background: "hsl(var(--light-green))" }}
+          >
+            <IonIcon name="chevron-back" size={20} style={{ color: "hsl(var(--green))" }} />
+          </motion.button>
+          <h1 className="text-[20px] font-semibold" style={{ color: "hsl(var(--dark))" }}>
+            Emergency Contacts
+          </h1>
+        </div>
+        {contacts.length < maxContacts && (
+          <div className="flex items-center gap-2">
+            {/* Import from phone contacts */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleImportFromContacts}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--light-green))" }}
+            >
+              <IonIcon name="person-circle" size={20} style={{ color: "hsl(var(--green))" }} />
+            </motion.button>
+            {/* Manual add */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setEditingContact({ ...emptyContact })}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--green))" }}
+            >
+              <IonIcon name="add" size={20} style={{ color: "white" }} />
+            </motion.button>
+          </div>
+        )}
+      </div>
 
 
       {/* Inline status (list) */}
