@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,18 +52,7 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
 
   return (
     <div className="space-y-5 pb-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 pt-1">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
-          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1
-          className="font-serif text-[26px] tracking-[-0.01em]"
-          style={{ color: "hsl(var(--dark))" }}
-        >
-          Safety Net
-        </h1>
-      </div>
+      <SimpleBackHeader title="Safety Net" onBack={onBack} className="pt-1" />
 
       {/* Hero card with gradient */}
       <motion.div

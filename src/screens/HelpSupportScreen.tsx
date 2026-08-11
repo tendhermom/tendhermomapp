@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import IonIcon from "@/components/IonIcon";
@@ -143,15 +144,7 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
 
   return (
     <div className="space-y-6 pb-8 pt-1">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
-          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
-          Help & Support
-        </h1>
-      </div>
+      <SimpleBackHeader title="Help & Support" onBack={onBack} className="pt-1" />
 
       {/* Hero */}
       <motion.div

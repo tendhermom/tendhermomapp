@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
@@ -104,35 +105,32 @@ const NotificationsScreen = ({ onBack }: NotificationsScreenProps) => {
 
   return (
     <div className="space-y-4 pb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
-            <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-          </motion.button>
-          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
-            Notifications
-          </h1>
-          {unreadCount > 0 && (
+      <SimpleBackHeader
+        title="Notifications"
+        onBack={onBack}
+        titleRight={
+          unreadCount > 0 && (
             <span
               className="px-2 py-0.5 rounded-full text-[11px] font-sans font-bold"
               style={{ background: "hsl(var(--coral))", color: "white" }}
             >
               {unreadCount}
             </span>
-          )}
-        </div>
-        {unreadCount > 0 && (
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={markAllRead}
-            className="text-[13px] font-sans font-semibold"
-            style={{ color: "hsl(var(--green))" }}
-          >
-            Mark all read
-          </motion.button>
-        )}
-      </div>
+          )
+        }
+        right={
+          unreadCount > 0 && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={markAllRead}
+              className="text-[13px] font-sans font-semibold"
+              style={{ color: "hsl(var(--green))" }}
+            >
+              Mark all read
+            </motion.button>
+          )
+        }
+      />
 
       {/* List */}
       {loading ? (

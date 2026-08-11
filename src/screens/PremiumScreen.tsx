@@ -183,15 +183,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       animate="show"
       variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}
     >
-      {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.88 }} onClick={onBack}>
-          <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[24px] flex-1" style={{ color: "hsl(var(--dark))" }}>
-          TendherMom Plus
-        </h1>
-      </motion.div>
+      <SimpleBackHeader title="TendherMom Plus" onBack={onBack} variants={fadeUp} />
 
       {/* Hero */}
       <motion.div

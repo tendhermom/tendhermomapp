@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
@@ -116,15 +117,7 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
 
   return (
     <div className="space-y-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
-          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
-          Edit Profile
-        </h1>
-      </div>
+      <SimpleBackHeader title="Edit Profile" onBack={onBack} />
 
       {/* Avatar */}
       <div className="flex flex-col items-center gap-3">

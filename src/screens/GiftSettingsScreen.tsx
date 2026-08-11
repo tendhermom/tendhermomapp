@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,23 +58,12 @@ const GiftSettingsScreen = ({ onBack }: GiftSettingsScreenProps) => {
 
   return (
     <div className="space-y-5 pb-6 pt-1">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onBack}
-          className="w-[38px] h-[38px] rounded-full flex items-center justify-center"
-          style={{ background: "hsl(var(--surface))" }}
-        >
-          <IonIcon name="arrow-back" size={20} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <div className="flex-1">
-          <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>Gift Settings</h1>
-          <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-            For P2P Baby Shower gifts
-          </p>
-        </div>
-      </div>
+      <SimpleBackHeader
+        title="Gift Settings"
+        onBack={onBack}
+        subtitle="For P2P Baby Shower gifts"
+        className="pt-1"
+      />
 
       {/* Info card */}
       <div className="tend-card p-4">
