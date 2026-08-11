@@ -6,7 +6,7 @@ import { initSentry } from "./lib/sentry";
 import { initOneSignal } from "./lib/onesignal";
 import { initDespia } from "./lib/despia";
 import { reportError } from "./lib/errorMessage";
-import { setupPwa } from "./lib/registerPwa";
+import { setupPwa, guardAgainstStaleRestore } from "./lib/registerPwa";
 import { captureLaunchDeepLink } from "./lib/deeplinks";
 
 // Initialize production services
@@ -46,7 +46,7 @@ if (typeof window !== "undefined") {
 
 // One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
 // whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-08-11-revenuecat-deeplinks";
+const RELEASE_TAG = "2026-08-11-no-legacy-shell";
 try {
   if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
     if (typeof caches !== "undefined" && caches?.keys) {
@@ -63,7 +63,7 @@ try {
     // Clear stale auth-related keys that could pin an old sign-in view.
     try {
       Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith("tendher_nav")) localStorage.removeItem(k);
+        if (k.startsWith("tendher_nav") || k.startsWith("tendher_legacy") || k.startsWith("workbox")) localStorage.removeItem(k);
       });
     } catch {}
     localStorage.setItem("release_tag", RELEASE_TAG);
@@ -83,6 +83,8 @@ const mount = () =>
       <App />
     </ErrorBoundary>
   );
+
+guardAgainstStaleRestore();
 
 withTimeout(setupPwa(), 1500).finally(mount);
 
