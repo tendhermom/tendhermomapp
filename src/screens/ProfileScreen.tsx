@@ -165,7 +165,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
       nativeShare({
         title: "TendherMom",
         text: "Join TendherMom — maternal health support for Nigerian mothers",
-        url: "https://tendhermomapp.lovable.app",
+        url: "https://tendhermomapps.lovable.app",
       });
       return;
     }
