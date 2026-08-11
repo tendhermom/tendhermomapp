@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "5V9N9Y25JW.com.tendhermom"
+        ],
+        "components": [
+          {
+            "/": "/*",
+            "comment": "Matches any URL path"
+          }
+        ]
+      }
+    ]
+  }
+}
