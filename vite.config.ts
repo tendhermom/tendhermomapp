@@ -5,16 +5,19 @@ import fs from "fs";
 import { componentTagger } from "lovable-tagger";
 import type { IncomingMessage, ServerResponse } from "http";
 
-const aasaMiddleware = (): Plugin => ({
-  name: "aasa-mime",
+const wellKnownMiddleware = (): Plugin => ({
+  name: "well-known-mime",
   configureServer(server: ViteDevServer) {
     server.middlewares.use(
       (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        if (req.url === "/.well-known/apple-app-site-association") {
-          const filePath = path.resolve(
-            __dirname,
-            "public/.well-known/apple-app-site-association"
-          );
+        const wellKnownFiles: Record<string, string> = {
+          "/.well-known/apple-app-site-association": "public/.well-known/apple-app-site-association",
+          "/.well-known/assetlinks.json": "public/.well-known/assetlinks.json",
+        };
+
+        const relativePath = wellKnownFiles[req.url || ""];
+        if (relativePath) {
+          const filePath = path.resolve(__dirname, relativePath);
           res.setHeader("Content-Type", "application/json");
           fs.createReadStream(filePath).pipe(res);
           return;
@@ -35,7 +38,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    aasaMiddleware(),
+    wellKnownMiddleware(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
