@@ -93,6 +93,71 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
     if (msg && autoHide) setTimeout(() => setListStatus(null), autoHide);
   };
 
+  // ── Native contact import (Despia readcontacts:// → picker sheet) ──
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [deviceContacts, setDeviceContacts] = useState<NativeContact[]>([]);
+  const [pickerSearch, setPickerSearch] = useState("");
+
+  const normalisePhone = (raw: string) =>
+    raw.startsWith("+") ? raw : `+234${raw.replace(/^0/, "")}`;
+
+  const startFromDeviceContact = (c: NativeContact) => {
+    hapticSuccess();
+    setPickerOpen(false);
+    setPickerSearch("");
+    setEditingContact({
+      ...emptyContact,
+      name: c.name,
+      phone: normalisePhone(c.phone.replace(/[\s()-]/g, "")),
+    });
+  };
+
+  const handleImportFromContacts = async () => {
+    hapticSelection();
+
+    // 1) Despia native shell — read the full address book, then let mum pick.
+    if (isDespiaNative()) {
+      setPickerOpen(true);
+      setPickerLoading(true);
+      setDeviceContacts([]);
+      const result = await readDespiaContacts();
+      setPickerLoading(false);
+
+      if (result.status === "ok" && result.contacts.length > 0) {
+        setDeviceContacts(result.contacts);
+        return;
+      }
+      setPickerOpen(false);
+      showListStatus({
+        kind: result.status === "denied" ? "error" : "info",
+        text:
+          result.status === "denied"
+            ? "Contacts access is off. Enable it in Settings › Privacy › Contacts, then try again."
+            : "No contacts found on this device — please add manually.",
+      });
+      if (result.status !== "denied") setEditingContact({ ...emptyContact });
+      return;
+    }
+
+    // 2) Web fallback — W3C Contact Picker (Chrome on Android).
+    if (!isContactPickerSupported()) {
+      showListStatus({ kind: "info", text: "Contact import needs the TendherMom app — please add manually." });
+      setEditingContact({ ...emptyContact });
+      return;
+    }
+
+    const result = await pickNativeContact();
+    if (result.status === "ok" && result.contact) {
+      startFromDeviceContact(result.contact);
+    } else if (result.status === "denied") {
+      showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
+    } else if (result.status === "unsupported") {
+      showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
+      setEditingContact({ ...emptyContact });
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
