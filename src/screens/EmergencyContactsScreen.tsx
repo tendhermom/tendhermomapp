@@ -476,30 +476,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             {/* Import from phone contacts */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={async () => {
-                if (!isContactPickerSupported()) {
-                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
-                  setEditingContact({ ...emptyContact });
-                  return;
-                }
-                const result = await pickNativeContact();
-                if (result.status === "ok" && result.contact) {
-                  hapticSuccess();
-                  setEditingContact({
-                    ...emptyContact,
-                    name: result.contact.name,
-                    phone: result.contact.phone.startsWith("+")
-                      ? result.contact.phone
-                      : `+234${result.contact.phone.replace(/^0/, "")}`,
-                  });
-                } else if (result.status === "denied") {
-                  showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
-                } else if (result.status === "unsupported") {
-                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
-                  setEditingContact({ ...emptyContact });
-                }
-                // 'cancelled' = user closed picker, no message needed
-              }}
+              onClick={handleImportFromContacts}
               className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
               style={{ background: "hsl(var(--light-green))" }}
             >
