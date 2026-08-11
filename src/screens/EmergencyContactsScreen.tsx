@@ -464,36 +464,36 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   return (
     <div className="space-y-5 pb-4">
       {/* Header */}
-      <div className="flex items-center gap-3 pt-4">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack}>
-          <IonIcon name="arrow-back" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[22px] flex-1" style={{ color: "hsl(var(--dark))" }}>
-          Emergency Contacts
-        </h1>
-        {contacts.length < maxContacts && (
-          <div className="flex items-center gap-2">
-            {/* Import from phone contacts */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleImportFromContacts}
-              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-              style={{ background: "hsl(var(--light-green))" }}
-            >
-              <IonIcon name="person-circle" size={20} style={{ color: "hsl(var(--green))" }} />
-            </motion.button>
-            {/* Manual add */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setEditingContact({ ...emptyContact })}
-              className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
-              style={{ background: "hsl(var(--green))" }}
-            >
-              <IonIcon name="add" size={20} style={{ color: "white" }} />
-            </motion.button>
-          </div>
-        )}
-      </div>
+      <ScreenHeader
+        eyebrow="Safety & Care"
+        title="Emergency Contacts"
+        onBack={onBack}
+        actions={
+          contacts.length < maxContacts ? (
+            <>
+              {/* Import from phone contacts */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleImportFromContacts}
+                className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+                style={{ background: "hsl(var(--light-green))" }}
+              >
+                <IonIcon name="person-circle" size={20} style={{ color: "hsl(var(--green))" }} />
+              </motion.button>
+              {/* Manual add */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setEditingContact({ ...emptyContact })}
+                className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
+                style={{ background: "hsl(var(--green))" }}
+              >
+                <IonIcon name="add" size={20} style={{ color: "white" }} />
+              </motion.button>
+            </>
+          ) : null
+        }
+      />
+
 
       {/* Inline status (list) */}
       <AnimatePresence>
