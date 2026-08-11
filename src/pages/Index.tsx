@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react"
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import { StatusBarThemes, hapticSelection } from "@/lib/despia";
+import { consumePendingDeepLink, onDeepLink } from "@/lib/deeplinks";
 import { useAuthStore } from "@/stores/authStore";
 
 // Eagerly load the 5 main tab screens for instant navigation
@@ -123,6 +124,23 @@ const Index = () => {
 
   const handleBack = useCallback(() => {
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }, []);
+
+  // Deep links — tendhermom:// and https://tendhermomapps.lovable.app/go/<target>
+  useEffect(() => {
+    const goTo = (target: { screen: string; params?: Record<string, string> }) => {
+      if (target.params?.post) {
+        try { sessionStorage.setItem("tendher_deeplink_post", target.params.post); } catch {}
+      }
+      setStack((prev) => {
+        if (prev[prev.length - 1] === target.screen) return prev;
+        return ROOT_TABS.has(target.screen) ? [target.screen] : [...prev, target.screen];
+      });
+    };
+
+    const pending = consumePendingDeepLink();
+    if (pending) goTo(pending);
+    return onDeepLink(goTo);
   }, []);
 
   // Hardware / browser back button — pop our stack instead of exiting the app.
