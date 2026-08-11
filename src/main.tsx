@@ -7,11 +7,14 @@ import { initOneSignal } from "./lib/onesignal";
 import { initDespia } from "./lib/despia";
 import { reportError } from "./lib/errorMessage";
 import { setupPwa } from "./lib/registerPwa";
+import { captureLaunchDeepLink } from "./lib/deeplinks";
 
 // Initialize production services
 initSentry();
 initOneSignal();
 initDespia();
+// Capture any deep link the app was launched with before routing starts.
+captureLaunchDeepLink();
 
 // Global safety net — catch unhandled JS runtime errors and promise rejections
 // so mums get a friendly toast + we still get Sentry events instead of silent crashes.
@@ -43,7 +46,7 @@ if (typeof window !== "undefined") {
 
 // One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
 // whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-07-18-signin-refresh-2";
+const RELEASE_TAG = "2026-08-11-revenuecat-deeplinks";
 try {
   if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
     if (typeof caches !== "undefined" && caches?.keys) {

@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import {
-  isNativeBillingAvailable,
+  isBillingAvailable,
+  configureForUser,
   purchase,
   restorePurchases,
   type PlusProductId,
-} from "@/lib/native-billing";
+} from "@/lib/revenuecat";
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 import LegalModal, { type LegalDoc } from "@/components/LegalModal";
 
@@ -104,11 +105,13 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
   useEffect(() => {
-    setNativeAvailable(isNativeBillingAvailable());
+    const available = isBillingAvailable();
+    setNativeAvailable(available);
+    if (available) void configureForUser(user?.id);
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
     screenShield.enable();
     return () => { screenShield.disable(); };
-  }, []);
+  }, [user?.id]);
 
   const handlePurchase = async () => {
     if (purchasing) return;
