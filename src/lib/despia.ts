@@ -291,19 +291,58 @@ export interface ContactPickResult {
   contact: NativeContact | null;
 }
 
-/** True if a contact picker (Web Contacts API or supported native shell) is usable on this device. */
+/** True if a contact source (Despia native shell or Web Contacts API) is usable on this device. */
 export const isContactPickerSupported = (): boolean => {
   if (typeof navigator === "undefined" || typeof window === "undefined") return false;
+  if (isDespiaNative()) return true;
   return "contacts" in navigator && "ContactsManager" in window;
 };
 
 /**
- * Pick a contact from the device's address book.
- * Uses the W3C Contact Picker API (Chrome on Android, Despia Android shell).
- * iOS Safari / iOS Despia do not expose this API — caller should fall back to manual entry.
+ * Read the full device address book via the Despia native SDK.
+ *   requestcontactpermission:// → native permission prompt
+ *   readcontacts://            → { contacts: { "Name": ["+2348..."] } }
+ * Only works inside the Despia shell; returns "unsupported" elsewhere.
+ */
+export const readDespiaContacts = async (): Promise<{
+  status: ContactPickStatus;
+  contacts: NativeContact[];
+}> => {
+  if (!isDespiaNative()) return { status: "unsupported", contacts: [] };
+
+  try {
+    const { default: despia } = await import("despia-native");
+    await despia("requestcontactpermission://");
+    const data: any = await despia("readcontacts://", ["contacts"]);
+    const raw = data?.contacts ?? {};
+
+    const list: NativeContact[] = [];
+    for (const [name, numbers] of Object.entries(raw)) {
+      const nums = Array.isArray(numbers) ? numbers : [numbers];
+      for (const n of nums) {
+        const phone = String(n ?? "").replace(/[\s()-]/g, "");
+        if (phone) list.push({ name: String(name || "Unknown"), phone });
+      }
+    }
+
+    list.sort((a, b) => a.name.localeCompare(b.name));
+    return { status: "ok", contacts: list };
+  } catch (err: any) {
+    const code = err?.name || "";
+    if (code === "SecurityError" || code === "NotAllowedError") {
+      return { status: "denied", contacts: [] };
+    }
+    // readcontacts:// rejects when the user denied the OS prompt
+    return { status: "denied", contacts: [] };
+  }
+};
+
+/**
+ * Pick a single contact using the W3C Contact Picker API (Chrome on Android).
+ * Used only as a web fallback when the Despia shell isn't present.
  */
 export const pickNativeContact = async (): Promise<ContactPickResult> => {
-  if (!isContactPickerSupported()) {
+  if (typeof navigator === "undefined" || !("contacts" in navigator)) {
     return { status: "unsupported", contact: null };
   }
 
@@ -336,6 +375,7 @@ export const pickNativeContact = async (): Promise<ContactPickResult> => {
     return { status: "unsupported", contact: null };
   }
 };
+
 
 // ─── Native Torch / Flashlight ────────────────────────────────
 
