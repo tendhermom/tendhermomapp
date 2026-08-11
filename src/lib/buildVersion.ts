@@ -31,6 +31,26 @@ const safeSet = (store: Storage | undefined, key: string, value: string) => {
   }
 };
 
+const getLatestPublishedBuild = async (): Promise<string | null> => {
+  if (BUILD_ID === "dev" || typeof window === "undefined") return null;
+
+  try {
+    const manifestUrl = new URL("/release.json", window.location.origin);
+    manifestUrl.searchParams.set("t", Date.now().toString());
+    const response = await fetch(manifestUrl.toString(), {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return typeof payload?.buildId === "string" && payload.buildId.length > 0
+      ? payload.buildId
+      : null;
+  } catch {
+    return null;
+  }
+};
+
 const purgeCaches = async () => {
   try {
     if (typeof caches !== "undefined" && caches?.keys) {
@@ -74,6 +94,21 @@ const purgeCaches = async () => {
  */
 export const applyBuildVersionGate = async (): Promise<boolean> => {
   if (typeof window === "undefined") return false;
+
+  // A cache-busted release manifest lets an already-open native WebView detect
+  // a newer deployment even if it retained the previous HTML document.
+  const latestPublishedBuild = await getLatestPublishedBuild();
+  if (latestPublishedBuild && latestPublishedBuild !== BUILD_ID) {
+    document.getElementById("root")?.replaceChildren();
+    await purgeCaches();
+    safeSet(window.localStorage, BUILD_KEY, latestPublishedBuild);
+    safeSet(window.sessionStorage, REFRESH_FLAG, latestPublishedBuild);
+
+    const freshUrl = new URL(window.location.href);
+    freshUrl.searchParams.set("v", latestPublishedBuild);
+    window.location.replace(freshUrl.toString());
+    return true;
+  }
 
   const previous = safeGet(window.localStorage, BUILD_KEY);
   if (previous === BUILD_ID) return false;

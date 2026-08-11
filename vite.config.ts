@@ -30,6 +30,17 @@ const wellKnownMiddleware = (): Plugin => ({
 
 const BUILD_ID = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+const releaseManifestPlugin = (): Plugin => ({
+  name: "release-manifest",
+  generateBundle() {
+    this.emitFile({
+      type: "asset",
+      fileName: "release.json",
+      source: JSON.stringify({ buildId: BUILD_ID }),
+    });
+  },
+});
+
 export default defineConfig(({ mode }) => ({
   define: {
     __APP_BUILD_ID__: JSON.stringify(mode === "development" ? "dev" : BUILD_ID),
@@ -44,6 +55,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     wellKnownMiddleware(),
+    releaseManifestPlugin(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
