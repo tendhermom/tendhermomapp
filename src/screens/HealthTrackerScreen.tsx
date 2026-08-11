@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import SmartGuidance from "@/components/health/SmartGuidance";
@@ -131,13 +132,11 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
 
   return (
     <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.07 } } }}>
-      {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center gap-3">
-        <button onClick={() => onNavigate("home")} className="ios-press">
-          <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>Health Tracker</h1>
-      </motion.div>
+      <SimpleBackHeader
+        title="Health Tracker"
+        onBack={() => onNavigate("home")}
+        variants={fadeUp}
+      />
 
       {/* Tab Toggle */}
       <motion.div variants={fadeUp} className="flex gap-2">

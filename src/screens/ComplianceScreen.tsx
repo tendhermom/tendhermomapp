@@ -1,4 +1,5 @@
 import IonIcon from "@/components/IonIcon";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion } from "framer-motion";
 
 interface ComplianceScreenProps {
@@ -8,20 +9,7 @@ interface ComplianceScreenProps {
 const ComplianceScreen = ({ onBack }: ComplianceScreenProps) => {
   return (
     <div className="space-y-5 pb-6 pt-1">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-1">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onBack}
-          className="w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: "hsl(var(--surface))" }}
-        >
-          <IonIcon name="chevron-back" size={20} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
-          Compliance
-        </h1>
-      </div>
+      <SimpleBackHeader title="Compliance" onBack={onBack} className="px-1" />
 
       {/* Intro */}
       <motion.div

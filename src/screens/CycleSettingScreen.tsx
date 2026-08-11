@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,15 +98,7 @@ const CycleSettingScreen = ({ onBack }: Props) => {
 
   return (
     <div className="space-y-6 pb-[max(env(safe-area-inset-bottom,24px),24px)] pt-1">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="p-1">
-          <IonIcon name="chevron-back-outline" size={24} style={{ color: "hsl(var(--dark))" }} />
-        </motion.button>
-        <h1 className="font-serif text-[22px]" style={{ color: "hsl(var(--dark))" }}>
-          Cycle Setting
-        </h1>
-      </div>
+      <SimpleBackHeader title="Cycle Setting" onBack={onBack} className="pt-1" />
 
       {/* Intro */}
       <div

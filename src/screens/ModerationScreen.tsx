@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -204,20 +205,19 @@ const ModerationScreen = ({ onBack }: ModerationScreenProps) => {
 
   return (
     <motion.div className="space-y-5 pb-4" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.07 } } }}>
-      {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center gap-3 pt-1">
-        <button onClick={onBack} className="ios-press">
-          <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <div className="flex-1">
-          <h1 className="font-serif text-[24px]" style={{ color: "hsl(var(--dark))" }}>Moderation</h1>
-        </div>
-        {pendingReports.length > 0 && (
-          <span className="text-[11px] font-sans font-bold px-2.5 py-1 rounded-full" style={{ background: "hsl(var(--coral))", color: "white" }}>
-            {pendingReports.length} pending
-          </span>
-        )}
-      </motion.div>
+      <SimpleBackHeader
+        title="Moderation"
+        onBack={onBack}
+        variants={fadeUp}
+        className="pt-1"
+        right={
+          pendingReports.length > 0 && (
+            <span className="text-[11px] font-sans font-bold px-2.5 py-1 rounded-full" style={{ background: "hsl(var(--coral))", color: "white" }}>
+              {pendingReports.length} pending
+            </span>
+          )
+        }
+      />
 
       {/* Tabs */}
       <motion.div variants={fadeUp} className="flex gap-2">

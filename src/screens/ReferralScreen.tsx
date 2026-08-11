@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
@@ -140,15 +141,7 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
       animate="show"
       variants={{ show: { transition: { staggerChildren: 0.07 } } }}
     >
-      {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center gap-3">
-        <button onClick={onBack} className="ios-press">
-          <IonIcon name="arrow-back" size={22} style={{ color: "hsl(var(--dark))" }} />
-        </button>
-        <h1 className="text-[24px] font-serif" style={{ color: "hsl(var(--dark))" }}>
-          Refer & Earn
-        </h1>
-      </motion.div>
+      <SimpleBackHeader title="Refer & Earn" onBack={onBack} variants={fadeUp} />
 
       {/* Progress Hero */}
       <motion.div variants={fadeUp} className="hero-card p-5 text-center">
