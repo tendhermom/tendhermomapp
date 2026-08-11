@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import {
-  isNativeBillingAvailable,
+  isBillingAvailable,
+  configureForUser,
   purchase,
   restorePurchases,
   type PlusProductId,
-} from "@/lib/native-billing";
+} from "@/lib/revenuecat";
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 import LegalModal, { type LegalDoc } from "@/components/LegalModal";
 
