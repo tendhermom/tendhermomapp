@@ -69,11 +69,10 @@ void applyBuildVersionGate().then((refreshing) => {
   if (refreshing) return; // page is navigating away — don't mount the old bundle
   mount();
   void setupPwa();
+}).catch(() => {
+  // A failed cache check must not block the current app, but unlike the old
+  // timer this cannot race with a refresh that is still in progress.
+  mount();
+  void setupPwa();
 });
-
-// Safety net: if the gate hangs (storage blocked, etc.) still render.
-setTimeout(() => {
-  const root = document.getElementById("root");
-  if (root && root.childElementCount === 0) mount();
-}, 1200);
 
