@@ -105,11 +105,13 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
   useEffect(() => {
-    setNativeAvailable(isNativeBillingAvailable());
+    const available = isBillingAvailable();
+    setNativeAvailable(available);
+    if (available) void configureForUser(user?.id);
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
     screenShield.enable();
     return () => { screenShield.disable(); };
-  }, []);
+  }, [user?.id]);
 
   const handlePurchase = async () => {
     if (purchasing) return;
