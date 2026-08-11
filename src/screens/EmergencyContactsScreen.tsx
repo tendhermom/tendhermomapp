@@ -541,28 +541,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           <div className="flex gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={async () => {
-                if (!isContactPickerSupported()) {
-                  showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
-                  setEditingContact({ ...emptyContact });
-                  return;
-                }
-                const result = await pickNativeContact();
-                if (result.status === "ok" && result.contact) {
-                  hapticSuccess();
-                  setEditingContact({
-                    ...emptyContact,
-                    name: result.contact.name,
-                    phone: result.contact.phone.startsWith("+")
-                      ? result.contact.phone
-                      : `+234${result.contact.phone.replace(/^0/, "")}`,
-                  });
-                } else if (result.status === "denied") {
-                  showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
-                } else if (result.status === "unsupported") {
-                  setEditingContact({ ...emptyContact });
-                }
-              }}
+              onClick={handleImportFromContacts}
               className="px-4 py-2.5 rounded-full text-[13px] font-semibold font-sans flex items-center gap-1.5"
               style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
             >
