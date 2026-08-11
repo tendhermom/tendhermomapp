@@ -168,9 +168,9 @@ const SmartGuidance = ({ entries, currentWeek }: SmartGuidanceProps) => {
   if (guidance.length === 0) return null;
 
   const severityStyles = {
-    alert: { bg: "hsl(var(--light-coral))", color: "hsl(var(--coral))", border: "hsl(var(--coral))" },
-    warning: { bg: "hsl(45 93% 92%)", color: "hsl(45 90% 35%)", border: "hsl(45 90% 50%)" },
-    info: { bg: "hsl(var(--light-green))", color: "hsl(var(--green))", border: "hsl(var(--green))" },
+    alert: { bg: "hsl(var(--light-coral))", color: "hsl(var(--coral))" },
+    warning: { bg: "hsl(45 93% 92%)", color: "hsl(45 90% 35%)" },
+    info: { bg: "hsl(var(--light-green))", color: "hsl(var(--green))" },
   };
 
   return (
@@ -185,7 +185,6 @@ const SmartGuidance = ({ entries, currentWeek }: SmartGuidanceProps) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
             className="tend-card p-4 flex items-start gap-3"
-            style={{ borderLeft: `3px solid ${style.border}` }}
           >
             <div className="w-[32px] h-[32px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: style.bg }}>
               <IonIcon name={g.icon} size={16} style={{ color: style.color }} />
