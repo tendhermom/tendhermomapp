@@ -35,6 +35,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    aasaMiddleware(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
