@@ -78,6 +78,10 @@ export const applyBuildVersionGate = async (): Promise<boolean> => {
   const previous = safeGet(window.localStorage, BUILD_KEY);
   if (previous === BUILD_ID) return false;
 
+  // Clear any browser/WebView-restored app DOM before cache cleanup or a
+  // version reload. index.html's boot shield remains visible above the root.
+  document.getElementById("root")?.replaceChildren();
+
   await purgeCaches();
   safeSet(window.localStorage, BUILD_KEY, BUILD_ID);
 

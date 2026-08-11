@@ -23,6 +23,22 @@
     <meta name="twitter:title" content="TendherMom — Maternal Health for Nigerian Mothers">
     <meta name="twitter:description" content="TendherMom helps Nigerian mothers navigate pregnancy with expert care, community support, and emergency tools.">
     <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe93ff77-9710-44f5-8aa9-b2e9b9da406b/id-preview-b2abc11e--0cb33bc1-fba1-4ff7-b57e-716d48852e62.lovable.app-1773480704673.png">
+    <style>
+      #app-boot-shield {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: grid;
+        place-items: center;
+        background: #fff;
+      }
+      #app-boot-shield img {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        object-fit: cover;
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://unpkg.com" crossorigin />
@@ -47,6 +63,7 @@
     </script>
   </head>
   <body>
+    <div id="app-boot-shield" aria-hidden="true"><img src="/pwa-192.png" alt="" /></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -10,6 +10,12 @@ import { setupPwa, guardAgainstStaleRestore } from "./lib/registerPwa";
 import { applyBuildVersionGate } from "./lib/buildVersion";
 import { captureLaunchDeepLink } from "./lib/deeplinks";
 
+// Remove any DOM restored by the browser/WebView before asynchronous startup
+// work begins. The static boot shield in index.html stays above the root until
+// the current React tree is committed, so an older auth screen cannot flash.
+const rootElement = document.getElementById("root");
+rootElement?.replaceChildren();
+
 // Initialize production services
 initSentry();
 initOneSignal();
@@ -46,16 +52,13 @@ if (typeof window !== "undefined") {
 }
 
 const mount = () => {
-  const rootElement = document.getElementById("root");
   if (!rootElement) return;
-  // A restored WebView may retain old DOM until React mounts. Clear it
-  // synchronously so the retired sign-in screen can never flash first.
-  rootElement.replaceChildren();
   createRoot(rootElement).render(
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
   );
+  document.getElementById("app-boot-shield")?.remove();
 };
 
 guardAgainstStaleRestore();
@@ -66,11 +69,10 @@ void applyBuildVersionGate().then((refreshing) => {
   if (refreshing) return; // page is navigating away — don't mount the old bundle
   mount();
   void setupPwa();
+}).catch(() => {
+  // A failed cache check must not block the current app, but unlike the old
+  // timer this cannot race with a refresh that is still in progress.
+  mount();
+  void setupPwa();
 });
-
-// Safety net: if the gate hangs (storage blocked, etc.) still render.
-setTimeout(() => {
-  const root = document.getElementById("root");
-  if (root && root.childElementCount === 0) mount();
-}, 1200);
 
