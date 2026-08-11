@@ -3,16 +3,33 @@
 // or cached shell can ever paint a legacy screen (e.g. the old sign-in page)
 // before the current build renders.
 
-/** Unregister ALL service workers + delete every cache on this origin. */
+const LEGACY_WORKER_PATHS = ["/sw.js", "/service-worker.js"];
+
+const isLegacyAppCache = (name: string) =>
+  /(^|-)precache-v\d+-|(^|-)runtime-|(^|-)googleAnalytics-/.test(name);
+
+/** Remove only retired app-shell workers and their Workbox caches. */
 const cleanupStaleSW = async () => {
   try {
     if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.allSettled(regs.map((r) => r.unregister()));
+      const staleRegs = regs.filter((registration) => {
+        const scriptURL = registration.active?.scriptURL
+          ?? registration.waiting?.scriptURL
+          ?? registration.installing?.scriptURL;
+        if (!scriptURL) return false;
+        try {
+          const pathname = new URL(scriptURL).pathname;
+          return LEGACY_WORKER_PATHS.includes(pathname);
+        } catch {
+          return false;
+        }
+      });
+      await Promise.allSettled(staleRegs.map((registration) => registration.unregister()));
     }
     if (typeof caches !== "undefined" && caches?.keys) {
       const names = await caches.keys();
-      await Promise.allSettled(names.map((n) => caches.delete(n)));
+      await Promise.allSettled(names.filter(isLegacyAppCache).map((name) => caches.delete(name)));
     }
   } catch (_) {
     // best effort — never block app startup
@@ -20,9 +37,8 @@ const cleanupStaleSW = async () => {
 };
 
 /**
- * Awaitable startup routine: unregister any existing service workers and
- * clear caches before the app renders. Callers should `await setupPwa()`
- * prior to mounting React so users never see a stale UI.
+ * Unregister retired app-shell workers without touching notification workers.
+ * This runs in the background; rendering must never wait for browser cleanup.
  */
 export const setupPwa = async () => {
   await cleanupStaleSW();
@@ -40,6 +56,8 @@ export const setupPwaSync = () => {
 export const guardAgainstStaleRestore = () => {
   if (typeof window === "undefined") return;
   window.addEventListener("pageshow", (event) => {
-    if ((event as PageTransitionEvent).persisted) window.location.reload();
+    if ((event as PageTransitionEvent).persisted) {
+      window.location.replace(`${window.location.pathname}${window.location.search}${window.location.hash}`);
+    }
   });
 };

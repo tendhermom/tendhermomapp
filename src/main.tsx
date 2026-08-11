@@ -46,7 +46,7 @@ if (typeof window !== "undefined") {
 
 // One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
 // whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-08-11-no-legacy-shell";
+const RELEASE_TAG = "2026-08-11-final-legacy-worker-cleanup";
 try {
   if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
     if (typeof caches !== "undefined" && caches?.keys) {
@@ -70,21 +70,20 @@ try {
   }
 } catch (_) {}
 
-// Startup routine: unregister any existing service workers and clear caches
-// BEFORE mounting React so the sign-in screen is never served from a stale
-// worker or cached shell. We cap the wait so a hung browser API can never
-// block the app from rendering.
-const withTimeout = <T,>(p: Promise<T>, ms: number) =>
-  Promise.race([p, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
-
-const mount = () =>
-  createRoot(document.getElementById("root")!).render(
+const mount = () => {
+  const rootElement = document.getElementById("root");
+  if (!rootElement) return;
+  // A restored WebView may retain old DOM until React mounts. Clear it
+  // synchronously so the retired sign-in screen can never flash first.
+  rootElement.replaceChildren();
+  createRoot(rootElement).render(
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
   );
+};
 
 guardAgainstStaleRestore();
-
-withTimeout(setupPwa(), 1500).finally(mount);
+mount();
+void setupPwa();
 
