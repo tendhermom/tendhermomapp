@@ -7,6 +7,7 @@ import { initOneSignal } from "./lib/onesignal";
 import { initDespia } from "./lib/despia";
 import { reportError } from "./lib/errorMessage";
 import { setupPwa, guardAgainstStaleRestore } from "./lib/registerPwa";
+import { applyBuildVersionGate } from "./lib/buildVersion";
 import { captureLaunchDeepLink } from "./lib/deeplinks";
 
 // Initialize production services
@@ -44,32 +45,6 @@ if (typeof window !== "undefined") {
   });
 }
 
-// One-time stale-cache purge for users on outdated builds. Bump RELEASE_TAG
-// whenever shipping a release that must invalidate workbox precaches.
-const RELEASE_TAG = "2026-08-11-final-legacy-worker-cleanup";
-try {
-  if (typeof localStorage !== "undefined" && localStorage.getItem("release_tag") !== RELEASE_TAG) {
-    if (typeof caches !== "undefined" && caches?.keys) {
-      caches.keys().then((names) => {
-        names.forEach((n) => caches.delete(n).catch(() => {}));
-      }).catch(() => {});
-    }
-    // Unregister any leftover service workers on returning devices.
-    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations?.().then((regs) => {
-        regs.forEach((r) => r.unregister().catch(() => {}));
-      }).catch(() => {});
-    }
-    // Clear stale auth-related keys that could pin an old sign-in view.
-    try {
-      Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith("tendher_nav") || k.startsWith("tendher_legacy") || k.startsWith("workbox")) localStorage.removeItem(k);
-      });
-    } catch {}
-    localStorage.setItem("release_tag", RELEASE_TAG);
-  }
-} catch (_) {}
-
 const mount = () => {
   const rootElement = document.getElementById("root");
   if (!rootElement) return;
@@ -84,6 +59,18 @@ const mount = () => {
 };
 
 guardAgainstStaleRestore();
-mount();
-void setupPwa();
+
+// Versioned build gate: after each deployment this purges caches/workers and
+// performs exactly one hard refresh, so stale auth UI can never resurface.
+void applyBuildVersionGate().then((refreshing) => {
+  if (refreshing) return; // page is navigating away — don't mount the old bundle
+  mount();
+  void setupPwa();
+});
+
+// Safety net: if the gate hangs (storage blocked, etc.) still render.
+setTimeout(() => {
+  const root = document.getElementById("root");
+  if (root && root.childElementCount === 0) mount();
+}, 1200);
 

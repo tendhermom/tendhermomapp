@@ -28,7 +28,12 @@ const wellKnownMiddleware = (): Plugin => ({
   },
 });
 
+const BUILD_ID = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 export default defineConfig(({ mode }) => ({
+  define: {
+    __APP_BUILD_ID__: JSON.stringify(mode === "development" ? "dev" : BUILD_ID),
+  },
   server: {
     host: "::",
     port: 8080,
@@ -51,6 +56,11 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
+        // Versioned (content-hashed + build-tagged) asset filenames so a new
+        // deploy can never be served old chunks from an HTTP cache.
+        entryFileNames: `assets/[name]-${BUILD_ID}-[hash].js`,
+        chunkFileNames: `assets/[name]-${BUILD_ID}-[hash].js`,
+        assetFileNames: `assets/[name]-${BUILD_ID}-[hash].[ext]`,
         manualChunks: {
           "vendor-react": ["react", "react-dom"],
           "vendor-router": ["react-router-dom"],
