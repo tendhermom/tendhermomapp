@@ -634,6 +634,131 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
           </span>
         </motion.button>
       )}
+
+      {/* ── Device contact picker sheet ── */}
+      <AnimatePresence>
+        {pickerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPickerOpen(false)}
+              className="fixed inset-0 z-[80]"
+              style={{ background: "hsl(var(--dark) / 0.35)", backdropFilter: "blur(4px)" }}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[430px] z-[81] rounded-t-[28px] overflow-hidden"
+              style={{
+                background: "hsl(var(--card, var(--bg)))",
+                boxShadow: "0 -12px 40px -12px hsl(var(--dark) / 0.25)",
+                paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+              }}
+            >
+              <div className="pt-3 pb-2 flex justify-center">
+                <div className="w-[38px] h-[4px] rounded-full" style={{ background: "hsl(var(--border))" }} />
+              </div>
+
+              <div className="px-5 pb-3">
+                <h3 className="font-serif text-[19px]" style={{ color: "hsl(var(--dark))" }}>
+                  Choose a Contact
+                </h3>
+                <p className="text-[12px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
+                  Pick someone from your phone to alert during an emergency
+                </p>
+              </div>
+
+              <div className="px-5 pb-3">
+                <div
+                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl"
+                  style={{ background: "hsl(var(--bg))" }}
+                >
+                  <IonIcon name="search" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+                  <input
+                    value={pickerSearch}
+                    onChange={(e) => setPickerSearch(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-[14px] font-sans"
+                    style={{ color: "hsl(var(--dark))" }}
+                    aria-label="Search contacts"
+                  />
+                </div>
+              </div>
+
+              <div className="max-h-[46vh] overflow-y-auto px-2 pb-2" style={{ scrollbarWidth: "none" }}>
+                {pickerLoading ? (
+                  <div className="py-10 text-center">
+                    <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                      Reading your contacts…
+                    </span>
+                  </div>
+                ) : (
+                  (() => {
+                    const q = pickerSearch.trim().toLowerCase();
+                    const filtered = q
+                      ? deviceContacts.filter(
+                          (c) => c.name.toLowerCase().includes(q) || c.phone.includes(q),
+                        )
+                      : deviceContacts;
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="py-10 text-center">
+                          <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                            No matching contacts
+                          </span>
+                        </div>
+                      );
+                    }
+                    return filtered.map((c, i) => (
+                      <motion.button
+                        key={`${c.name}-${c.phone}-${i}`}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => startFromDeviceContact(c)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left"
+                      >
+                        <div
+                          className="w-[40px] h-[40px] rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ background: "hsl(var(--light-green))" }}
+                        >
+                          <span className="text-[13px] font-bold font-sans" style={{ color: "hsl(var(--green))" }}>
+                            {c.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-semibold font-sans truncate" style={{ color: "hsl(var(--dark))" }}>
+                            {c.name}
+                          </p>
+                          <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                            {c.phone}
+                          </p>
+                        </div>
+                        <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
+                      </motion.button>
+                    ));
+                  })()
+                )}
+              </div>
+
+              <div className="px-5 pt-2">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => {
+                    setPickerOpen(false);
+                    setEditingContact({ ...emptyContact });
+                  }}
+                  className="w-full py-[13px] rounded-2xl text-[14px] font-semibold font-sans"
+                  style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}
+                >
+                  Add Manually Instead
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
