@@ -508,6 +508,19 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             </div>
           </div>
 
+          {/* Customer Center — restore, change plan, cancel, request refund */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleManage}
+            className="w-full py-[14px] rounded-2xl text-[14px] font-sans font-semibold text-white"
+            style={{
+              background: "linear-gradient(135deg, hsl(153 42% 28%), hsl(153 42% 36%))",
+              boxShadow: "0 6px 24px -6px hsla(153, 42%, 28%, 0.35)",
+            }}
+          >
+            Manage Subscription
+          </motion.button>
+
           {/* Restore Purchases — visible even for premium users (Apple compliance) */}
           <motion.button
             whileTap={{ scale: 0.97 }}
