@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import PaywallDrawer from "@/components/PaywallDrawer";
 
 // Static illustrations (one per gated feature — no carousel)
 import babyShowerIllustration from "@/assets/previews/baby-shower-illustration.jpg";
@@ -42,6 +43,7 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
   const slides = FEATURE_PREVIEWS[feature] || [];
   const benefits = FEATURE_BENEFITS[feature] || [];
   const [activeSlide, setActiveSlide] = useState(0);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   // Clamp index in case slides shrinks (defensive — fixes a crash when
   // FEATURE_PREVIEWS is reduced from multi-slide to single illustration).
@@ -209,7 +211,7 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
         </p>
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={onUpgrade}
+          onClick={() => setPaywallOpen(true)}
           className="w-full max-w-[280px] flex items-center justify-center gap-2 px-6 py-[14px] rounded-2xl text-[15px] font-sans font-bold mx-auto ios-press"
           style={{
             background: "linear-gradient(135deg, hsl(var(--coral)), hsl(11 74% 52%))",
@@ -226,6 +228,13 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
           Starting from <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>₦300/week</span>
         </p>
       </motion.div>
+
+      <PaywallDrawer
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        feature={feature}
+        onSeeAllFeatures={onUpgrade}
+      />
     </motion.div>
   );
 };
