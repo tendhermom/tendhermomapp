@@ -49,6 +49,34 @@ serve(async (req) => {
       });
     }
 
+    // Free plan: 2 questions per week. Plus (or tester) is unlimited.
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("plan_type, plus_expires_at, is_tester")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const plusActive = profile?.is_tester === true ||
+      (profile?.plan_type === "premium" &&
+        (!profile?.plus_expires_at || new Date(profile.plus_expires_at).getTime() > Date.now()));
+
+    if (!plusActive) {
+      const { data: withinFreeQuota } = await serviceClient.rpc("check_rate_limit", {
+        _user_id: userId,
+        _action: "ai_chat_free_week",
+        _max_requests: 2,
+        _window_minutes: 10080,
+      });
+      if (!withinFreeQuota) {
+        return new Response(
+          JSON.stringify({ error: "You've used your 2 free AI questions this week. Upgrade to TendherMom Plus for unlimited chat." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+
+
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
