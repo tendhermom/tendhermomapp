@@ -242,9 +242,11 @@ const notify = () => {
 };
 
 /** Subscribe to purchase / Customer Center state changes. Returns an unsubscribe fn. */
-export const onEntitlementChange = (fn: EntitlementListener) => {
+export const onEntitlementChange = (fn: EntitlementListener): (() => void) => {
   listeners.add(fn);
-  return () => listeners.delete(fn);
+  return () => {
+    listeners.delete(fn);
+  };
 };
 
 let handlersRegistered = false;
