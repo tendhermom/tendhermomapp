@@ -63,45 +63,11 @@ const FEATURES = [
   },
 ];
 
-const PLANS: Array<{
-  id: "weekly" | "monthly" | "yearly";
-  productId: PlusProductId;
-  label: string;
-  price: string;
-  period: string;
-  tag: string | null;
-}> = [
-  {
-    id: "weekly",
-    productId: "tendhermom_plus_weekly",
-    label: "Weekly",
-    price: "₦300",
-    period: "/week",
-    tag: null,
-  },
-  {
-    id: "monthly",
-    productId: "tendhermom_plus_monthly",
-    label: "Monthly",
-    price: "₦1,000",
-    period: "/month",
-    tag: "Popular",
-  },
-  {
-    id: "yearly",
-    productId: "tendhermom_plus_yearly",
-    label: "Yearly",
-    price: "₦10,000",
-    period: "/year",
-    tag: "Save 36%",
-  },
-];
-
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const isPremium = user?.plan_type === "premium";
-  const [selectedPlan, setSelectedPlan] = useState<"weekly" | "monthly" | "yearly">("yearly");
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>("yearly");
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [nativeAvailable, setNativeAvailable] = useState(false);
