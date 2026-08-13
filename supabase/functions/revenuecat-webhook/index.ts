@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 /** The entitlement that unlocks TendherMom Plus (matches the RevenueCat dashboard). */
-const PRO_ENTITLEMENT = "pro";
+const PRO_ENTITLEMENT = "entl38b15a9cf6";
 
 // Events that grant / keep access
 const ACTIVE_TYPES = new Set([
