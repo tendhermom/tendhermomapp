@@ -21,7 +21,12 @@ import { supabase } from "@/integrations/supabase/client";
 /** The RevenueCat entitlement that unlocks TendherMom Plus. */
 export const PRO_ENTITLEMENT = "Pro";
 
+/** The RevenueCat offering ("Plus") that holds the weekly/monthly/yearly packages. */
+export const OFFERING_NAME = "Plus";
+export const OFFERING_ID = "ofrng9ed4b6dd86";
+
 export type PlanId = "weekly" | "monthly" | "yearly";
+
 
 export interface PlanDefinition {
   id: PlanId;
@@ -168,6 +173,31 @@ export interface PurchaseOutcome {
   error?: string;
 }
 
+/**
+ * Open the native RevenueCat paywall for the "Plus" offering.
+ * Used as the fallback when a direct product purchase cannot be dispatched.
+ */
+export async function launchPaywall(userId: string): Promise<PurchaseOutcome> {
+  if (!userId) return { started: false, error: "You must be signed in to subscribe." };
+  if (!isBillingAvailable()) {
+    return {
+      started: false,
+      error: "Subscriptions are only available in the TendherMom mobile app.",
+    };
+  }
+  try {
+    const despia = await loadDespia();
+    await despia(
+      `revenuecat://launchPaywall?external_id=${encodeURIComponent(userId)}&offering=${encodeURIComponent(
+        OFFERING_ID,
+      )}`,
+    );
+    return { started: true };
+  } catch (e: any) {
+    return { started: false, error: e?.message ?? "Could not open the store." };
+  }
+}
+
 /** Trigger a native purchase for a plan. Resolves once the scheme is dispatched. */
 export async function startPurchase(planId: PlanId, userId: string): Promise<PurchaseOutcome> {
   if (!userId) return { started: false, error: "You must be signed in to subscribe." };
@@ -189,9 +219,14 @@ export async function startPurchase(planId: PlanId, userId: string): Promise<Pur
     );
     return { started: true };
   } catch (e: any) {
+    // Fall back to the configured "Plus" offering paywall so the mum can still buy.
+    console.warn("[revenuecat] direct purchase failed, opening Plus paywall", e);
+    const fallback = await launchPaywall(userId);
+    if (fallback.started) return fallback;
     return { started: false, error: e?.message ?? "Could not open the store." };
   }
 }
+
 
 /** Open the RevenueCat Customer Center (restore, manage, refunds). */
 export async function openCustomerCenter(userId?: string | null): Promise<PurchaseOutcome> {
