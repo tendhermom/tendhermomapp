@@ -16,7 +16,20 @@ interface UserProfile {
   avatar_url: string | null;
   user_type: "mother";
   inactivity_alerts_enabled: boolean;
+  is_tester: boolean;
 }
+
+/**
+ * Premium is granted when the profile is a flagged tester, or when the
+ * RevenueCat "Pro" entitlement is active and not past its expiry.
+ */
+const resolvePlanType = (data: any): "free" | "premium" => {
+  if (data?.is_tester) return "premium";
+  if (data?.plan_type !== "premium") return "free";
+  const expires = data?.plus_expires_at ? new Date(data.plus_expires_at).getTime() : null;
+  if (expires && expires <= Date.now()) return "free";
+  return "premium";
+};
 
 const fallbackProfile = (userId: string, authUser?: { email?: string | null; user_metadata?: Record<string, any> | null }): UserProfile => {
   const lmp = new Date(Date.now() - 24 * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -29,13 +42,14 @@ const fallbackProfile = (userId: string, authUser?: { email?: string | null; use
     lmp_date: lmp,
     birth_date: null,
     baby_name: null,
-    plan_type: "premium",
+    plan_type: "free",
     current_stage: "second_trimester",
     phone: null,
     can_post: true,
     avatar_url: null,
     user_type: "mother",
     inactivity_alerts_enabled: true,
+    is_tester: false,
   };
 };
 
@@ -79,15 +93,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             lmp_date: data.lmp_date,
             birth_date: data.birth_date,
             baby_name: data.baby_name,
-            // TEMP: Unlock all premium features for Google Play review.
-            // Revert to `data.plan_type as "free" | "premium"` once review is complete.
-            plan_type: "premium",
+            // Premium is entitlement-driven: an active RevenueCat "Pro"
+            // entitlement (synced by the webhook) or a flagged test account.
+            plan_type: resolvePlanType(data),
             current_stage: (data.current_stage as UserProfile["current_stage"]) || "second_trimester",
             phone: data.phone,
             can_post: data.can_post ?? true,
             avatar_url: data.avatar_url,
             user_type: "mother",
             inactivity_alerts_enabled: (data as any).inactivity_alerts_enabled ?? true,
+            is_tester: (data as any).is_tester ?? false,
           },
           isAuthenticated: true,
           isLoading: false,

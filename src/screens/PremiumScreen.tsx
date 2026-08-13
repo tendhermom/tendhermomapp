@@ -4,11 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import {
+  PLANS,
   isBillingAvailable,
-  configureForUser,
-  purchase,
+  startPurchase,
   restorePurchases,
-  type PlusProductId,
+  openCustomerCenter,
+  onEntitlementChange,
+  confirmPremiumWithBackend,
+  type PlanId,
 } from "@/lib/revenuecat";
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 import LegalModal, { type LegalDoc } from "@/components/LegalModal";
@@ -60,45 +63,11 @@ const FEATURES = [
   },
 ];
 
-const PLANS: Array<{
-  id: "weekly" | "monthly" | "yearly";
-  productId: PlusProductId;
-  label: string;
-  price: string;
-  period: string;
-  tag: string | null;
-}> = [
-  {
-    id: "weekly",
-    productId: "tendhermom_plus_weekly",
-    label: "Weekly",
-    price: "₦300",
-    period: "/week",
-    tag: null,
-  },
-  {
-    id: "monthly",
-    productId: "tendhermom_plus_monthly",
-    label: "Monthly",
-    price: "₦1,000",
-    period: "/month",
-    tag: "Popular",
-  },
-  {
-    id: "yearly",
-    productId: "tendhermom_plus_yearly",
-    label: "Yearly",
-    price: "₦10,000",
-    period: "/year",
-    tag: "Save 36%",
-  },
-];
-
 const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const isPremium = user?.plan_type === "premium";
-  const [selectedPlan, setSelectedPlan] = useState<"weekly" | "monthly" | "yearly">("yearly");
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>("yearly");
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [nativeAvailable, setNativeAvailable] = useState(false);
@@ -106,19 +75,28 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
   useEffect(() => {
-    const available = isBillingAvailable();
-    setNativeAvailable(available);
-    if (available) void configureForUser(user?.id);
+    setNativeAvailable(isBillingAvailable());
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
     screenShield.enable();
     return () => { screenShield.disable(); };
   }, [user?.id]);
 
+  // The Despia runtime fires onRevenueCatPurchase when the store confirms —
+  // the backend still decides whether access is granted.
+  useEffect(() => {
+    return onEntitlementChange(async () => {
+      const result = await confirmPremiumWithBackend();
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
+      }
+      if (user?.id) await fetchProfile(user.id);
+      setPurchasing(false);
+    });
+  }, [user?.id, fetchProfile]);
+
   const handlePurchase = async () => {
     if (purchasing) return;
-    const plan = PLANS.find((p) => p.id === selectedPlan);
-    if (!plan) return;
-
     setStatusMsg(null);
 
     if (!nativeAvailable) {
@@ -132,24 +110,21 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
     setPurchasing(true);
     hapticSelection();
-    try {
-      const result = await purchase(plan.productId);
-      if (result.cancelled) {
-        return;
-      }
-      if (!result.success) {
-        setStatusMsg({ kind: "error", text: result.error || "Purchase failed. Please try again." });
-        hapticError();
-        return;
-      }
-      hapticSuccess();
-      setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
-      if (user?.id) await fetchProfile(user.id);
-    } catch (e: any) {
-      setStatusMsg({ kind: "error", text: e?.message || "Something went wrong." });
+    const result = await startPurchase(selectedPlan, user?.id ?? "");
+    if (!result.started) {
+      setStatusMsg({ kind: "error", text: result.error || "Purchase failed. Please try again." });
       hapticError();
-    } finally {
       setPurchasing(false);
+      return;
+    }
+    // Purchase sheet is open natively; onRevenueCatPurchase resolves the rest.
+    setTimeout(() => setPurchasing(false), 30_000);
+  };
+
+  const handleManage = async () => {
+    const result = await openCustomerCenter(user?.id);
+    if (!result.started) {
+      setStatusMsg({ kind: "error", text: result.error || "Could not open subscription settings." });
     }
   };
 
@@ -159,11 +134,11 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     setStatusMsg(null);
     try {
       const result = await restorePurchases();
-      if (!result.success) {
-        setStatusMsg({ kind: "error", text: result.error || "No previous purchases found." });
+      if (result.error) {
+        setStatusMsg({ kind: "error", text: result.error });
         return;
       }
-      if (result.plan_type === "premium") {
+      if (result.premium) {
         hapticSuccess();
         setStatusMsg({ kind: "success", text: "Plus restored ✨" });
         if (user?.id) await fetchProfile(user.id);
@@ -532,6 +507,19 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
               </div>
             </div>
           </div>
+
+          {/* Customer Center — restore, change plan, cancel, request refund */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleManage}
+            className="w-full py-[14px] rounded-2xl text-[14px] font-sans font-semibold text-white"
+            style={{
+              background: "linear-gradient(135deg, hsl(153 42% 28%), hsl(153 42% 36%))",
+              boxShadow: "0 6px 24px -6px hsla(153, 42%, 28%, 0.35)",
+            }}
+          >
+            Manage Subscription
+          </motion.button>
 
           {/* Restore Purchases — visible even for premium users (Apple compliance) */}
           <motion.button

@@ -543,14 +543,18 @@ export type Database = {
           gift_bank_name: string | null
           id: string
           inactivity_alerts_enabled: boolean
+          is_tester: boolean
           last_active_at: string
           lmp_date: string | null
           phone: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
           plus_expires_at: string | null
+          plus_last_event: string | null
           plus_original_tx_id: string | null
           plus_product_id: string | null
           plus_provider: string | null
+          plus_status: string | null
+          plus_store: string | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
@@ -571,14 +575,18 @@ export type Database = {
           gift_bank_name?: string | null
           id: string
           inactivity_alerts_enabled?: boolean
+          is_tester?: boolean
           last_active_at?: string
           lmp_date?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           plus_expires_at?: string | null
+          plus_last_event?: string | null
           plus_original_tx_id?: string | null
           plus_product_id?: string | null
           plus_provider?: string | null
+          plus_status?: string | null
+          plus_store?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
@@ -599,14 +607,18 @@ export type Database = {
           gift_bank_name?: string | null
           id?: string
           inactivity_alerts_enabled?: boolean
+          is_tester?: boolean
           last_active_at?: string
           lmp_date?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           plus_expires_at?: string | null
+          plus_last_event?: string | null
           plus_original_tx_id?: string | null
           plus_product_id?: string | null
           plus_provider?: string | null
+          plus_status?: string | null
+          plus_store?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }

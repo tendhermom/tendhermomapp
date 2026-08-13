@@ -9,6 +9,7 @@ import { reportError } from "./lib/errorMessage";
 import { setupPwa, guardAgainstStaleRestore } from "./lib/registerPwa";
 import { applyBuildVersionGate } from "./lib/buildVersion";
 import { captureLaunchDeepLink } from "./lib/deeplinks";
+import { registerRevenueCatHandlers } from "./lib/revenuecat";
 
 // Remove any DOM restored by the browser/WebView before asynchronous startup
 // work begins. The static boot shield in index.html stays above the root until
@@ -22,6 +23,8 @@ initOneSignal();
 initDespia();
 // Capture any deep link the app was launched with before routing starts.
 captureLaunchDeepLink();
+// RevenueCat runtime callbacks (purchase + Customer Center) — registered once.
+registerRevenueCatHandlers();
 
 // Global safety net — catch unhandled JS runtime errors and promise rejections
 // so mums get a friendly toast + we still get Sentry events instead of silent crashes.
