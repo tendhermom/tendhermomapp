@@ -26,6 +26,9 @@ interface Profile {
   full_name: string;
   last_active_at: string;
   inactivity_alerts_enabled?: boolean | null;
+  plan_type?: string | null;
+  plus_expires_at?: string | null;
+  is_tester?: boolean | null;
 }
 
 interface Contact {
@@ -82,7 +85,7 @@ serve(async (req) => {
     const selfCutoff = new Date(Date.now() - SELF_CHECKIN_HOURS * 60 * 60 * 1000).toISOString();
     const { data: profiles, error: profilesErr } = await admin
       .from("profiles")
-      .select("id, full_name, last_active_at, inactivity_alerts_enabled")
+      .select("id, full_name, last_active_at, inactivity_alerts_enabled, plan_type, plus_expires_at, is_tester")
       .lt("last_active_at", selfCutoff)
       .limit(MAX_USERS_PER_RUN);
 
@@ -158,6 +161,12 @@ serve(async (req) => {
 
       // ─── TIER 2: 48h+ contact escalation ───
       // Respect user opt-out (Apple compliance / consent)
+      // Safety Net is a TendherMom Plus entitlement (testers always allowed).
+      const plusActive = profile.is_tester === true ||
+        (profile.plan_type === "premium" &&
+          (!profile.plus_expires_at || new Date(profile.plus_expires_at).getTime() > Date.now()));
+      if (!plusActive) continue;
+
       if (profile.inactivity_alerts_enabled === false) {
         skipped.push(`${profile.id}:opted-out`);
         continue;
