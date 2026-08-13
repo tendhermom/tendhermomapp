@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { hapticSelection } from "@/lib/despia";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 import { PlaceCardSkeleton } from "@/components/skeletons/Skeletons";
+import { useAuthStore } from "@/stores/authStore";
+import PaywallDrawer from "@/components/PaywallDrawer";
 
 // Category images
 import imgMaternal from "@/assets/hubs/maternal.jpg";
@@ -164,6 +166,14 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [status, setStatus] = useState<InlineStatusMsg | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const isPremium = user?.plan_type === "premium";
+  const [paywallOpen, setPaywallOpen] = useState(false);
+
+  // Free plan keeps life-saving Emergency access; the rest of the
+  // directory is a TendherMom Plus feature.
+  const FREE_CATEGORY = "emergency";
+  const isCategoryLocked = (key: string) => !isPremium && key !== FREE_CATEGORY;
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -288,7 +298,11 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.04, type: "spring", stiffness: 300, damping: 28 }}
               whileTap={{ scale: 0.96 }}
-              onClick={() => { hapticSelection(); setSelectedCat(cat.key); }}
+              onClick={() => {
+                hapticSelection();
+                if (isCategoryLocked(cat.key)) { setPaywallOpen(true); return; }
+                setSelectedCat(cat.key);
+              }}
               className="relative rounded-[18px] overflow-hidden text-left ios-press"
               style={{ aspectRatio: "3/4", boxShadow: "0 4px 20px -4px hsla(0,0%,0%,0.12)" }}
             >
@@ -299,7 +313,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
                 <p className="text-white/60 text-[11px] font-sans mt-0.5">{cat.subs.length} services</p>
               </div>
               <div className="absolute top-3 right-3 w-[28px] h-[28px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}>
-                <IonIcon name="chevron-forward" size={14} style={{ color: "white" }} />
+                <IonIcon name={isCategoryLocked(cat.key) ? "lock-closed" : "chevron-forward"} size={14} style={{ color: "white" }} />
               </div>
             </motion.button>
           ))}
@@ -311,6 +325,8 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
             Rescue Map uses your location to find nearby facilities using Google Maps. Your location data is not stored.
           </p>
         </motion.div>
+
+        <PaywallDrawer open={paywallOpen} onOpenChange={setPaywallOpen} feature="Rescue Map" />
       </motion.div>
     );
   }
