@@ -106,19 +106,28 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
   useEffect(() => {
-    const available = isBillingAvailable();
-    setNativeAvailable(available);
-    if (available) void configureForUser(user?.id);
+    setNativeAvailable(isBillingAvailable());
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
     screenShield.enable();
     return () => { screenShield.disable(); };
   }, [user?.id]);
 
+  // The Despia runtime fires onRevenueCatPurchase when the store confirms —
+  // the backend still decides whether access is granted.
+  useEffect(() => {
+    return onEntitlementChange(async () => {
+      const result = await confirmPremiumWithBackend();
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
+      }
+      if (user?.id) await fetchProfile(user.id);
+      setPurchasing(false);
+    });
+  }, [user?.id, fetchProfile]);
+
   const handlePurchase = async () => {
     if (purchasing) return;
-    const plan = PLANS.find((p) => p.id === selectedPlan);
-    if (!plan) return;
-
     setStatusMsg(null);
 
     if (!nativeAvailable) {
@@ -132,24 +141,21 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
     setPurchasing(true);
     hapticSelection();
-    try {
-      const result = await purchase(plan.productId);
-      if (result.cancelled) {
-        return;
-      }
-      if (!result.success) {
-        setStatusMsg({ kind: "error", text: result.error || "Purchase failed. Please try again." });
-        hapticError();
-        return;
-      }
-      hapticSuccess();
-      setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
-      if (user?.id) await fetchProfile(user.id);
-    } catch (e: any) {
-      setStatusMsg({ kind: "error", text: e?.message || "Something went wrong." });
+    const result = await startPurchase(selectedPlan, user?.id ?? "");
+    if (!result.started) {
+      setStatusMsg({ kind: "error", text: result.error || "Purchase failed. Please try again." });
       hapticError();
-    } finally {
       setPurchasing(false);
+      return;
+    }
+    // Purchase sheet is open natively; onRevenueCatPurchase resolves the rest.
+    setTimeout(() => setPurchasing(false), 30_000);
+  };
+
+  const handleManage = async () => {
+    const result = await openCustomerCenter(user?.id);
+    if (!result.started) {
+      setStatusMsg({ kind: "error", text: result.error || "Could not open subscription settings." });
     }
   };
 
@@ -159,11 +165,11 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     setStatusMsg(null);
     try {
       const result = await restorePurchases();
-      if (!result.success) {
-        setStatusMsg({ kind: "error", text: result.error || "No previous purchases found." });
+      if (result.error) {
+        setStatusMsg({ kind: "error", text: result.error });
         return;
       }
-      if (result.plan_type === "premium") {
+      if (result.premium) {
         hapticSuccess();
         setStatusMsg({ kind: "success", text: "Plus restored ✨" });
         if (user?.id) await fetchProfile(user.id);
