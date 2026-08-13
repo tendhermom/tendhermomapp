@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import IonIcon from "@/components/IonIcon";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
+import PaywallDrawer from "@/components/PaywallDrawer";
 
 interface SafetySettingsScreenProps {
   onBack: () => void;
@@ -17,6 +18,8 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
   const [enabled, setEnabled] = useState<boolean>(user?.inactivity_alerts_enabled ?? true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<InlineStatusMsg | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const isPremium = user?.plan_type === "premium";
 
   useEffect(() => {
     setEnabled(user?.inactivity_alerts_enabled ?? true);
@@ -29,6 +32,12 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
 
   const handleToggle = async (next: boolean) => {
     if (!user) return;
+    // Safety Net inactivity alerts are a TendherMom Plus feature.
+    if (!isPremium) {
+      setEnabled(false);
+      setPaywallOpen(true);
+      return;
+    }
     setEnabled(next);
     setSaving(true);
     const { error } = await supabase
@@ -140,10 +149,20 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
               {enabled ? "Active · monitoring quietly" : "Paused · self-pings only"}
             </p>
           </div>
-          <Switch checked={enabled} onCheckedChange={handleToggle} disabled={saving} />
+          <Switch checked={isPremium && enabled} onCheckedChange={handleToggle} disabled={saving} />
+          {!isPremium && (
+            <IonIcon name="lock-closed" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+          )}
         </div>
 
+        {!isPremium && (
+          <p className="text-[12px] font-sans mt-3" style={{ color: "hsl(var(--text-muted))" }}>
+            Safety Net alerts are included with TendherMom Plus.
+          </p>
+        )}
+
         <InlineStatus status={status} spacing="mt-4" />
+        <PaywallDrawer open={paywallOpen} onOpenChange={setPaywallOpen} feature="Safety Net" />
       </motion.div>
 
       {/* Timeline card */}
