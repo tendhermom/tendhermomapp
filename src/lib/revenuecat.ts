@@ -19,7 +19,7 @@ import { isDespiaNative } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
 
 /** The RevenueCat entitlement that unlocks TendherMom Plus. */
-export const PRO_ENTITLEMENT = "Pro";
+export const PRO_ENTITLEMENT = "entl38b15a9cf6";
 
 /** The RevenueCat offering ("Plus") that holds the weekly/monthly/yearly packages. */
 export const OFFERING_NAME = "Plus";
