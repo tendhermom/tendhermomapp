@@ -111,7 +111,6 @@ export interface RestoredPurchase {
 export async function getPurchaseHistory(): Promise<RestoredPurchase[]> {
   if (!isBillingAvailable()) return [];
   try {
-    if (!isDespiaIOS() && !isDespiaAndroid()) return launchPaywall(userId);
     const despia = await loadDespia();
     const data = await despia<{ restoredData?: RestoredPurchase[] }>("getpurchasehistory://", [
       "restoredData",

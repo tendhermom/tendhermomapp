@@ -119,7 +119,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
 
             {/* Input bar — always visible at bottom */}
             <div
-              className="shrink-0 px-5 py-3 flex gap-2 border-t"
+              className="relative shrink-0 px-5 py-3 flex gap-2 border-t"
               style={{
                 borderColor: "hsl(var(--border-subtle))",
                 paddingBottom: keyboardOpen ? "12px" : "max(env(safe-area-inset-bottom, 16px), 16px)",

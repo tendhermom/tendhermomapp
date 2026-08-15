@@ -41,6 +41,14 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   const [reporting, setReporting] = useState(false);
   const [cardStatus, setCardStatus] = useState<InlineStatusMsg | null>(null);
   const [reportStatus, setReportStatus] = useState<InlineStatusMsg | null>(null);
+  const [showImage, setShowImage] = useState(false);
+  const [saved, setSaved] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("tendher_saved_community_posts") || "[]").includes(post.id);
+    } catch {
+      return false;
+    }
+  });
 
   const initials = (post.author_name || "A")
     .split(" ")
@@ -178,12 +186,14 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
 
       {/* Post image */}
       {post.image_url && (
-        <img
-          src={post.image_url}
-          alt=""
-          className="w-full rounded-xl object-cover max-h-[260px]"
-          loading="lazy"
-        />
+        <button type="button" onClick={() => setShowImage(true)} className="block w-full rounded-xl overflow-hidden">
+          <img
+            src={post.image_url}
+            alt="Community post"
+            className="w-full h-auto max-h-[420px] object-contain"
+            loading="lazy"
+          />
+        </button>
       )}
 
       {/* Actions */}
@@ -219,29 +229,50 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
 
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={async () => {
+          onClick={() => {
             hapticLight();
-            const excerpt = (post.content || "").slice(0, 140).trim();
-            const ok = await nativeShare({
-              title: "TendherMom Community",
-              text: excerpt ? `"${excerpt}${(post.content || "").length > 140 ? "…" : ""}" — via TendherMom` : "Check out this post on TendherMom",
-              url: "https://tendhermom.lovable.app",
-            });
-            if (!ok) {
-              try {
-                await navigator.clipboard.writeText(`${excerpt}\n\nhttps://tendhermom.lovable.app`);
-                setCardStatus({ kind: "success", text: "Post copied to clipboard" });
-              } catch {
-                setCardStatus({ kind: "error", text: "Sharing isn't supported on this device" });
-              }
-              setTimeout(() => setCardStatus(null), 2500);
+            try {
+              const key = "tendher_saved_community_posts";
+              const ids: string[] = JSON.parse(localStorage.getItem(key) || "[]");
+              const next = saved ? ids.filter((id) => id !== post.id) : [...new Set([...ids, post.id])];
+              localStorage.setItem(key, JSON.stringify(next));
+              setSaved(!saved);
+              setCardStatus({ kind: "success", text: saved ? "Removed from saved posts" : "Post saved" });
+            } catch {
+              setCardStatus({ kind: "error", text: "Couldn't save this post" });
             }
+            setTimeout(() => setCardStatus(null), 2500);
           }}
           className="flex items-center gap-1.5 ml-auto pt-2"
+          aria-label={saved ? "Remove from saved posts" : "Save post"}
         >
-          <IonIcon name="share-outline" size={16} style={{ color: "hsl(var(--text-muted))" }} />
+          <IonIcon name={saved ? "bookmark" : "bookmark-outline"} size={17} style={{ color: saved ? "hsl(var(--green))" : "hsl(var(--text-muted))" }} />
         </motion.button>
       </div>
+
+      <AnimatePresence>
+        {showImage && post.image_url && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+            style={{ background: "hsl(var(--dark) / 0.94)" }}
+            onClick={() => setShowImage(false)}
+          >
+            <img src={post.image_url} alt="Community post enlarged" className="max-w-full max-h-[85vh] object-contain rounded-xl" />
+            <button
+              type="button"
+              aria-label="Close image"
+              onClick={() => setShowImage(false)}
+              className="absolute top-[max(env(safe-area-inset-top),20px)] right-5 w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--surface) / 0.18)" }}
+            >
+              <IonIcon name="close" size={22} style={{ color: "hsl(var(--surface))" }} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 
       {/* Report Sheet */}
