@@ -106,10 +106,6 @@ const Index = () => {
     }
   }, [activeTab]);
 
-  const pushBrowserHistory = useCallback(() => {
-    try { window.history.pushState({ tendher: true }, ""); } catch {}
-  }, []);
-
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
     setStack((prev) => {
@@ -119,8 +115,11 @@ const Index = () => {
       if (ROOT_TABS.has(screen)) return [screen];
       return [...prev, screen];
     });
-    pushBrowserHistory();
-  }, [pushBrowserHistory]);
+    // No history.pushState here: a single sentinel entry (seeded below) is
+    // enough to catch the hardware back press. Pushing one entry per screen
+    // made exiting require many back presses and felt like the app hung.
+  }, []);
+
 
   const handleBack = useCallback(() => {
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
