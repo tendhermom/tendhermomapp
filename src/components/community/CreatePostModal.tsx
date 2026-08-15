@@ -114,8 +114,8 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end justify-center"
-          style={{ background: "rgba(0,0,0,0.4)" }}
+          className="fixed inset-x-0 top-0 z-[80] flex items-end justify-center"
+          style={{ background: "rgba(0,0,0,0.4)", bottom: keyboardOffset }}
           onClick={onClose}
         >
           <motion.div
@@ -124,8 +124,12 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[430px] rounded-t-3xl p-5 pb-[max(env(safe-area-inset-bottom,32px),32px)]"
-            style={{ background: "hsl(var(--surface))" }}
+            className="w-full max-w-[430px] rounded-t-3xl p-5 overflow-y-auto"
+            style={{
+              background: "hsl(var(--surface))",
+              maxHeight: keyboardOpen ? "70vh" : "85vh",
+              paddingBottom: keyboardOpen ? 20 : "max(env(safe-area-inset-bottom, 32px), 32px)",
+            }}
           >
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
             <h3 className="font-serif text-[20px] mb-2" style={{ color: "hsl(var(--dark))" }}>Share with the community</h3>
