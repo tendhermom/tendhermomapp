@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 
@@ -43,7 +44,10 @@ const STYLES: Record<InlineStatusKind, { bg: string; fg: string; icon: string }>
  * Drop in next to the action button to give users immediate, in-context feedback
  * without using popup toasts.
  */
-const InlineStatus = ({ status, className, spacing = "mb-3" }: InlineStatusProps) => {
+const InlineStatus = forwardRef<HTMLDivElement, InlineStatusProps>(function InlineStatus(
+  { status, className, spacing = "mb-3" },
+  ref,
+) {
   return (
     <AnimatePresence>
       {status && (
@@ -53,6 +57,7 @@ const InlineStatus = ({ status, className, spacing = "mb-3" }: InlineStatusProps
           animate={{ opacity: 1, y: 0, height: "auto" }}
           exit={{ opacity: 0, y: -4, height: 0 }}
           transition={{ duration: 0.18 }}
+          ref={ref}
           className={`overflow-hidden ${spacing} ${className ?? ""}`}
         >
           <div
@@ -75,6 +80,6 @@ const InlineStatus = ({ status, className, spacing = "mb-3" }: InlineStatusProps
       )}
     </AnimatePresence>
   );
-};
+});
 
 export default InlineStatus;
