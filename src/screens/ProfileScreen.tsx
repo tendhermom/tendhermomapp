@@ -11,7 +11,7 @@ import ComplianceScreen from "@/screens/ComplianceScreen";
 import CycleSettingScreen from "@/screens/CycleSettingScreen";
 import GiftSettingsScreen from "@/screens/GiftSettingsScreen";
 import { useAuthStore } from "@/stores/authStore";
-import { nativeShare, hapticLight, screenShield } from "@/lib/despia";
+import { hapticLight, screenShield } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
 import InlineStatus, { type InlineStatusMsg } from "@/components/InlineStatus";
 
@@ -35,7 +35,6 @@ const menuSections = [
       { icon: "shield-checkmark-outline", label: "Safety Net", route: "safety" },
       { icon: "notifications-outline", label: "Notifications", route: "notifications" },
       { icon: "shield-outline", label: "Moderation", route: "moderation", adminOnly: true },
-      { icon: "share-social-outline", label: "Share TendherMom", route: "share-app" },
     ],
   },
   {
@@ -161,14 +160,6 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
 
   const handleMenuPress = (route: string) => {
     hapticLight();
-    if (route === "share-app") {
-      nativeShare({
-        title: "TendherMom",
-        text: "Join TendherMom — maternal health support for Nigerian mothers",
-        url: "https://tendhermomapps.lovable.app",
-      });
-      return;
-    }
     if (["privacy", "terms", "help", "technical-popups", "health-safety", "compliance"].includes(route)) {
       setSubScreen(route);
       return;

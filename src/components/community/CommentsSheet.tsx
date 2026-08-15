@@ -8,13 +8,16 @@ interface CommentsSheetProps {
   onClose: () => void;
   comments: PostComment[];
   loading: boolean;
-  onAddComment: (text: string) => void;
+  onAddComment: (text: string) => Promise<boolean>;
 }
 
 const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
@@ -27,18 +30,29 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
     if (!vv) return;
 
     const onResize = () => {
-      const heightDiff = window.innerHeight - vv.height;
+      const heightDiff = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       setKeyboardOpen(heightDiff > 100);
+      setKeyboardOffset(heightDiff > 100 ? heightDiff : 0);
     };
 
     vv.addEventListener("resize", onResize);
-    return () => vv.removeEventListener("resize", onResize);
+    vv.addEventListener("scroll", onResize);
+    onResize();
+    return () => {
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", onResize);
+      setKeyboardOffset(0);
+    };
   }, [open]);
 
-  const handleSubmit = () => {
-    if (!text.trim()) return;
-    onAddComment(text);
-    setText("");
+  const handleSubmit = async () => {
+    if (!text.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    const ok = await onAddComment(text.trim());
+    setSubmitting(false);
+    if (ok) setText("");
+    else setError("Couldn't post your comment. Please try again.");
   };
 
   return (
@@ -48,8 +62,8 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end justify-center"
-          style={{ background: "rgba(0,0,0,0.4)" }}
+          className="fixed inset-x-0 top-0 z-[80] flex items-end justify-center"
+          style={{ background: "rgba(0,0,0,0.4)", bottom: keyboardOffset }}
           onClick={onClose}
         >
           <motion.div
@@ -61,7 +75,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
             className="w-full max-w-[430px] rounded-t-3xl flex flex-col"
             style={{
               background: "hsl(var(--surface))",
-              maxHeight: keyboardOpen ? "50vh" : "70vh",
+               maxHeight: keyboardOpen ? "65vh" : "70vh",
             }}
           >
             {/* Handle + Title */}
@@ -111,24 +125,34 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                 paddingBottom: keyboardOpen ? "12px" : "max(env(safe-area-inset-bottom, 16px), 16px)",
               }}
             >
+              {error && (
+                <p className="absolute -top-7 left-5 right-5 text-center text-[11px] font-sans" style={{ color: "hsl(var(--coral))" }}>
+                  {error}
+                </p>
+              )}
               <input
                 ref={inputRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Write a comment…"
                 maxLength={500}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleSubmit();
+                  }
+                }}
                 className="flex-1 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none"
                 style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))", border: "1.5px solid hsl(var(--border-subtle))" }}
               />
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={handleSubmit}
-                disabled={!text.trim()}
+                onClick={() => void handleSubmit()}
+                disabled={!text.trim() || submitting}
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: "hsl(var(--green))", opacity: text.trim() ? 1 : 0.5 }}
               >
-                <IonIcon name="send" size={18} style={{ color: "white" }} />
+                <IonIcon name={submitting ? "hourglass-outline" : "send"} size={18} style={{ color: "white" }} />
               </motion.button>
             </div>
           </motion.div>

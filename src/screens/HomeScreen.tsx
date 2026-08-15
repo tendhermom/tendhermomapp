@@ -47,7 +47,7 @@ const getGamificationLevel = (points: number) => {
 
 const QUICK_ACTIONS = [
   { id: "antenatal", label: "Antenatal", icon: "medkit-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
-  { id: "health-hubs", label: "Rescue Map", icon: "location-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
+  { id: "health-hubs", label: "Rescue\nMap", icon: "location-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
   { id: "health-tracker", label: "Health Tracker", icon: "heart-outline", color: "hsl(var(--green))", bg: "hsl(var(--light-green))" },
   { id: "insights", label: "Insights", icon: "bulb-outline", color: "hsl(var(--coral))", bg: "hsl(var(--light-coral))" },
 ];
@@ -186,7 +186,7 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
               >
                 <IonIcon name={item.icon} size={24} style={{ color: item.color }} />
               </div>
-              <span className="text-[10px] font-sans font-semibold text-center leading-tight tracking-wide min-h-[2.4em] flex items-center justify-center" style={{ color: "hsl(var(--dark))" }}>
+              <span className="text-[10px] font-sans font-semibold text-center leading-tight tracking-wide whitespace-pre-line min-h-[2.4em] flex items-center justify-center" style={{ color: "hsl(var(--dark))" }}>
                 {item.label}
               </span>
             </motion.button>

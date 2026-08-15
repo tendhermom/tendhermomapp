@@ -95,7 +95,7 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: "linear-gradient(to top, hsla(var(--dark), 0.85) 0%, hsla(var(--dark), 0.3) 40%, transparent 70%)",
+                    background: "linear-gradient(to top, hsl(var(--green)) 0%, hsla(var(--green), 0.82) 42%, hsla(var(--green), 0.08) 78%)",
                   }}
                 />
               </motion.div>
@@ -111,10 +111,10 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <h3 className="text-white text-[18px] font-serif leading-tight">
+                   <h3 className="text-[18px] font-serif leading-tight" style={{ color: "hsl(var(--surface))" }}>
                     {currentSlide.title}
                   </h3>
-                  <p className="text-white/70 text-[12px] font-sans mt-1 leading-relaxed">
+                   <p className="text-[12px] font-sans mt-1 leading-relaxed" style={{ color: "hsl(var(--surface) / 0.82)" }}>
                     {currentSlide.description}
                   </p>
                 </motion.div>
