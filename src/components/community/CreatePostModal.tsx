@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,27 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [status, setStatus] = useState<InlineStatusMsg | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const keyboardOpen = keyboardOffset > 0;
+
+  // Lift the sheet above the on-screen keyboard so the Post button stays visible
+  useEffect(() => {
+    if (!open) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      const diff = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardOffset(diff > 100 ? diff : 0);
+    };
+    vv.addEventListener("resize", onResize);
+    vv.addEventListener("scroll", onResize);
+    onResize();
+    return () => {
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", onResize);
+      setKeyboardOffset(0);
+    };
+  }, [open]);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     let file = e.target.files?.[0];
