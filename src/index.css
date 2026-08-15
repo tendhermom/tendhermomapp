@@ -100,6 +100,10 @@
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
   }
+
+  #lovable-badge {
+    display: none !important;
+  }
 }
 
 /* App shell */
