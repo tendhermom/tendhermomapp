@@ -144,24 +144,30 @@ const Index = () => {
 
   // Hardware / browser back button — pop our stack instead of exiting the app.
   useEffect(() => {
-    // Seed a history entry we own so the first back press fires popstate
+    // Seed exactly one history entry we own so a back press fires popstate
     // instead of leaving the app.
     try { window.history.pushState({ tendher: true, seed: true }, ""); } catch {}
 
+    let exiting = false;
+
     const onPop = () => {
+      if (exiting) return;
       if (stackRef.current.length > 1) {
         setStack((prev) => prev.slice(0, -1));
-        // Re-seed so the next back press also fires popstate.
+        // Re-seed a single entry so the next back press also fires popstate.
         try { window.history.pushState({ tendher: true }, ""); } catch {}
       } else {
-        // At a root tab, do not trap the hardware back action or open a blocking
-        // browser confirm dialog. Let the native shell/browser leave naturally.
-        window.setTimeout(() => window.history.go(-1), 0);
+        // At a root tab: stop intercepting and let the shell/browser leave
+        // in one step instead of bouncing through our own entries.
+        exiting = true;
+        window.removeEventListener("popstate", onPop);
+        try { window.history.back(); } catch {}
       }
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
+
 
   const renderScreen = () => {
     switch (activeTab) {
