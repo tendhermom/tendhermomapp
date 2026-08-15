@@ -35,7 +35,7 @@ const formatMemberCount = (n: number): string => {
 const db = supabase as any;
 
 const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
-  const { activeChannel, posts, loading, hasMore, setActiveChannel, fetchPosts, loadMore, toggleLike, createPost, fetchComments, addComment } = useCommunityStore();
+  const { activeChannel, posts, loading, hasMore, setActiveChannel, fetchPosts, loadMore, toggleLike, createPost, fetchComments, addComment, removePost } = useCommunityStore();
   const user = useAuthStore((s) => s.user);
 
   // Membership state
@@ -300,6 +300,11 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
                     post={post}
                     onLike={() => user && toggleLike(post.id, user.id)}
                     onComment={() => openComments(post.id)}
+                    onHide={(id) => {
+                      removePost(id);
+                      setFeedStatus({ kind: "success", text: "Post deleted" });
+                      setTimeout(() => setFeedStatus(null), 2500);
+                    }}
                   />
                 </motion.div>
               ))}
