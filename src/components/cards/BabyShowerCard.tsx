@@ -75,22 +75,12 @@ const BabyShowerCard = ({
     ? [...BASE_REACTIONS, GIFT_REACTION]
     : BASE_REACTIONS;
 
-  const handleTap = () => {
-    if (userReaction === "gifted") {
-      // Tapping the "Gifted" chip re-opens the bank details sheet (no toggle-off)
-      onGiveGift?.();
-      return;
-    }
-    if (userReaction) {
-      onReaction?.(userReaction as any);
-    } else {
-      setShowPicker(true);
-    }
-  };
+  // Always open the picker so Gift stays reachable even after reacting
+  const handleTap = () => setShowPicker(true);
 
   const handleSelect = (type: string) => {
     setShowPicker(false);
-    if (type === "gift") {
+    if (type === "gift" || type === "gifted") {
       onGiveGift?.();
       return;
     }

@@ -51,8 +51,13 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
     setError(null);
     const ok = await onAddComment(text.trim());
     setSubmitting(false);
-    if (ok) setText("");
-    else setError("Couldn't post your comment. Please try again.");
+    if (ok) {
+      setText("");
+      // Keep the composer ready so another comment can be posted right away
+      requestAnimationFrame(() => inputRef.current?.focus());
+    } else {
+      setError("Couldn't post your comment. Please try again.");
+    }
   };
 
   return (
