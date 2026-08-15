@@ -44,7 +44,8 @@ async function sendTermiiSMS(phone: string, message: string, apiKey: string): Pr
     });
 
     const data = await response.json();
-    if (!response.ok) {
+    const accepted = response.ok && !data?.error && !data?.message?.toLowerCase?.().includes("fail");
+    if (!accepted) {
       console.error(`[SOS] Termii SMS failed for ${phone}:`, data);
       return { success: false, error: `HTTP ${response.status}`, response: data };
     }
@@ -75,7 +76,8 @@ async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string
     });
 
     const data = await response.json();
-    if (!response.ok) {
+    const accepted = response.ok && !data?.error && !data?.message?.toLowerCase?.().includes("fail");
+    if (!accepted) {
       console.error(`[SOS] Termii WhatsApp failed for ${phone}:`, data);
       return { success: false, error: `HTTP ${response.status}`, response: data };
     }
@@ -155,6 +157,13 @@ serve(async (req) => {
       });
     }
 
+    if (body.user_id !== userId || !user_name || typeof user_name !== "string" || user_name.length > 120) {
+      return new Response(JSON.stringify({ error: "Invalid alert details" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const limitedContacts = contacts.slice(0, maxContacts);
 
     const now = new Date();
@@ -222,8 +231,15 @@ serve(async (req) => {
 
     console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s)`);
 
+    if (successCount === 0) {
+      return new Response(
+        JSON.stringify({ error: "No emergency messages could be delivered", channel_results: channelResults }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ success: true, contacts_notified: limitedContacts.length, channel_results: channelResults, is_test }),
+      JSON.stringify({ success: true, contacts_notified: limitedContacts.length, messages_sent: successCount, channel_results: channelResults, is_test }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

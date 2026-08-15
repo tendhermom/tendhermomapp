@@ -11,7 +11,8 @@ const corsHeaders = {
 };
 
 /** The entitlement that unlocks TendherMom Plus (matches the RevenueCat dashboard). */
-const PRO_ENTITLEMENT = "entl38b15a9cf6";
+// Webhook entitlement_ids contains the public identifier configured in RevenueCat.
+const PRO_ENTITLEMENT = "pro";
 
 // Events that grant / keep access
 const ACTIVE_TYPES = new Set([
