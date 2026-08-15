@@ -83,9 +83,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     
     if (uncachedIds.length > 0) {
       const { data: profiles } = await (supabase as any)
-        .from("public_profiles")
-        .select("id, full_name, avatar_url")
-        .in("id", uncachedIds);
+        .rpc("get_public_profiles", { _user_ids: uncachedIds });
       
       (profiles || []).forEach((p: any) => {
         queryCache.set(`profile:${p.id}`, p, 5 * 60_000); // Cache 5 min
@@ -194,9 +192,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     
     if (uncachedIds.length > 0) {
       const { data: profiles } = await (supabase as any)
-        .from("public_profiles")
-        .select("id, full_name, avatar_url")
-        .in("id", uncachedIds);
+        .rpc("get_public_profiles", { _user_ids: uncachedIds });
       (profiles || []).forEach((p: any) => {
         queryCache.set(`profile:${p.id}`, p, 5 * 60_000);
       });

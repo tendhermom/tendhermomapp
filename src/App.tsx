@@ -12,7 +12,6 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import SplashScreen from "./components/SplashScreen";
 import BiometricLock from "./components/BiometricLock";
-import PhoneBackfillPrompt from "./components/PhoneBackfillPrompt";
 import OfflineBanner from "./components/OfflineBanner";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
@@ -207,7 +206,6 @@ const App = () => {
         <BrowserRouter>
           <AuthListener />
           <AppContent />
-          <PhoneBackfillPrompt />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

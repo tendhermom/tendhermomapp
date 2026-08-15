@@ -196,12 +196,14 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   };
 
   const handleAddComment = async (text: string) => {
-    if (!text.trim() || !commentsPostId) return;
+    if (!text.trim() || !commentsPostId) return false;
     const ok = await addComment(commentsPostId, text.trim());
     if (ok) {
       const data = await fetchComments(commentsPostId);
       setComments(data);
+      return true;
     }
+    return false;
   };
 
   // ─── FEED VIEW (inside a community) ───

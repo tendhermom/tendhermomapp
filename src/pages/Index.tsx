@@ -155,11 +155,9 @@ const Index = () => {
         // Re-seed so the next back press also fires popstate.
         try { window.history.pushState({ tendher: true }, ""); } catch {}
       } else {
-        // At root — confirm before letting the shell exit.
-        const shouldExit = window.confirm("Exit TendherMom?");
-        if (!shouldExit) {
-          try { window.history.pushState({ tendher: true }, ""); } catch {}
-        }
+        // At a root tab, do not trap the hardware back action or open a blocking
+        // browser confirm dialog. Let the native shell/browser leave naturally.
+        window.setTimeout(() => window.history.go(-1), 0);
       }
     };
     window.addEventListener("popstate", onPop);

@@ -19,7 +19,7 @@ import { isDespiaNative } from "@/lib/despia";
 import { supabase } from "@/integrations/supabase/client";
 
 /** The RevenueCat entitlement that unlocks TendherMom Plus. */
-export const PRO_ENTITLEMENT = "entl38b15a9cf6";
+export const PRO_ENTITLEMENT = "Pro";
 
 /** The RevenueCat offering ("Plus") that holds the weekly/monthly/yearly packages. */
 export const OFFERING_NAME = "Plus";
@@ -70,7 +70,7 @@ export const PLANS: PlanDefinition[] = [
   },
 ];
 
-export const getPlan = (id: PlanId) => PLANS.find((p) => p.id === id)!;
+export const getPlan = (id: PlanId) => PLANS.find((p) => p.id === id) ?? PLANS[0];
 
 // ─── Runtime detection ────────────────────────────────────────
 
@@ -82,7 +82,7 @@ export const isDespiaIOS = (): boolean =>
 export const isDespiaAndroid = (): boolean => isDespiaNative() && ua().includes("android");
 
 /** Purchases can only run inside the Despia shell. */
-export const isBillingAvailable = (): boolean => isDespiaIOS() || isDespiaAndroid();
+export const isBillingAvailable = (): boolean => isDespiaNative();
 
 /** Resolve the correct store product id for the current platform. */
 export const productIdFor = (plan: PlanDefinition): string =>

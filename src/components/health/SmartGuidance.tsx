@@ -34,14 +34,11 @@ const SmartGuidance = ({ entries, currentWeek }: SmartGuidanceProps) => {
   const guidance = useMemo((): Guidance[] => {
     if (entries.length === 0) return [];
     const tips: Guidance[] = [];
-    const recent = entries.slice(0, 5);
+    const latest = entries[0];
 
-    // BP analysis — use the same classification as the tracker card
-    const bpEntries = recent.filter((e) => e.systolic && e.diastolic);
-    if (bpEntries.length >= 2) {
-      const avgSys = Math.round(bpEntries.reduce((s, e) => s + (e.systolic || 0), 0) / bpEntries.length);
-      const avgDia = Math.round(bpEntries.reduce((s, e) => s + (e.diastolic || 0), 0) / bpEntries.length);
-      const category = classifyBP(avgSys, avgDia);
+    // Current guidance is based on the newest reading only. Older entries are history.
+    if (latest?.systolic && latest?.diastolic) {
+      const category = classifyBP(latest.systolic, latest.diastolic);
 
       if (category) {
         const severityMap: Record<typeof category.severity, Guidance["severity"]> = {
@@ -65,71 +62,34 @@ const SmartGuidance = ({ entries, currentWeek }: SmartGuidanceProps) => {
             : "";
         tips.push({
           icon,
-          title: `${category.shortTag} · ${avgSys}/${avgDia} mmHg`,
+          title: `${category.shortTag} · ${latest.systolic}/${latest.diastolic} mmHg`,
           message: `${category.clinicalRemark}${pregnancyNote} Tap the BP status on your card above for full guidance.`,
           severity: severityMap[category.severity],
         });
       }
 
-      // Trend analysis
-      if (bpEntries.length >= 3) {
-        const first = bpEntries[bpEntries.length - 1].systolic || 0;
-        const last = bpEntries[0].systolic || 0;
-        if (last - first > 15) {
-          tips.push({
-            icon: "trending-up",
-            title: "Rising BP Trend",
-            message: "Your systolic blood pressure has been increasing. Consider reducing stress, cutting sodium, and speaking with your healthcare provider.",
-            severity: "warning",
-          });
-        }
-      }
     }
 
     // Heart rate analysis
-    const hrEntries = recent.filter((e) => e.heartRate);
-    if (hrEntries.length >= 1) {
-      const avgHR = hrEntries.reduce((s, e) => s + (e.heartRate || 0), 0) / hrEntries.length;
-      if (avgHR > 110) {
+    if (latest?.heartRate) {
+      if (latest.heartRate > 110) {
         tips.push({
           icon: "pulse",
           title: "Heart Rate Is High",
-          message: `Your average heart rate is ${Math.round(avgHR)} bpm. While slight increases are normal in pregnancy, rates above 100 bpm should be discussed with your doctor.`,
+          message: `Your latest heart rate is ${latest.heartRate} bpm. While slight increases are normal in pregnancy, rates above 100 bpm should be discussed with your doctor.`,
           severity: "warning",
         });
-      } else if (avgHR >= 80 && avgHR <= 110) {
+      } else if (latest.heartRate >= 80 && latest.heartRate <= 110) {
         tips.push({
           icon: "pulse",
           title: "Heart Rate Is Normal",
-          message: `${Math.round(avgHR)} bpm is within the expected range for pregnancy. Your heart is working harder to support baby's growth.`,
+          message: `${latest.heartRate} bpm is within the expected range for pregnancy. Your heart is working harder to support baby's growth.`,
           severity: "info",
         });
       }
     }
 
     // Weight analysis
-    const weightEntries = recent.filter((e) => e.weight);
-    if (weightEntries.length >= 2) {
-      const latest = weightEntries[0].weight || 0;
-      const earliest = weightEntries[weightEntries.length - 1].weight || 0;
-      const diff = latest - earliest;
-
-      if (diff > 3) {
-        tips.push({
-          icon: "scale-outline",
-          title: "Rapid Weight Gain",
-          message: `You've gained ${diff.toFixed(1)} kg recently. ${currentWeek >= 28 ? "Some gain is expected in the third trimester, but rapid gain may indicate fluid retention. Discuss with your doctor." : "Focus on balanced meals with lean protein, vegetables, and whole grains."}`,
-          severity: "warning",
-        });
-      } else if (diff < -1) {
-        tips.push({
-          icon: "scale-outline",
-          title: "Weight Loss Detected",
-          message: `You've lost ${Math.abs(diff).toFixed(1)} kg. ${currentWeek <= 14 ? "Some weight loss in the first trimester is normal due to nausea." : "Weight loss at this stage should be discussed with your healthcare provider."}`,
-          severity: currentWeek <= 14 ? "info" : "warning",
-        });
-      }
-    }
 
     // Week-specific guidance
     if (currentWeek <= 12) {
