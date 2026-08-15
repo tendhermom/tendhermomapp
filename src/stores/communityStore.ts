@@ -41,6 +41,7 @@ interface CommunityState {
   toggleLike: (postId: string, userId: string) => Promise<void>;
   fetchComments: (postId: string) => Promise<PostComment[]>;
   addComment: (postId: string, content: string) => Promise<boolean>;
+  removePost: (postId: string) => void;
 }
 
 const db = supabase as any;
@@ -207,6 +208,10 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       author_name: profileMap.get(c.user_id)?.full_name || "Anonymous",
       author_avatar: profileMap.get(c.user_id)?.avatar_url || undefined,
     }));
+  },
+
+  removePost: (postId) => {
+    set({ posts: get().posts.filter((p) => p.id !== postId) });
   },
 
   addComment: async (postId, content) => {
