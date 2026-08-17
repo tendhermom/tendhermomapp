@@ -60,6 +60,23 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const [loading, setLoading] = useState(true);
   const [logStatus, setLogStatus] = useState<InlineStatusMsg | null>(null);
   const [detailsCategory, setDetailsCategory] = useState<BPCategory | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const handleClearEntries = async () => {
+    if (!user?.id) return;
+    setClearing(true);
+    const { error } = await supabase.from("health_metrics" as any).delete().eq("user_id", user.id);
+    setClearing(false);
+    setShowClearConfirm(false);
+    if (error) {
+      setLogStatus({ kind: "error", text: "Couldn't clear your entries. Please try again." });
+    } else {
+      setEntries([]);
+      setLogStatus({ kind: "success", text: "Recent entries cleared." });
+    }
+    setTimeout(() => setLogStatus(null), 5000);
+  };
 
   const fetchEntries = useCallback(async () => {
     if (!user?.id) return;
