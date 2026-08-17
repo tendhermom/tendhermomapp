@@ -124,73 +124,84 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[430px] rounded-t-3xl p-5 overflow-y-auto"
+            className="w-full max-w-[430px] rounded-t-3xl flex flex-col"
             style={{
               background: "hsl(var(--surface))",
               maxHeight: keyboardOpen ? "70vh" : "85vh",
-              paddingBottom: keyboardOpen ? 20 : "max(env(safe-area-inset-bottom, 32px), 32px)",
             }}
           >
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
-            <h3 className="font-serif text-[20px] mb-2" style={{ color: "hsl(var(--dark))" }}>Share with the community</h3>
-            <p className="text-[13px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
-              Posting to <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>{channelLabel}</span>
-            </p>
+            {/* Scrollable content */}
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-2">
+              <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
+              <h3 className="font-serif text-[20px] mb-2" style={{ color: "hsl(var(--dark))" }}>Share with the community</h3>
+              <p className="text-[13px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
+                Posting to <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>{channelLabel}</span>
+              </p>
 
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="What's on your mind?"
-              maxLength={1000}
-              rows={4}
-              autoFocus
-              className="w-full px-4 py-3 rounded-2xl text-[15px] font-sans outline-none resize-none"
-              style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))", border: "1.5px solid hsl(var(--border-subtle))" }}
-            />
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What's on your mind?"
+                maxLength={1000}
+                rows={4}
+                autoFocus
+                className="w-full px-4 py-3 rounded-2xl text-[15px] font-sans outline-none resize-none"
+                style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))", border: "1.5px solid hsl(var(--border-subtle))" }}
+              />
 
-            {/* Image preview */}
-            {imagePreview && (
-              <div className="relative mt-3">
-                <img src={imagePreview} alt="Preview" className="w-full h-[160px] object-cover rounded-2xl" />
-                <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
-                {!uploading && (
-                  <motion.button
-                    whileTap={{ scale: 0.85 }}
-                    onClick={removeImage}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
-                    style={{ background: "rgba(0,0,0,0.6)" }}
-                  >
-                    <IonIcon name="close" size={16} style={{ color: "white" }} />
-                  </motion.button>
-                )}
+              {/* Image preview */}
+              {imagePreview && (
+                <div className="relative mt-3">
+                  <img src={imagePreview} alt="Preview" className="w-full h-[160px] object-cover rounded-2xl" />
+                  <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
+                  {!uploading && (
+                    <motion.button
+                      whileTap={{ scale: 0.85 }}
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                      style={{ background: "rgba(0,0,0,0.6)" }}
+                    >
+                      <IonIcon name="close" size={16} style={{ color: "white" }} />
+                    </motion.button>
+                  )}
+                </div>
+              )}
+
+              {/* Action bar */}
+              <div className="flex items-center gap-3 mt-3">
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => fileRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
+                  style={{ background: "hsl(var(--bg))" }}
+                >
+                  <IonIcon name="camera-outline" size={18} style={{ color: "hsl(var(--green))" }} />
+                  <span className="text-[13px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>Photo</span>
+                </motion.button>
               </div>
-            )}
 
-            {/* Action bar */}
-            <div className="flex items-center gap-3 mt-3">
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
-                style={{ background: "hsl(var(--bg))" }}
-              >
-                <IonIcon name="camera-outline" size={18} style={{ color: "hsl(var(--green))" }} />
-                <span className="text-[13px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>Photo</span>
-              </motion.button>
+              <InlineStatus status={status} spacing="mt-3" />
             </div>
 
-            <InlineStatus status={status} spacing="mt-3" />
-
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={handleSubmit}
-              disabled={isDisabled}
-              className="w-full py-3.5 rounded-2xl text-[15px] font-semibold font-sans mt-4"
-              style={{ background: "hsl(var(--green))", color: "white", opacity: isDisabled ? 0.6 : 1 }}
+            {/* Pinned footer — Post is always visible */}
+            <div
+              className="shrink-0 px-5 pt-3 border-t"
+              style={{
+                borderColor: "hsl(var(--border-subtle))",
+                paddingBottom: keyboardOpen ? 12 : "max(env(safe-area-inset-bottom, 24px), 24px)",
+              }}
             >
-              {uploading ? "Uploading…" : posting ? "Posting…" : "Post"}
-            </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSubmit}
+                disabled={isDisabled}
+                className="w-full py-3.5 rounded-2xl text-[15px] font-semibold font-sans"
+                style={{ background: "hsl(var(--green))", color: "white", opacity: isDisabled ? 0.6 : 1 }}
+              >
+                {uploading ? "Uploading…" : posting ? "Posting…" : "Post"}
+              </motion.button>
+            </div>
           </motion.div>
         </motion.div>
       )}
