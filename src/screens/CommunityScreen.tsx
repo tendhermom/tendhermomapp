@@ -86,6 +86,20 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const [feedStatus, setFeedStatus] = useState<InlineStatusMsg | null>(null);
   const [joinStatus, setJoinStatus] = useState<InlineStatusMsg | null>(null);
 
+  // Persist the current spot (feed + open comments) for resume-after-minimise
+  useEffect(() => {
+    try {
+      if (activeCommunity) {
+        localStorage.setItem(
+          RESUME_KEY,
+          JSON.stringify({ community: activeCommunity, commentsPostId, ts: Date.now() })
+        );
+      } else {
+        localStorage.removeItem(RESUME_KEY);
+      }
+    } catch {}
+  }, [activeCommunity, commentsPostId]);
+
   // Fetch memberships + real member counts per community
   useEffect(() => {
     const fetch = async () => {
