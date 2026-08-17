@@ -539,14 +539,14 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
         )}
       </AnimatePresence>
 
-      {/* Clear entries confirmation */}
+      {/* Clear entry confirmation */}
       <AnimatePresence>
-        {showClearConfirm && (
+        {entryToClear && (
           <motion.div
             className="fixed inset-0 z-[80] flex items-end justify-center"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ background: "rgba(0,0,0,0.4)" }}
-            onClick={() => !clearing && setShowClearConfirm(false)}
+            onClick={() => !clearing && setEntryToClear(null)}
           >
             <motion.div
               onClick={(e) => e.stopPropagation()}
@@ -560,14 +560,14 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
                 <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--light-coral))" }}>
                   <IonIcon name="trash-outline" size={18} style={{ color: "hsl(var(--coral))" }} />
                 </div>
-                <h3 className="text-[16px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Clear recent entries?</h3>
+                <h3 className="text-[16px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>Remove this entry?</h3>
               </div>
               <p className="text-[12px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
-                This permanently removes all your logged blood pressure, heart rate and weight entries. This can't be undone.
+                This permanently removes this logged entry. This can't be undone.
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowClearConfirm(false)}
+                  onClick={() => setEntryToClear(null)}
                   disabled={clearing}
                   className="flex-1 py-3 rounded-[14px] text-[13px] font-sans font-semibold ios-press"
                   style={{ background: "hsl(var(--surface))", color: "hsl(var(--dark))" }}
@@ -575,12 +575,12 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
                   Cancel
                 </button>
                 <button
-                  onClick={handleClearEntries}
+                  onClick={() => handleClearEntry(entryToClear)}
                   disabled={clearing}
                   className="flex-1 py-3 rounded-[14px] text-[13px] font-sans font-semibold ios-press text-white"
                   style={{ background: "hsl(var(--coral))", opacity: clearing ? 0.7 : 1 }}
                 >
-                  {clearing ? "Clearing…" : "Clear all"}
+                  {clearing ? "Removing…" : "Remove"}
                 </button>
               </div>
             </motion.div>
