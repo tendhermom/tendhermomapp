@@ -25,7 +25,17 @@ const formatCommentTime = (dateStr: string) => {
 };
 
 const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
-  const [text, setText] = useState("");
+  // Keep any half-typed comment if the app is minimised and reopened
+  const [text, setText] = useState(() => {
+    try { return localStorage.getItem(DRAFT_KEY) || ""; } catch { return ""; }
+  });
+
+  useEffect(() => {
+    try {
+      if (text) localStorage.setItem(DRAFT_KEY, text);
+      else localStorage.removeItem(DRAFT_KEY);
+    } catch {}
+  }, [text]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
