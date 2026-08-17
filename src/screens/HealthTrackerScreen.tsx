@@ -286,23 +286,12 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
           {/* Recent Entries */}
           {entries.length > 0 && (
             <motion.div variants={fadeUp}>
-              <div className="flex items-center justify-between mb-2">
-                <p className="label-caps text-text-muted">RECENT ENTRIES</p>
-                <button
-                  onClick={() => setShowClearConfirm(true)}
-                  className="ios-press inline-flex items-center gap-1 text-[11px] font-sans font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}
-                  aria-label="Clear all recent entries"
-                >
-                  <IonIcon name="trash-outline" size={12} style={{ color: "hsl(var(--coral))" }} />
-                  Clear
-                </button>
-              </div>
+              <p className="label-caps text-text-muted mb-2">RECENT ENTRIES</p>
               <div className="tend-card overflow-hidden">
                 {entries.slice(0, 5).map((entry, i) => (
                   <div key={entry.id} className="flex items-center px-4 py-3 gap-3" style={{ borderBottom: i < Math.min(entries.length, 5) - 1 ? "1px solid hsl(var(--border-subtle))" : "none" }}>
                     <span className="text-[11px] font-sans font-medium w-[40px]" style={{ color: "hsl(var(--text-muted))" }}>{entry.date}</span>
-                    <div className="flex-1 flex items-center gap-3">
+                    <div className="flex-1 flex items-center gap-3 min-w-0">
                       {entry.systolic && (
                         <span className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--coral))" }}>
                           {entry.systolic}/{entry.diastolic} mmHg
@@ -319,6 +308,14 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
                         </span>
                       )}
                     </div>
+                    <button
+                      onClick={() => setEntryToClear(entry.id)}
+                      className="ios-press w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: "hsl(var(--light-coral))" }}
+                      aria-label={`Remove entry from ${entry.date}`}
+                    >
+                      <IonIcon name="trash-outline" size={13} style={{ color: "hsl(var(--coral))" }} />
+                    </button>
                   </div>
                 ))}
               </div>
