@@ -50,7 +50,7 @@ const ScreenFallback = () => (
 // Tabs live at the root of the stack — tapping a tab resets the stack.
 const ROOT_TABS = new Set(["home", "triage", "sos", "community", "profile"]);
 const NAV_STORAGE_KEY = "tendher_nav_v1";
-const NAV_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const NAV_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 const readPersistedStack = (): string[] | null => {
   try {
