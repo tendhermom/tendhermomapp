@@ -9,7 +9,6 @@ import {
   pickNativeContact,
   isContactPickerSupported,
   readDespiaContacts,
-  isDespiaNative,
   hapticSuccess,
   hapticSelection,
   type NativeContact,
