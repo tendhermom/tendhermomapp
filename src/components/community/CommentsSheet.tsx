@@ -11,6 +11,19 @@ interface CommentsSheetProps {
   onAddComment: (text: string) => Promise<boolean>;
 }
 
+// Same day → show the time (e.g. 3:42 PM). Older → show the date.
+const formatCommentTime = (dateStr: string) => {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  return sameDay
+    ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : d.toLocaleDateString();
+};
+
 const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
