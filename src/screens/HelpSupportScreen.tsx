@@ -228,7 +228,7 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
               Chat on WhatsApp
             </p>
             <p className="text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-              {SUPPORT_PHONE_DISPLAY}
+              {WHATSAPP_DISPLAY}
             </p>
           </div>
           <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
