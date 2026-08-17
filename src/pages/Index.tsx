@@ -121,6 +121,14 @@ const Index = () => {
   }, []);
 
 
+  const [exitPromptOpen, setExitPromptOpen] = useState(false);
+
+  const confirmExit = useCallback(() => {
+    setExitPromptOpen(false);
+    // Leave our sentinel behind and hand control back to the shell/browser.
+    try { window.history.go(-2); } catch { try { window.history.back(); } catch {} }
+  }, []);
+
   const handleBack = useCallback(() => {
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   }, []);
@@ -148,21 +156,17 @@ const Index = () => {
     // instead of leaving the app.
     try { window.history.pushState({ tendher: true, seed: true }, ""); } catch {}
 
-    let exiting = false;
-
     const onPop = () => {
-      if (exiting) return;
       if (stackRef.current.length > 1) {
         setStack((prev) => prev.slice(0, -1));
         // Re-seed a single entry so the next back press also fires popstate.
         try { window.history.pushState({ tendher: true }, ""); } catch {}
-      } else {
-        // At a root tab: stop intercepting and let the shell/browser leave
-        // in one step instead of bouncing through our own entries.
-        exiting = true;
-        window.removeEventListener("popstate", onPop);
-        try { window.history.back(); } catch {}
+        return;
       }
+      // At a root tab: confirm before leaving so an accidental back press
+      // never drops a mum out of the app mid-task.
+      try { window.history.pushState({ tendher: true }, ""); } catch {}
+      setExitPromptOpen(true);
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
