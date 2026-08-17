@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import PremiumGate from "@/components/PremiumGate";
 import { uploadWithProgress } from "@/lib/uploadWithProgress";
 import UploadProgress from "@/components/UploadProgress";
+import PhotoViewer from "@/components/PhotoViewer";
 
 import babyShower1 from "@/assets/baby-shower-1.jpg";
 import babyShower2 from "@/assets/baby-shower-2.jpg";
@@ -83,6 +84,10 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [giveGiftPost, setGiveGiftPost] = useState<BabyShowerPost | null>(null);
   const [giftAccount, setGiftAccount] = useState<GiftAccount | null>(null);
   const [loadingGift, setLoadingGift] = useState(false);
+  // Full-screen photo viewer
+  const [viewerPhotos, setViewerPhotos] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   // Create form state
   const [babyName, setBabyName] = useState("");
@@ -320,11 +325,23 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                   onReaction={(type) => handleReaction(post.id, type)}
                   isOwner={user?.id === post.user_id}
                   onGiveGift={() => openGiveGift(post)}
+                  onOpenPhotos={(photos, index) => {
+                    setViewerPhotos(photos);
+                    setViewerIndex(index);
+                    setViewerOpen(true);
+                  }}
                 />
               </div>
             ))}
           </div>
         )}
+
+        <PhotoViewer
+          photos={viewerPhotos}
+          startIndex={viewerIndex}
+          open={viewerOpen}
+          onClose={() => setViewerOpen(false)}
+        />
 
         {/* Give a Gift Sheet — visitor sees poster's bank details (from Gift Settings) to make P2P transfer */}
         <AnimatePresence>
