@@ -66,17 +66,24 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const handleClearEntry = async (id: string) => {
     if (!user?.id) return;
     setClearing(true);
-    const { error } = await supabase.from("health_metrics" as any).delete().eq("id", id);
+    const { data, error } = await supabase
+      .from("health_metrics" as any)
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select("id");
     setClearing(false);
     setEntryToClear(null);
-    if (error) {
+    if (error || !data || (data as any[]).length === 0) {
       setLogStatus({ kind: "error", text: "Couldn't remove this entry. Please try again." });
+      fetchEntries();
     } else {
       setEntries((prev) => prev.filter((e) => e.id !== id));
       setLogStatus({ kind: "success", text: "Entry removed." });
     }
     setTimeout(() => setLogStatus(null), 5000);
   };
+
 
   const fetchEntries = useCallback(async () => {
     if (!user?.id) return;
