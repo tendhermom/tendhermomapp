@@ -42,6 +42,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   const [cardStatus, setCardStatus] = useState<InlineStatusMsg | null>(null);
   const [reportStatus, setReportStatus] = useState<InlineStatusMsg | null>(null);
   const [showImage, setShowImage] = useState(false);
+  const [showAvatar, setShowAvatar] = useState(false);
   const [saved, setSaved] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("tendher_saved_community_posts") || "[]").includes(post.id);
@@ -364,6 +365,29 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
         )}
       </AnimatePresence>
     </div>
+
+      {/* Avatar viewer */}
+      <AnimatePresence>
+        {showAvatar && post.author_avatar && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] flex items-center justify-center p-8"
+            style={{ background: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowAvatar(false)}
+          >
+            <motion.img
+              initial={{ scale: 0.85 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.85 }}
+              src={post.author_avatar}
+              alt={post.author_name || "Member"}
+              className="max-w-full max-h-[70vh] rounded-3xl object-contain"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
   );
 });
 
