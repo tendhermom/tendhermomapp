@@ -48,7 +48,7 @@ const generateMonthCards = () => {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  const months: { label: string; month: number; year: number; isCurrent: boolean }[] = [];
+  const months: { label: string; month: number; year: number; isCurrent: boolean; isPast: boolean }[] = [];
 
   for (let offset = -2; offset <= 9; offset++) {
     const d = new Date(currentYear, currentMonth + offset, 1);
@@ -58,6 +58,7 @@ const generateMonthCards = () => {
       month: d.getMonth(),
       year: d.getFullYear(),
       isCurrent: offset === 0,
+      isPast: offset < 0,
     });
   }
   return months;
@@ -87,8 +88,9 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [parentNames, setParentNames] = useState("");
   const [gender, setGender] = useState<"boy" | "girl" | "mixed">("boy");
   const [birthType, setBirthType] = useState<"single" | "twins" | "triplets" | "quadruplets">("single");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const MAX_PHOTOS = 4;
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -174,12 +176,27 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
 
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    const picked = Array.from(e.target.files || []);
+    if (picked.length === 0) return;
+    const room = MAX_PHOTOS - imageFiles.length;
+    if (room <= 0) {
+      toast(`You can share up to ${MAX_PHOTOS} photos`);
+      return;
+    }
+    const accepted = picked.slice(0, room);
+    if (picked.length > room) toast(`Only ${room} more photo${room === 1 ? "" : "s"} added`);
+    setImageFiles((prev) => [...prev, ...accepted]);
+    accepted.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreviews((prev) => [...prev, reader.result as string]);
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removePhoto = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmitPost = async () => {
@@ -190,36 +207,40 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     if (!activeMonth) return;
     setSubmitting(true);
     setUploadProgress(null);
-    let imageUrl: string | null = null;
+    const uploadedUrls: string[] = [];
     try {
-      if (imageFile) {
-        const ext = imageFile.name.split(".").pop();
-        const path = `${user.id}/${Date.now()}.${ext}`;
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        const ext = file.name.split(".").pop();
+        const path = `${user.id}/${Date.now()}-${i}.${ext}`;
         setUploadProgress(0);
         const { publicUrl } = await uploadWithProgress({
           bucket: "baby-shower-images",
           path,
-          file: imageFile,
-          onProgress: (p) => setUploadProgress(p),
+          file,
+          onProgress: (p) => setUploadProgress(Math.round(((i + p / 100) / imageFiles.length) * 100)),
         });
-        imageUrl = publicUrl;
+        uploadedUrls.push(publicUrl);
       }
       const { error } = await supabase.from("baby_shower_posts").insert({
         user_id: user.id, baby_name: babyName.trim(), parent_names: parentNames.trim(),
-        gender, birth_type: birthType, month_label: activeMonth, image_url: imageUrl,
+        gender, birth_type: birthType, month_label: activeMonth,
+        image_url: uploadedUrls[0] ?? null, image_urls: uploadedUrls,
       } as any);
       if (error) throw error;
       toast.success("Baby post created! 🎉");
       setShowCreateForm(false);
-      setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFile(null); setImagePreview(null);
+      setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFiles([]); setImagePreviews([]);
       await fetchPosts();
     } catch (err) { console.error(err); toast.error("Failed to create post"); }
     finally { setSubmitting(false); setUploadProgress(null); }
   };
 
-  const handleMonthTap = (monthLabel: string, isCurrent: boolean) => {
-    if (!isCurrent) {
-      toast("Only the current month is open for posting and viewing", { icon: "🔒" });
+  const handleMonthTap = (monthLabel: string, isCurrent: boolean, isPast: boolean) => {
+    // Past months stay browsable so celebrations aren't lost; only the
+    // current month accepts new posts. Future months stay locked.
+    if (!isCurrent && !isPast) {
+      toast("This month opens later — check back then", { icon: "🔒" });
       return;
     }
     setActiveMonth(monthLabel);
@@ -560,15 +581,15 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <motion.button
                   key={month.label}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => handleMonthTap(month.label, isCurrent)}
+                  onClick={() => handleMonthTap(month.label, isCurrent, month.isPast)}
                   className="relative flex-shrink-0 rounded-[20px] overflow-hidden text-left"
                   style={{
                     width: 160,
                     aspectRatio: "3/4",
                     scrollSnapAlign: "start",
                     boxShadow: "0 4px 20px -4px rgba(0,0,0,0.15)",
-                    opacity: isCurrent ? 1 : 0.55,
-                    filter: isCurrent ? "none" : "grayscale(0.4)",
+                    opacity: isCurrent ? 1 : month.isPast ? 0.85 : 0.55,
+                    filter: isCurrent || month.isPast ? "none" : "grayscale(0.4)",
                   }}
                 >
                   {/* Background image */}
@@ -598,8 +619,18 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                       </span>
                     </div>
                   )}
-                  {/* Lock icon for non-current */}
-                  {!isCurrent && (
+                  {/* Past months are read-only, future months are locked */}
+                  {!isCurrent && month.isPast && (
+                    <div className="absolute top-3 right-3">
+                      <span
+                        className="text-[10px] font-sans font-semibold px-2.5 py-1 rounded-full"
+                        style={{ background: "rgba(255,255,255,0.85)", color: "hsl(var(--dark))" }}
+                      >
+                        View
+                      </span>
+                    </div>
+                  )}
+                  {!isCurrent && !month.isPast && (
                     <div className="absolute top-3 right-3">
                       <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
                         <IonIcon name="lock-closed" size={12} style={{ color: "rgba(255,255,255,0.7)" }} />
