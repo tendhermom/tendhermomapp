@@ -18,6 +18,7 @@ interface BabyShowerCardProps {
   // Peer-to-peer "Give a Gift"
   isOwner?: boolean;
   onGiveGift?: () => void;
+  onOpenPhotos?: (photos: string[], index: number) => void;
 }
 
 type ReactionMeta = { type: string; icon: string; activeIcon: string; label: string; color: string };
