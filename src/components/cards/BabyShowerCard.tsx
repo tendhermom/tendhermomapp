@@ -129,29 +129,34 @@ const BabyShowerCard = ({
             }
           }}
         />
+        {/* Tap the photo to open the full-screen viewer */}
+        <button
+          onClick={() => onOpenPhotos?.(photos as string[], photoIndex)}
+          className="absolute inset-0 z-[1]"
+          aria-label="View photo"
+        />
+        <div
+          className="absolute bottom-1.5 right-2 z-[2] px-1.5 py-0.5 rounded-full flex items-center gap-1 pointer-events-none"
+          style={{ background: "rgba(0,0,0,0.35)" }}
+        >
+          <IonIcon name="expand-outline" size={10} style={{ color: "white" }} />
+        </div>
         {photos.length > 1 && (
-          <>
-            <div className="absolute inset-x-0 bottom-1.5 flex items-center justify-center gap-1 z-[2]">
-              {photos.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPhotoIndex(i)}
-                  className="rounded-full"
-                  style={{
-                    width: i === photoIndex ? 12 : 5,
-                    height: 5,
-                    background: i === photoIndex ? "white" : "rgba(255,255,255,0.6)",
-                  }}
-                  aria-label={`Photo ${i + 1}`}
-                />
-              ))}
-            </div>
-            <button
-              onClick={() => setPhotoIndex((photoIndex + 1) % photos.length)}
-              className="absolute inset-0 z-[1]"
-              aria-label="Next photo"
-            />
-          </>
+          <div className="absolute inset-x-0 bottom-1.5 flex items-center justify-center gap-1 z-[2]">
+            {photos.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setPhotoIndex(i); }}
+                className="rounded-full"
+                style={{
+                  width: i === photoIndex ? 12 : 5,
+                  height: 5,
+                  background: i === photoIndex ? "white" : "rgba(255,255,255,0.6)",
+                }}
+                aria-label={`Photo ${i + 1}`}
+              />
+            ))}
+          </div>
         )}
         <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full" style={{ background: accentColor }}>
           <span className="text-[10px] font-bold text-white font-sans uppercase tracking-wider">
