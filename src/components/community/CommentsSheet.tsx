@@ -38,7 +38,14 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
       else localStorage.removeItem(DRAFT_KEY);
     } catch {}
   }, [text]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Grow the comment box up to 3 lines as the user types
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 84)}px`;
+  });
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [submitting, setSubmitting] = useState(false);
