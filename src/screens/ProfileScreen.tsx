@@ -454,12 +454,6 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
         </motion.div>
       ))}
 
-      {/* App version */}
-      <div className="text-center">
-        <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-          TendherMom v1.0.0
-        </p>
-      </div>
 
       {/* Log out */}
       <motion.button
