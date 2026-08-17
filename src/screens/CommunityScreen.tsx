@@ -229,6 +229,18 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
     setLoadingComments(false);
   };
 
+  // Restore the exact spot on mount: load the saved feed and re-open comments
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const saved = readResume();
+    if (!saved.community) return;
+    setActiveChannel(saved.community);
+    if (saved.commentsPostId) void openComments(saved.commentsPostId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleAddComment = async (text: string) => {
     if (!text.trim() || !commentsPostId) return false;
     const ok = await addComment(commentsPostId, text.trim());
