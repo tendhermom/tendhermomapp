@@ -34,6 +34,26 @@ const formatMemberCount = (n: number): string => {
 
 const db = supabase as any;
 
+// Remember where the user was inside Community so minimising/returning to the
+// app resumes on the same feed (and re-opens the comments sheet) instead of
+// resetting to the community picker.
+const RESUME_KEY = "tendher_community_resume_v1";
+const RESUME_TTL_MS = 30 * 60 * 1000;
+
+const readResume = (): { community: ChannelId | null; commentsPostId: string | null } => {
+  try {
+    const raw = localStorage.getItem(RESUME_KEY);
+    if (!raw) return { community: null, commentsPostId: null };
+    const parsed = JSON.parse(raw) as { community?: ChannelId; commentsPostId?: string | null; ts?: number };
+    if (typeof parsed?.ts !== "number" || Date.now() - parsed.ts > RESUME_TTL_MS) {
+      return { community: null, commentsPostId: null };
+    }
+    return { community: parsed.community ?? null, commentsPostId: parsed.commentsPostId ?? null };
+  } catch {
+    return { community: null, commentsPostId: null };
+  }
+};
+
 const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const { activeChannel, posts, loading, hasMore, setActiveChannel, fetchPosts, loadMore, toggleLike, createPost, fetchComments, addComment, removePost } = useCommunityStore();
   const user = useAuthStore((s) => s.user);
