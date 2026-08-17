@@ -11,6 +11,8 @@ interface CommentsSheetProps {
   onAddComment: (text: string) => Promise<boolean>;
 }
 
+const DRAFT_KEY = "tendher_comment_draft_v1";
+
 // Same day → show the time (e.g. 3:42 PM). Older → show the date.
 const formatCommentTime = (dateStr: string) => {
   const d = new Date(dateStr);
