@@ -160,20 +160,28 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                   {error}
                 </p>
               )}
-              <input
+              <textarea
                 ref={inputRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Write a comment…"
                 maxLength={500}
+                rows={1}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     void handleSubmit();
                   }
                 }}
-                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none"
-                style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))", border: "1.5px solid hsl(var(--border-subtle))" }}
+                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none resize-none leading-[20px]"
+                style={{
+                  background: "hsl(var(--bg))",
+                  color: "hsl(var(--dark))",
+                  border: "1.5px solid hsl(var(--border-subtle))",
+                  minHeight: 44,
+                  maxHeight: 84,
+                  overflowY: "auto",
+                }}
               />
               <motion.button
                 whileTap={{ scale: 0.9 }}
