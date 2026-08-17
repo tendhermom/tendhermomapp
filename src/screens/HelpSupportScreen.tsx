@@ -14,9 +14,8 @@ interface HelpSupportScreenProps {
 
 const SUPPORT_EMAIL_PRIMARY = "support@tendhermom.com";
 const SUPPORT_EMAIL_SECONDARY = "tendhermom@gmail.com";
-const SUPPORT_PHONE_DISPLAY = "+234 810 536 4446";
-const SUPPORT_PHONE_TEL = "+2348105364446";
-const WHATSAPP_NUMBER = "2348105364446";
+const WHATSAPP_DISPLAY = "Whatsapp.com/@tendhermom";
+const WHATSAPP_URL = "https://whatsapp.com/@tendhermom";
 
 const CATEGORIES = [
   "General",
