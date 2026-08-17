@@ -101,10 +101,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
     if (!nativeAvailable) {
       setStatusMsg({
-        kind: "error",
-        text: "Subscriptions are only available in the TendherMom mobile app.",
+        kind: "info",
+        text: "Open TendherMom on your phone to subscribe — purchases run through the App Store or Google Play.",
       });
-      hapticError();
       return;
     }
 
