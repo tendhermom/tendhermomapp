@@ -188,12 +188,8 @@ const BabyShowerCard = ({
           </p>
         </div>
 
-        {/* "Give a Gift" is integrated into the reaction picker as a "Gift" option (visitors only). */}
-
-
-
-        {/* Reaction button */}
-        <div className="flex items-center justify-between">
+        {/* React + dedicated Gift button (Gift is also kept inside the reaction picker) */}
+        <div className="flex items-center gap-1.5">
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={handleTap}
@@ -210,8 +206,19 @@ const BabyShowerCard = ({
             />
             {activeReaction ? activeReaction.label : "React"}
           </motion.button>
+          {!isOwner && (
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => onGiveGift?.()}
+              className="py-1.5 px-2.5 rounded-xl text-[12px] font-semibold font-sans flex items-center justify-center gap-1"
+              style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}
+            >
+              <IonIcon name="gift" size={14} style={{ color: "hsl(var(--coral))" }} />
+              Gift
+            </motion.button>
+          )}
           {reactionsCount > 0 && (
-            <span className="text-[11px] font-sans font-medium ml-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+            <span className="text-[11px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
               {reactionsCount}
             </span>
           )}
