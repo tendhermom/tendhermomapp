@@ -364,7 +364,6 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
           </>
         )}
       </AnimatePresence>
-    </div>
 
       {/* Avatar viewer */}
       <AnimatePresence>
@@ -388,6 +387,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
   );
 });
 
