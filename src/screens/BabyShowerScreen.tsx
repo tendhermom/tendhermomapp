@@ -248,6 +248,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
 
   // Posts for the active month
   const monthPosts = posts.filter((p) => p.month_label === activeMonth);
+  const canPostThisMonth = !!activeMonth && activeMonth === MONTH_CARDS.find((m) => m.isCurrent)?.label;
 
   // ─── MONTH FEED VIEW ───
   if (activeMonth) {
@@ -269,15 +270,17 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
               {monthPosts.length} {monthPosts.length === 1 ? "baby" : "babies"} celebrated
             </p>
           </div>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowCreateForm(true)}
-            className="w-[38px] h-[38px] rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--coral))" }}>
-            <IonIcon name="add" size={20} style={{ color: "white" }} />
-          </motion.button>
+          {canPostThisMonth && (
+            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowCreateForm(true)}
+              className="w-[38px] h-[38px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--coral))" }}>
+              <IonIcon name="add" size={20} style={{ color: "white" }} />
+            </motion.button>
+          )}
         </motion.div>
 
-        {/* Post your baby CTA */}
-        <motion.div variants={fadeUp}>
+        {/* Post your baby CTA — current month only */}
+        <motion.div variants={fadeUp} style={{ display: canPostThisMonth ? undefined : "none" }}>
           <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowCreateForm(true)}
             className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
             style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}>
@@ -298,7 +301,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
             </div>
             <h3 className="font-serif text-[18px] mb-1" style={{ color: "hsl(var(--dark))" }}>No Babies Yet</h3>
             <p className="text-[13px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
-              Be the first to celebrate your baby this month!
+              {canPostThisMonth ? "Be the first to celebrate your baby this month!" : "No celebrations were shared this month."}
             </p>
           </motion.div>
         ) : (
@@ -421,21 +424,50 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <h3 className="font-serif text-[20px] mb-5" style={{ color: "hsl(var(--dark))" }}>Celebrate Your Baby 🎉</h3>
                 <div className="space-y-4">
                   <div>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
-                    {imagePreview ? (
-                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => !submitting && fileInputRef.current?.click()} className="relative cursor-pointer">
-                        <img src={imagePreview} alt="Preview" className="w-full h-[180px] object-cover rounded-2xl" />
-                        <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
-                          <IonIcon name="camera" size={28} style={{ color: "white" }} />
+                    <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                    {imagePreviews.length > 0 ? (
+                      <div className="space-y-2.5">
+                        <div className="relative">
+                          <img src={imagePreviews[0]} alt="Preview" className="w-full h-[180px] object-cover rounded-2xl" />
+                          <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photos" />
+                          {!submitting && (
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => removePhoto(0)}
+                              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                              style={{ background: "rgba(0,0,0,0.6)" }}>
+                              <IonIcon name="close" size={16} style={{ color: "white" }} />
+                            </motion.button>
+                          )}
                         </div>
-                        <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
-                      </motion.div>
+                        <div className="flex gap-2">
+                          {imagePreviews.slice(1).map((src, i) => (
+                            <div key={i} className="relative w-[62px] h-[62px] rounded-xl overflow-hidden">
+                              <img src={src} alt={`Photo ${i + 2}`} className="w-full h-full object-cover" />
+                              {!submitting && (
+                                <motion.button whileTap={{ scale: 0.85 }} onClick={() => removePhoto(i + 1)}
+                                  className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                                  style={{ background: "rgba(0,0,0,0.6)" }}>
+                                  <IonIcon name="close" size={11} style={{ color: "white" }} />
+                                </motion.button>
+                              )}
+                            </div>
+                          ))}
+                          {imagePreviews.length < MAX_PHOTOS && (
+                            <motion.button whileTap={{ scale: 0.94 }} onClick={() => !submitting && fileInputRef.current?.click()}
+                              className="w-[62px] h-[62px] rounded-xl flex items-center justify-center"
+                              style={{ background: "hsl(var(--bg))", border: "1.5px dashed hsl(var(--border))" }}>
+                              <IonIcon name="add" size={20} style={{ color: "hsl(var(--text-muted))" }} />
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
                     ) : (
                       <motion.button whileTap={{ scale: 0.97 }} onClick={() => fileInputRef.current?.click()}
                         className="w-full h-[140px] rounded-2xl flex flex-col items-center justify-center gap-2"
                         style={{ background: "hsl(var(--bg))", border: "2px dashed hsl(var(--border))" }}>
                         <IonIcon name="camera-outline" size={28} style={{ color: "hsl(var(--text-muted))" }} />
-                        <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Add a photo</span>
+                        <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                          Add photos (up to {MAX_PHOTOS})
+                        </span>
                       </motion.button>
                     )}
                   </div>
