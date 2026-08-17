@@ -617,6 +617,13 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           </>
         )}
       </AnimatePresence>
+
+      <PhotoViewer
+        photos={user?.avatar_url ? [user.avatar_url] : []}
+        open={avatarViewer}
+        onClose={() => setAvatarViewer(false)}
+        caption={user?.full_name || undefined}
+      />
     </div>
   );
 };
