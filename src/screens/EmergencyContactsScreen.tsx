@@ -117,46 +117,53 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
   const handleImportFromContacts = async () => {
     hapticSelection();
 
-    // 1) Despia native shell — read the full address book, then let mum pick.
-    if (isDespiaNative()) {
-      setPickerOpen(true);
-      setPickerLoading(true);
-      setDeviceContacts([]);
-      const result = await readDespiaContacts();
-      setPickerLoading(false);
+    // 1) Try the native address book first — no user-agent sniffing, because
+    //    some WebViews hide their identity and mums were dropped straight
+    //    into the manual form.
+    setPickerOpen(true);
+    setPickerLoading(true);
+    setDeviceContacts([]);
+    const result = await readDespiaContacts();
 
-      if (result.status === "ok" && result.contacts.length > 0) {
-        setDeviceContacts(result.contacts);
-        return;
-      }
+    if (result.status === "ok" && result.contacts.length > 0) {
+      setPickerLoading(false);
+      setDeviceContacts(result.contacts);
+      return;
+    }
+
+    if (result.status === "denied") {
+      setPickerLoading(false);
       setPickerOpen(false);
       showListStatus({
-        kind: result.status === "denied" ? "error" : "info",
-        text:
-          result.status === "denied"
-            ? "Contacts access is off. Enable it in Settings › Privacy › Contacts, then try again."
-            : "No contacts found on this device — please add manually.",
+        kind: "error",
+        text: "Contacts access is off. Enable it in Settings › Privacy › Contacts, then try again.",
       });
-      if (result.status !== "denied") setEditingContact({ ...emptyContact });
       return;
     }
 
     // 2) Web fallback — W3C Contact Picker (Chrome on Android).
-    if (!isContactPickerSupported()) {
-      showListStatus({ kind: "info", text: "Contact import needs the TendherMom app — please add manually." });
-      setEditingContact({ ...emptyContact });
-      return;
+    if (isContactPickerSupported()) {
+      const web = await pickNativeContact();
+      setPickerLoading(false);
+      setPickerOpen(false);
+      if (web.status === "ok" && web.contact) {
+        startFromDeviceContact(web.contact);
+        return;
+      }
+      if (web.status === "denied") {
+        showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
+        return;
+      }
     }
 
-    const result = await pickNativeContact();
-    if (result.status === "ok" && result.contact) {
-      startFromDeviceContact(result.contact);
-    } else if (result.status === "denied") {
-      showListStatus({ kind: "error", text: "Permission denied. Enable contacts access in your settings." });
-    } else if (result.status === "unsupported") {
-      showListStatus({ kind: "info", text: "Contact import isn't supported on this device — please add manually." });
-      setEditingContact({ ...emptyContact });
-    }
+    // 3) Last resort — manual entry.
+    setPickerLoading(false);
+    setPickerOpen(false);
+    showListStatus({
+      kind: "info",
+      text: "We couldn't reach your phone contacts on this device — please add the number manually.",
+    });
+    setEditingContact({ ...emptyContact });
   };
 
   useEffect(() => {
@@ -395,21 +402,31 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
             Alert Channels
           </h4>
           {[
-            { key: "sms_enabled", label: "SMS", icon: "chatbubble", desc: "Text message via Twilio" },
-            { key: "whatsapp_enabled", label: "WhatsApp", icon: "logo-whatsapp", desc: "WhatsApp message via Twilio" },
-            { key: "voice_enabled", label: "Voice Call", icon: "call", desc: "Automated call via Termii" },
+            { key: "sms_enabled", label: "Text", icon: "chatbubble", desc: "SMS alert — active", available: true },
+            { key: "whatsapp_enabled", label: "WhatsApp", icon: "logo-whatsapp", desc: "Coming soon", available: false },
+            { key: "voice_enabled", label: "Voice Call", icon: "call", desc: "Coming soon", available: false },
           ].map((ch) => (
-            <div key={ch.key} className="flex items-center justify-between">
+            <div key={ch.key} className="flex items-center justify-between" style={{ opacity: ch.available ? 1 : 0.45 }}>
               <div className="flex items-center gap-2.5">
-                <IonIcon name={ch.icon} size={18} style={{ color: "hsl(var(--green))" }} />
+                <IonIcon
+                  name={ch.icon}
+                  size={18}
+                  style={{ color: ch.available ? "hsl(var(--green))" : "hsl(var(--text-muted))" }}
+                />
                 <div>
-                  <span className="text-[14px] font-sans block" style={{ color: "hsl(var(--dark))" }}>{ch.label}</span>
+                  <span
+                    className="text-[14px] font-sans block"
+                    style={{ color: ch.available ? "hsl(var(--dark))" : "hsl(var(--text-muted))" }}
+                  >
+                    {ch.label}
+                  </span>
                   <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{ch.desc}</span>
                 </div>
               </div>
               <Switch
-                checked={(editingContact as any)[ch.key] ?? false}
-                onCheckedChange={(val) => setEditingContact({ ...editingContact, [ch.key]: val })}
+                checked={ch.available ? ((editingContact as any)[ch.key] ?? false) : false}
+                disabled={!ch.available}
+                onCheckedChange={(val) => ch.available && setEditingContact({ ...editingContact, [ch.key]: val })}
               />
             </div>
           ))}
@@ -582,8 +599,8 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
                   <span className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>{c.phone}</span>
                 </div>
                 <div className="flex items-center gap-1 mt-1">
-                  {c.sms_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>SMS</span>}
-                  {c.whatsapp_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>WhatsApp</span>}
+                  {c.sms_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>Text</span>}
+
                   {c.voice_enabled && <span className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full" style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>Voice</span>}
                 </div>
               </div>
