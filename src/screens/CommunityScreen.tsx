@@ -62,7 +62,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const [memberships, setMemberships] = useState<string[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
   const [loadingMemberships, setLoadingMemberships] = useState(true);
-  const [activeCommunity, setActiveCommunity] = useState<ChannelId | null>(null);
+  const [activeCommunity, setActiveCommunity] = useState<ChannelId | null>(() => readResume().community);
 
   // Join flow
   const [showJoinModal, setShowJoinModal] = useState(false);
