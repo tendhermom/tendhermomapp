@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import PhotoViewer from "@/components/PhotoViewer";
 import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
@@ -57,6 +58,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState<InlineStatusMsg | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [avatarViewer, setAvatarViewer] = useState(false);
   const user = useAuthStore((s) => s.user);
   const { logout, getCurrentWeek } = useAuthStore();
   const navigate = useNavigate();
@@ -242,7 +244,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
             {/* Avatar core */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSubScreen("edit-profile")}
+              onClick={() => (user?.avatar_url ? setAvatarViewer(true) : setSubScreen("edit-profile"))}
               className="absolute inset-0 m-auto w-[72px] h-[72px] rounded-full flex items-center justify-center overflow-hidden"
               style={{
                 background: "hsl(var(--green))",
@@ -615,6 +617,13 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
           </>
         )}
       </AnimatePresence>
+
+      <PhotoViewer
+        photos={user?.avatar_url ? [user.avatar_url] : []}
+        open={avatarViewer}
+        onClose={() => setAvatarViewer(false)}
+        caption={user?.full_name || undefined}
+      />
     </div>
   );
 };

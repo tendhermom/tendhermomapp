@@ -182,7 +182,7 @@ export async function launchPaywall(userId: string): Promise<PurchaseOutcome> {
   if (!isBillingAvailable()) {
     return {
       started: false,
-      error: "Subscriptions are only available in the TendherMom mobile app.",
+      error: "Open TendherMom on your phone to subscribe — purchases run through the App Store or Google Play.",
     };
   }
   try {
@@ -206,7 +206,7 @@ export async function startPurchase(planId: PlanId, userId: string): Promise<Pur
   if (!isBillingAvailable()) {
     return {
       started: false,
-      error: "Subscriptions are only available in the TendherMom mobile app.",
+      error: "Open TendherMom on your phone to subscribe — purchases run through the App Store or Google Play.",
     };
   }
 
@@ -233,7 +233,7 @@ export async function openCustomerCenter(userId?: string | null): Promise<Purcha
   if (!isBillingAvailable()) {
     return {
       started: false,
-      error: "Subscription management is only available in the TendherMom mobile app.",
+      error: "Open TendherMom on your phone to manage your subscription.",
     };
   }
   try {
@@ -252,7 +252,7 @@ export async function openCustomerCenter(userId?: string | null): Promise<Purcha
 /** Restore purchases: re-query the store, then confirm with the backend. */
 export async function restorePurchases(): Promise<{ premium: boolean; error?: string }> {
   if (!isBillingAvailable()) {
-    return { premium: false, error: "Restore is only available in the TendherMom mobile app." };
+    return { premium: false, error: "Open TendherMom on your phone to restore your purchases." };
   }
   const nativeActive = await hasActiveProEntitlement();
   const synced = await confirmPremiumWithBackend(nativeActive ? 4 : 1, 1200);

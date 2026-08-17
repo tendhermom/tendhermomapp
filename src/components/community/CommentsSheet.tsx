@@ -38,7 +38,14 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
       else localStorage.removeItem(DRAFT_KEY);
     } catch {}
   }, [text]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Grow the comment box up to 3 lines as the user types
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 84)}px`;
+  });
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -160,20 +167,28 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                   {error}
                 </p>
               )}
-              <input
+              <textarea
                 ref={inputRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Write a comment…"
                 maxLength={500}
+                rows={1}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     void handleSubmit();
                   }
                 }}
-                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none"
-                style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))", border: "1.5px solid hsl(var(--border-subtle))" }}
+                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none resize-none leading-[20px]"
+                style={{
+                  background: "hsl(var(--bg))",
+                  color: "hsl(var(--dark))",
+                  border: "1.5px solid hsl(var(--border-subtle))",
+                  minHeight: 44,
+                  maxHeight: 84,
+                  overflowY: "auto",
+                }}
               />
               <motion.button
                 whileTap={{ scale: 0.9 }}
