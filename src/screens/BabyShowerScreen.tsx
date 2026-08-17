@@ -589,7 +589,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
         <div className="flex-1">
           <h1 className="font-serif text-[26px]" style={{ color: "hsl(var(--dark))" }}>Baby Shower 🎉</h1>
           <p className="text-[13px] font-sans mt-0.5" style={{ color: "hsl(var(--text-muted))" }}>
-            Celebrate babies born each month
+            Also celebrate babies born on each month
           </p>
         </div>
       </motion.div>
@@ -702,7 +702,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
           <div>
             <p className="text-[13px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>How it works</p>
             <p className="text-[12px] font-sans mt-0.5 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
-              Each month opens for baby celebrations. Tap the current month to view and post babies born this month. Plus members can enable gift-giving!
+              Celebrate your pregnancy now, and also celebrate your baby once they arrive. Tap the current month to view and post. Plus members can enable gift-giving!
             </p>
           </div>
         </div>

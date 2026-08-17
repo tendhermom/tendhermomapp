@@ -14,9 +14,8 @@ interface HelpSupportScreenProps {
 
 const SUPPORT_EMAIL_PRIMARY = "support@tendhermom.com";
 const SUPPORT_EMAIL_SECONDARY = "tendhermom@gmail.com";
-const SUPPORT_PHONE_DISPLAY = "+234 810 536 4446";
-const SUPPORT_PHONE_TEL = "+2348105364446";
-const WHATSAPP_NUMBER = "2348105364446";
+const WHATSAPP_DISPLAY = "Whatsapp.com/@tendhermom";
+const WHATSAPP_URL = "https://whatsapp.com/@tendhermom";
 
 const CATEGORIES = [
   "General",
@@ -64,18 +63,9 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
     hapticLight();
     window.open(`mailto:${addr}?subject=TendherMom%20Support%20Request`, "_blank");
   };
-  const openTel = () => {
-    hapticLight();
-    window.open(`tel:${SUPPORT_PHONE_TEL}`, "_blank");
-  };
   const openWhatsApp = () => {
     hapticLight();
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        "Hi TendherMom team, I need help with…",
-      )}`,
-      "_blank",
-    );
+    window.open(WHATSAPP_URL, "_blank");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -224,28 +214,6 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
 
         <motion.button
           whileTap={{ scale: 0.98 }}
-          onClick={openTel}
-          className="tend-card w-full px-[18px] py-4 flex items-center gap-3.5 text-left"
-        >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "hsl(var(--coral) / 0.12)" }}
-          >
-            <IonIcon name="call-outline" size={20} style={{ color: "hsl(var(--coral))" }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-              Call us
-            </p>
-            <p className="text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-              {SUPPORT_PHONE_DISPLAY}
-            </p>
-          </div>
-          <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
-        </motion.button>
-
-        <motion.button
-          whileTap={{ scale: 0.98 }}
           onClick={openWhatsApp}
           className="tend-card w-full px-[18px] py-4 flex items-center gap-3.5 text-left"
         >
@@ -260,7 +228,7 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
               Chat on WhatsApp
             </p>
             <p className="text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>
-              {SUPPORT_PHONE_DISPLAY}
+              {WHATSAPP_DISPLAY}
             </p>
           </div>
           <IonIcon name="chevron-forward" size={16} style={{ color: "hsl(var(--border))" }} />
