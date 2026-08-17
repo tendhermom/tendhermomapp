@@ -60,20 +60,20 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
   const [loading, setLoading] = useState(true);
   const [logStatus, setLogStatus] = useState<InlineStatusMsg | null>(null);
   const [detailsCategory, setDetailsCategory] = useState<BPCategory | null>(null);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [entryToClear, setEntryToClear] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
 
-  const handleClearEntries = async () => {
+  const handleClearEntry = async (id: string) => {
     if (!user?.id) return;
     setClearing(true);
-    const { error } = await supabase.from("health_metrics" as any).delete().eq("user_id", user.id);
+    const { error } = await supabase.from("health_metrics" as any).delete().eq("id", id);
     setClearing(false);
-    setShowClearConfirm(false);
+    setEntryToClear(null);
     if (error) {
-      setLogStatus({ kind: "error", text: "Couldn't clear your entries. Please try again." });
+      setLogStatus({ kind: "error", text: "Couldn't remove this entry. Please try again." });
     } else {
-      setEntries([]);
-      setLogStatus({ kind: "success", text: "Recent entries cleared." });
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+      setLogStatus({ kind: "success", text: "Entry removed." });
     }
     setTimeout(() => setLogStatus(null), 5000);
   };
