@@ -63,18 +63,9 @@ const HelpSupportScreen = ({ onBack }: HelpSupportScreenProps) => {
     hapticLight();
     window.open(`mailto:${addr}?subject=TendherMom%20Support%20Request`, "_blank");
   };
-  const openTel = () => {
-    hapticLight();
-    window.open(`tel:${SUPPORT_PHONE_TEL}`, "_blank");
-  };
   const openWhatsApp = () => {
     hapticLight();
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        "Hi TendherMom team, I need help with…",
-      )}`,
-      "_blank",
-    );
+    window.open(WHATSAPP_URL, "_blank");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
