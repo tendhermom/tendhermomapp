@@ -242,7 +242,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
             {/* Avatar core */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSubScreen("edit-profile")}
+              onClick={() => (user?.avatar_url ? setAvatarViewer(true) : setSubScreen("edit-profile"))}
               className="absolute inset-0 m-auto w-[72px] h-[72px] rounded-full flex items-center justify-center overflow-hidden"
               style={{
                 background: "hsl(var(--green))",
