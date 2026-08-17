@@ -29,6 +29,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [weeklyCount, setWeeklyCount] = useState(0);
   const [errorStatus, setErrorStatus] = useState<InlineStatusMsg | null>(null);
@@ -271,9 +272,10 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder={canAsk ? "Ask about your pregnancy..." : "Weekly limit reached"}
             disabled={!canAsk}
+            ref={inputRef}
             rows={1}
-            className="w-full text-[14px] font-sans resize-none outline-none bg-transparent"
-            style={{ color: "hsl(var(--dark))", maxHeight: 80 }}
+            className="w-full text-[14px] font-sans resize-none outline-none bg-transparent leading-[20px]"
+            style={{ color: "hsl(var(--dark))", maxHeight: 60, overflowY: "auto" }}
           />
         </div>
         <motion.button
