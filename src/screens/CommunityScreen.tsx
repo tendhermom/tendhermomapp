@@ -34,6 +34,26 @@ const formatMemberCount = (n: number): string => {
 
 const db = supabase as any;
 
+// Remember where the user was inside Community so minimising/returning to the
+// app resumes on the same feed (and re-opens the comments sheet) instead of
+// resetting to the community picker.
+const RESUME_KEY = "tendher_community_resume_v1";
+const RESUME_TTL_MS = 30 * 60 * 1000;
+
+const readResume = (): { community: ChannelId | null; commentsPostId: string | null } => {
+  try {
+    const raw = localStorage.getItem(RESUME_KEY);
+    if (!raw) return { community: null, commentsPostId: null };
+    const parsed = JSON.parse(raw) as { community?: ChannelId; commentsPostId?: string | null; ts?: number };
+    if (typeof parsed?.ts !== "number" || Date.now() - parsed.ts > RESUME_TTL_MS) {
+      return { community: null, commentsPostId: null };
+    }
+    return { community: parsed.community ?? null, commentsPostId: parsed.commentsPostId ?? null };
+  } catch {
+    return { community: null, commentsPostId: null };
+  }
+};
+
 const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const { activeChannel, posts, loading, hasMore, setActiveChannel, fetchPosts, loadMore, toggleLike, createPost, fetchComments, addComment, removePost } = useCommunityStore();
   const user = useAuthStore((s) => s.user);
@@ -42,7 +62,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const [memberships, setMemberships] = useState<string[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
   const [loadingMemberships, setLoadingMemberships] = useState(true);
-  const [activeCommunity, setActiveCommunity] = useState<ChannelId | null>(null);
+  const [activeCommunity, setActiveCommunity] = useState<ChannelId | null>(() => readResume().community);
 
   // Join flow
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -65,6 +85,20 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   // Inline status banners
   const [feedStatus, setFeedStatus] = useState<InlineStatusMsg | null>(null);
   const [joinStatus, setJoinStatus] = useState<InlineStatusMsg | null>(null);
+
+  // Persist the current spot (feed + open comments) for resume-after-minimise
+  useEffect(() => {
+    try {
+      if (activeCommunity) {
+        localStorage.setItem(
+          RESUME_KEY,
+          JSON.stringify({ community: activeCommunity, commentsPostId, ts: Date.now() })
+        );
+      } else {
+        localStorage.removeItem(RESUME_KEY);
+      }
+    } catch {}
+  }, [activeCommunity, commentsPostId]);
 
   // Fetch memberships + real member counts per community
   useEffect(() => {
@@ -194,6 +228,18 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
     setComments(data);
     setLoadingComments(false);
   };
+
+  // Restore the exact spot on mount: load the saved feed and re-open comments
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const saved = readResume();
+    if (!saved.community) return;
+    setActiveChannel(saved.community);
+    if (saved.commentsPostId) void openComments(saved.commentsPostId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddComment = async (text: string) => {
     if (!text.trim() || !commentsPostId) return false;

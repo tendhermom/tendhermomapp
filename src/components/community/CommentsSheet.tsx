@@ -11,8 +11,33 @@ interface CommentsSheetProps {
   onAddComment: (text: string) => Promise<boolean>;
 }
 
+const DRAFT_KEY = "tendher_comment_draft_v1";
+
+// Same day → show the time (e.g. 3:42 PM). Older → show the date.
+const formatCommentTime = (dateStr: string) => {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  return sameDay
+    ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : d.toLocaleDateString();
+};
+
 const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
-  const [text, setText] = useState("");
+  // Keep any half-typed comment if the app is minimised and reopened
+  const [text, setText] = useState(() => {
+    try { return localStorage.getItem(DRAFT_KEY) || ""; } catch { return ""; }
+  });
+
+  useEffect(() => {
+    try {
+      if (text) localStorage.setItem(DRAFT_KEY, text);
+      else localStorage.removeItem(DRAFT_KEY);
+    } catch {}
+  }, [text]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
@@ -112,7 +137,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                       <p className="text-[13px] font-sans">
                         <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{c.author_name}</span>
                         <span className="ml-2 text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
-                          {new Date(c.created_at).toLocaleDateString()}
+                          {formatCommentTime(c.created_at)}
                         </span>
                       </p>
                       <p className="text-[13px] font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
