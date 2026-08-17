@@ -269,7 +269,18 @@ const HealthTrackerScreen = ({ onNavigate }: HealthTrackerScreenProps) => {
           {/* Recent Entries */}
           {entries.length > 0 && (
             <motion.div variants={fadeUp}>
-              <p className="label-caps text-text-muted mb-2">RECENT ENTRIES</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="label-caps text-text-muted">RECENT ENTRIES</p>
+                <button
+                  onClick={() => setShowClearConfirm(true)}
+                  className="ios-press inline-flex items-center gap-1 text-[11px] font-sans font-semibold px-2.5 py-1 rounded-full"
+                  style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}
+                  aria-label="Clear all recent entries"
+                >
+                  <IonIcon name="trash-outline" size={12} style={{ color: "hsl(var(--coral))" }} />
+                  Clear
+                </button>
+              </div>
               <div className="tend-card overflow-hidden">
                 {entries.slice(0, 5).map((entry, i) => (
                   <div key={entry.id} className="flex items-center px-4 py-3 gap-3" style={{ borderBottom: i < Math.min(entries.length, 5) - 1 ? "1px solid hsl(var(--border-subtle))" : "none" }}>
