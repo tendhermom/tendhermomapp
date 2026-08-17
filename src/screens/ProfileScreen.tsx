@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import PhotoViewer from "@/components/PhotoViewer";
 import TopBar from "@/components/navigation/TopBar";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
@@ -57,6 +58,7 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState<InlineStatusMsg | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [avatarViewer, setAvatarViewer] = useState(false);
   const user = useAuthStore((s) => s.user);
   const { logout, getCurrentWeek } = useAuthStore();
   const navigate = useNavigate();
