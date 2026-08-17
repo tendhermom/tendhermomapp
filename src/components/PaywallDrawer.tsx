@@ -70,7 +70,7 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     setStatus(null);
     if (!nativeAvailable) {
       hapticError();
-      setStatus({ kind: "error", text: "Subscriptions are only available in the TendherMom mobile app." });
+      setStatus({ kind: "info", text: "Open TendherMom on your phone to subscribe — purchases run through the App Store or Google Play." });
       return;
     }
     setBusy(true);

@@ -30,6 +30,13 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Grow the composer up to 3 lines as the user types
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 60)}px`;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [weeklyCount, setWeeklyCount] = useState(0);
   const [errorStatus, setErrorStatus] = useState<InlineStatusMsg | null>(null);
