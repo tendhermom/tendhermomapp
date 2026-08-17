@@ -124,7 +124,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
 
             {/* Input bar — always visible at bottom */}
             <div
-              className="relative shrink-0 px-5 py-3 flex gap-2 border-t"
+              className="relative shrink-0 px-4 py-3 flex items-center gap-2 border-t"
               style={{
                 borderColor: "hsl(var(--border-subtle))",
                 paddingBottom: keyboardOpen ? "12px" : "max(env(safe-area-inset-bottom, 16px), 16px)",
@@ -147,14 +147,14 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                     void handleSubmit();
                   }
                 }}
-                className="flex-1 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none"
+                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl text-[14px] font-sans outline-none"
                 style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))", border: "1.5px solid hsl(var(--border-subtle))" }}
               />
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => void handleSubmit()}
                 disabled={!text.trim() || submitting}
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                className="w-11 h-11 shrink-0 grow-0 basis-11 rounded-xl flex items-center justify-center"
                 style={{ background: "hsl(var(--green))", opacity: text.trim() ? 1 : 0.5 }}
               >
                 <IonIcon name={submitting ? "hourglass-outline" : "send"} size={18} style={{ color: "white" }} />

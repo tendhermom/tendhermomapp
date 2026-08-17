@@ -84,10 +84,11 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   };
 
   const handleDeleteOwn = async () => {
+    // Remove from the feed immediately, then confirm with the server.
+    setShowMenu(false);
+    onHide?.(post.id);
     const { error } = await supabase.from("community_posts").delete().eq("id", post.id);
-    if (!error) {
-      onHide?.(post.id);
-    } else {
+    if (error) {
       setCardStatus({ kind: "error", text: "Couldn't delete post. Please try again." });
       setTimeout(() => setCardStatus(null), 3500);
     }
