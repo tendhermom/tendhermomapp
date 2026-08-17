@@ -125,7 +125,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                       <p className="text-[13px] font-sans">
                         <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{c.author_name}</span>
                         <span className="ml-2 text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
-                          {new Date(c.created_at).toLocaleDateString()}
+                          {formatCommentTime(c.created_at)}
                         </span>
                       </p>
                       <p className="text-[13px] font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
