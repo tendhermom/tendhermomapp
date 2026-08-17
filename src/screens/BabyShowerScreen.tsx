@@ -22,6 +22,7 @@ interface BabyShowerPost {
   gender: string;
   birth_type: "single" | "twins" | "triplets" | "quadruplets";
   image_url: string | null;
+  image_urls?: string[] | null;
   reactions_count: number;
   user_id: string;
   created_at: string;
@@ -311,6 +312,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <BabyShowerCard
                   name={post.baby_name} parentName={post.parent_names} date={post.month_label}
                   imageUrl={post.image_url || "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop"}
+                  imageUrls={(post as any).image_urls || undefined}
                   gender={post.gender as "boy" | "girl" | "mixed"}
                   birthType={post.birth_type}
                   reactionsCount={post.reactions_count}
