@@ -82,6 +82,7 @@ export type Database = {
           gift_total: number
           id: string
           image_url: string | null
+          image_urls: string[]
           month_label: string
           parent_names: string
           reactions_count: number
@@ -100,6 +101,7 @@ export type Database = {
           gift_total?: number
           id?: string
           image_url?: string | null
+          image_urls?: string[]
           month_label: string
           parent_names: string
           reactions_count?: number
@@ -118,6 +120,7 @@ export type Database = {
           gift_total?: number
           id?: string
           image_url?: string | null
+          image_urls?: string[]
           month_label?: string
           parent_names?: string
           reactions_count?: number
@@ -828,6 +831,7 @@ export type Database = {
           gift_total: number | null
           id: string | null
           image_url: string | null
+          image_urls: string[] | null
           month_label: string | null
           parent_names: string | null
           reactions_count: number | null
@@ -843,6 +847,7 @@ export type Database = {
           gift_total?: number | null
           id?: string | null
           image_url?: string | null
+          image_urls?: string[] | null
           month_label?: string | null
           parent_names?: string | null
           reactions_count?: number | null
@@ -858,6 +863,7 @@ export type Database = {
           gift_total?: number | null
           id?: string | null
           image_url?: string | null
+          image_urls?: string[] | null
           month_label?: string | null
           parent_names?: string | null
           reactions_count?: number | null
@@ -917,6 +923,7 @@ export type Database = {
           avatar_url: string
           full_name: string
           id: string
+          is_plus: boolean
         }[]
       }
       has_role: {

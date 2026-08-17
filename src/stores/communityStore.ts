@@ -16,6 +16,7 @@ export interface CommunityPost {
   created_at: string;
   author_name?: string;
   author_avatar?: string;
+  author_is_plus?: boolean;
   liked_by_me?: boolean;
 }
 
@@ -42,6 +43,7 @@ interface CommunityState {
   fetchComments: (postId: string) => Promise<PostComment[]>;
   addComment: (postId: string, content: string) => Promise<boolean>;
   removePost: (postId: string) => void;
+  deleteComment: (commentId: string, postId: string) => Promise<boolean>;
 }
 
 const db = supabase as any;
@@ -109,6 +111,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       ...p,
       author_name: profileMap.get(p.user_id)?.full_name || "Anonymous",
       author_avatar: profileMap.get(p.user_id)?.avatar_url || undefined,
+      author_is_plus: !!profileMap.get(p.user_id)?.is_plus,
       liked_by_me: likedPostIds.has(p.id),
     }));
 
@@ -212,6 +215,17 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
   removePost: (postId) => {
     set({ posts: get().posts.filter((p) => p.id !== postId) });
+  },
+
+  deleteComment: async (commentId, postId) => {
+    const { error } = await db.from("post_comments").delete().eq("id", commentId);
+    if (error) return false;
+    set({
+      posts: get().posts.map((p) =>
+        p.id === postId ? { ...p, comments_count: Math.max(0, p.comments_count - 1) } : p
+      ),
+    });
+    return true;
   },
 
   addComment: async (postId, content) => {

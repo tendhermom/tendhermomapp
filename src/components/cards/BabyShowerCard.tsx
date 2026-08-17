@@ -9,6 +9,7 @@ interface BabyShowerCardProps {
   parentName: string;
   date: string;
   imageUrl: string;
+  imageUrls?: string[];
   gender: "boy" | "girl" | "mixed";
   birthType?: BirthType;
   reactionsCount?: number;
@@ -40,6 +41,7 @@ const BabyShowerCard = ({
   name,
   parentName,
   imageUrl,
+  imageUrls,
   gender,
   birthType = "single",
   reactionsCount = 0,
@@ -49,6 +51,9 @@ const BabyShowerCard = ({
   onGiveGift,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
+  const photos = (imageUrls && imageUrls.length > 0 ? imageUrls : [imageUrl]).filter(Boolean);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const activePhoto = photos[Math.min(photoIndex, photos.length - 1)] || imageUrl;
   const accentColor =
     gender === "boy"
       ? "hsl(214 60% 55%)"
@@ -98,12 +103,21 @@ const BabyShowerCard = ({
         boxShadow: "0 2px 16px -4px hsla(0,0%,0%,0.08)",
       }}
     >
-      {/* Image */}
-      <div className="w-full h-[130px] relative" style={{ background: accentBg }}>
+      {/* Image — full photo is shown (never cropped); a blurred copy fills
+          the leftover space so the card keeps its premium look. */}
+      <div className="w-full h-[130px] relative overflow-hidden" style={{ background: accentBg }}>
         <img
-          src={imageUrl}
+          src={activePhoto}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "blur(14px)", transform: "scale(1.2)", opacity: 0.6 }}
+          decoding="async"
+        />
+        <img
+          src={activePhoto}
           alt={name}
-          className="w-full h-full object-cover"
+          className="relative w-full h-full object-contain"
           decoding="async"
           referrerPolicy="no-referrer"
           onError={(e) => {
@@ -113,6 +127,30 @@ const BabyShowerCard = ({
             }
           }}
         />
+        {photos.length > 1 && (
+          <>
+            <div className="absolute inset-x-0 bottom-1.5 flex items-center justify-center gap-1 z-[2]">
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPhotoIndex(i)}
+                  className="rounded-full"
+                  style={{
+                    width: i === photoIndex ? 12 : 5,
+                    height: 5,
+                    background: i === photoIndex ? "white" : "rgba(255,255,255,0.6)",
+                  }}
+                  aria-label={`Photo ${i + 1}`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => setPhotoIndex((photoIndex + 1) % photos.length)}
+              className="absolute inset-0 z-[1]"
+              aria-label="Next photo"
+            />
+          </>
+        )}
         <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full" style={{ background: accentColor }}>
           <span className="text-[10px] font-bold text-white font-sans uppercase tracking-wider">
             {genderLabel}

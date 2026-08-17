@@ -96,6 +96,18 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
         throw error;
       }
 
+      // Show the invite in the list right away — the row is saved even if SMS fails.
+      const refreshList = async () => {
+        const { data } = await supabase
+          .from("referrals")
+          .select(REFERRAL_SELECT)
+          .eq("referrer_id", user.id)
+          .order("created_at", { ascending: false });
+        setReferrals((data as Referral[]) || []);
+      };
+      await refreshList();
+      setPhone("");
+
       // Send SMS via edge function
       const { data: session } = await supabase.auth.getSession();
       const { error: smsError } = await supabase.functions.invoke("send-referral-sms", {
@@ -104,19 +116,14 @@ const ReferralScreen = ({ onBack }: ReferralScreenProps) => {
           ? { Authorization: `Bearer ${session.session.access_token}` }
           : undefined,
       });
-      if (smsError) throw smsError;
+      if (smsError) {
+        toast.error("Invite saved, but the SMS couldn't be sent. You can share the link instead.");
+        Sentry.captureException(smsError, { tags: { feature: "referral-sms" } });
+        return;
+      }
 
       hapticSuccess();
       toast.success("Invitation sent via SMS!");
-      setPhone("");
-
-      // Refresh list
-      const { data } = await supabase
-        .from("referrals")
-        .select(REFERRAL_SELECT)
-        .eq("referrer_id", user.id)
-        .order("created_at", { ascending: false });
-      setReferrals((data as Referral[]) || []);
     } catch (err: any) {
       Sentry.captureException(err, { tags: { feature: "referral-sms" } });
       toast.error(err.message || "Failed to send invite");

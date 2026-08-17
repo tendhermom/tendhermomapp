@@ -58,6 +58,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   setUser: (user: UserProfile | null) => void;
+  patchUser: (patch: Partial<UserProfile>) => void;
   setLoading: (loading: boolean) => void;
   fetchProfile: (userId: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -72,6 +73,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: true,
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
+  // Update a few profile fields in place — no reload, no loading state,
+  // so the current screen is never remounted.
+  patchUser: (patch) => set((state) => (state.user ? { user: { ...state.user, ...patch } } : {})),
   setLoading: (isLoading) => set({ isLoading }),
 
   fetchProfile: async (userId: string) => {

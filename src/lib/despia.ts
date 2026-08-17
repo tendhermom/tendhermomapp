@@ -308,12 +308,26 @@ export const readDespiaContacts = async (): Promise<{
   status: ContactPickStatus;
   contacts: NativeContact[];
 }> => {
-  if (!isDespiaNative()) return { status: "unsupported", contacts: [] };
-
+  // Never gate on user-agent sniffing: some WebViews rewrite the UA, which
+  // used to drop mums straight into the manual form. Try the SDK and let the
+  // call itself decide whether a native address book is reachable.
   try {
     const { default: despia } = await import("despia-native");
-    await despia("requestcontactpermission://");
-    const data: any = await despia("readcontacts://", ["contacts"]);
+    const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+      Promise.race([
+        p,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(Object.assign(new Error("timeout"), { name: "TimeoutError" })), ms)
+        ),
+      ]);
+
+    try {
+      await withTimeout(despia("requestcontactpermission://") as Promise<unknown>, 20000);
+    } catch {
+      // Permission bridge may not resolve on some shells — continue to read.
+    }
+
+    const data: any = await withTimeout(despia("readcontacts://", ["contacts"]) as Promise<any>, 20000);
     const raw = data?.contacts ?? {};
 
     const list: NativeContact[] = [];
@@ -332,7 +346,8 @@ export const readDespiaContacts = async (): Promise<{
     if (code === "SecurityError" || code === "NotAllowedError") {
       return { status: "denied", contacts: [] };
     }
-    // readcontacts:// rejects when the user denied the OS prompt
+    // Timeout / no native bridge on this device → let the caller fall back.
+    if (code === "TimeoutError") return { status: "unsupported", contacts: [] };
     return { status: "denied", contacts: [] };
   }
 };

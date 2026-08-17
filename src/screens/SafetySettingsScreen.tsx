@@ -14,7 +14,7 @@ interface SafetySettingsScreenProps {
 
 const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
   const user = useAuthStore((s) => s.user);
-  const fetchProfile = useAuthStore((s) => s.fetchProfile);
+  const patchUser = useAuthStore((s) => s.patchUser);
   const [enabled, setEnabled] = useState<boolean>(user?.inactivity_alerts_enabled ?? true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<InlineStatusMsg | null>(null);
@@ -50,7 +50,7 @@ const SafetySettingsScreen = ({ onBack }: SafetySettingsScreenProps) => {
       showStatus({ kind: "error", text: "Couldn't update setting. Please try again." });
       return;
     }
-    await fetchProfile(user.id);
+    patchUser({ inactivity_alerts_enabled: next });
     showStatus({
       kind: "success",
       text: next

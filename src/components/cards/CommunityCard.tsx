@@ -42,6 +42,7 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   const [cardStatus, setCardStatus] = useState<InlineStatusMsg | null>(null);
   const [reportStatus, setReportStatus] = useState<InlineStatusMsg | null>(null);
   const [showImage, setShowImage] = useState(false);
+  const [showAvatar, setShowAvatar] = useState(false);
   const [saved, setSaved] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("tendher_saved_community_posts") || "[]").includes(post.id);
@@ -83,10 +84,11 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
   };
 
   const handleDeleteOwn = async () => {
+    // Remove from the feed immediately, then confirm with the server.
+    setShowMenu(false);
+    onHide?.(post.id);
     const { error } = await supabase.from("community_posts").delete().eq("id", post.id);
-    if (!error) {
-      onHide?.(post.id);
-    } else {
+    if (error) {
       setCardStatus({ kind: "error", text: "Couldn't delete post. Please try again." });
       setTimeout(() => setCardStatus(null), 3500);
     }
@@ -101,20 +103,33 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
     >
       {/* Author row */}
       <div className="flex items-center gap-3">
-        <div
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => post.author_avatar && setShowAvatar(true)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold font-sans shrink-0 overflow-hidden"
           style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
         >
           {post.author_avatar ? (
-            <img src={post.author_avatar} alt="" className="w-full h-full object-cover" />
+            <img src={post.author_avatar} alt={post.author_name || "Member"} className="w-full h-full object-cover" />
           ) : (
             initials
           )}
-        </div>
+        </motion.button>
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-semibold font-sans truncate" style={{ color: "hsl(var(--dark))" }}>
-            {post.author_name}
-          </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-[14px] font-semibold font-sans truncate" style={{ color: "hsl(var(--dark))" }}>
+              {post.author_name}
+            </p>
+            {post.author_is_plus && (
+              <span
+                className="shrink-0 flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9px] font-bold font-sans uppercase tracking-wider"
+                style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+              >
+                <IonIcon name="sparkles" size={9} style={{ color: "hsl(var(--green))" }} />
+                Plus
+              </span>
+            )}
+          </div>
           <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
             {timeAgo(post.created_at)}
           </span>
@@ -348,6 +363,29 @@ const CommunityCard = forwardRef<HTMLDivElement, CommunityCardProps>(({ post, on
               </motion.button>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Avatar viewer */}
+      <AnimatePresence>
+        {showAvatar && post.author_avatar && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] flex items-center justify-center p-8"
+            style={{ background: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowAvatar(false)}
+          >
+            <motion.img
+              initial={{ scale: 0.85 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.85 }}
+              src={post.author_avatar}
+              alt={post.author_name || "Member"}
+              className="max-w-full max-h-[70vh] rounded-3xl object-contain"
+            />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -22,6 +22,7 @@ interface BabyShowerPost {
   gender: string;
   birth_type: "single" | "twins" | "triplets" | "quadruplets";
   image_url: string | null;
+  image_urls?: string[] | null;
   reactions_count: number;
   user_id: string;
   created_at: string;
@@ -48,7 +49,7 @@ const generateMonthCards = () => {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  const months: { label: string; month: number; year: number; isCurrent: boolean }[] = [];
+  const months: { label: string; month: number; year: number; isCurrent: boolean; isPast: boolean }[] = [];
 
   for (let offset = -2; offset <= 9; offset++) {
     const d = new Date(currentYear, currentMonth + offset, 1);
@@ -58,6 +59,7 @@ const generateMonthCards = () => {
       month: d.getMonth(),
       year: d.getFullYear(),
       isCurrent: offset === 0,
+      isPast: offset < 0,
     });
   }
   return months;
@@ -87,8 +89,9 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [parentNames, setParentNames] = useState("");
   const [gender, setGender] = useState<"boy" | "girl" | "mixed">("boy");
   const [birthType, setBirthType] = useState<"single" | "twins" | "triplets" | "quadruplets">("single");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const MAX_PHOTOS = 4;
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -174,12 +177,27 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
 
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    const picked = Array.from(e.target.files || []);
+    if (picked.length === 0) return;
+    const room = MAX_PHOTOS - imageFiles.length;
+    if (room <= 0) {
+      toast(`You can share up to ${MAX_PHOTOS} photos`);
+      return;
+    }
+    const accepted = picked.slice(0, room);
+    if (picked.length > room) toast(`Only ${room} more photo${room === 1 ? "" : "s"} added`);
+    setImageFiles((prev) => [...prev, ...accepted]);
+    accepted.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreviews((prev) => [...prev, reader.result as string]);
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removePhoto = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmitPost = async () => {
@@ -190,36 +208,40 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     if (!activeMonth) return;
     setSubmitting(true);
     setUploadProgress(null);
-    let imageUrl: string | null = null;
+    const uploadedUrls: string[] = [];
     try {
-      if (imageFile) {
-        const ext = imageFile.name.split(".").pop();
-        const path = `${user.id}/${Date.now()}.${ext}`;
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        const ext = file.name.split(".").pop();
+        const path = `${user.id}/${Date.now()}-${i}.${ext}`;
         setUploadProgress(0);
         const { publicUrl } = await uploadWithProgress({
           bucket: "baby-shower-images",
           path,
-          file: imageFile,
-          onProgress: (p) => setUploadProgress(p),
+          file,
+          onProgress: (p) => setUploadProgress(Math.round(((i + p / 100) / imageFiles.length) * 100)),
         });
-        imageUrl = publicUrl;
+        uploadedUrls.push(publicUrl);
       }
       const { error } = await supabase.from("baby_shower_posts").insert({
         user_id: user.id, baby_name: babyName.trim(), parent_names: parentNames.trim(),
-        gender, birth_type: birthType, month_label: activeMonth, image_url: imageUrl,
+        gender, birth_type: birthType, month_label: activeMonth,
+        image_url: uploadedUrls[0] ?? null, image_urls: uploadedUrls,
       } as any);
       if (error) throw error;
       toast.success("Baby post created! 🎉");
       setShowCreateForm(false);
-      setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFile(null); setImagePreview(null);
+      setBabyName(""); setParentNames(""); setGender("boy"); setBirthType("single"); setImageFiles([]); setImagePreviews([]);
       await fetchPosts();
     } catch (err) { console.error(err); toast.error("Failed to create post"); }
     finally { setSubmitting(false); setUploadProgress(null); }
   };
 
-  const handleMonthTap = (monthLabel: string, isCurrent: boolean) => {
-    if (!isCurrent) {
-      toast("Only the current month is open for posting and viewing", { icon: "🔒" });
+  const handleMonthTap = (monthLabel: string, isCurrent: boolean, isPast: boolean) => {
+    // Past months stay browsable so celebrations aren't lost; only the
+    // current month accepts new posts. Future months stay locked.
+    if (!isCurrent && !isPast) {
+      toast("This month opens later — check back then", { icon: "🔒" });
       return;
     }
     setActiveMonth(monthLabel);
@@ -227,6 +249,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
 
   // Posts for the active month
   const monthPosts = posts.filter((p) => p.month_label === activeMonth);
+  const canPostThisMonth = !!activeMonth && activeMonth === MONTH_CARDS.find((m) => m.isCurrent)?.label;
 
   // ─── MONTH FEED VIEW ───
   if (activeMonth) {
@@ -248,15 +271,17 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
               {monthPosts.length} {monthPosts.length === 1 ? "baby" : "babies"} celebrated
             </p>
           </div>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowCreateForm(true)}
-            className="w-[38px] h-[38px] rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--coral))" }}>
-            <IonIcon name="add" size={20} style={{ color: "white" }} />
-          </motion.button>
+          {canPostThisMonth && (
+            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowCreateForm(true)}
+              className="w-[38px] h-[38px] rounded-full flex items-center justify-center"
+              style={{ background: "hsl(var(--coral))" }}>
+              <IonIcon name="add" size={20} style={{ color: "white" }} />
+            </motion.button>
+          )}
         </motion.div>
 
-        {/* Post your baby CTA */}
-        <motion.div variants={fadeUp}>
+        {/* Post your baby CTA — current month only */}
+        <motion.div variants={fadeUp} style={{ display: canPostThisMonth ? undefined : "none" }}>
           <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowCreateForm(true)}
             className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans flex items-center justify-center gap-2"
             style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}>
@@ -277,7 +302,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
             </div>
             <h3 className="font-serif text-[18px] mb-1" style={{ color: "hsl(var(--dark))" }}>No Babies Yet</h3>
             <p className="text-[13px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
-              Be the first to celebrate your baby this month!
+              {canPostThisMonth ? "Be the first to celebrate your baby this month!" : "No celebrations were shared this month."}
             </p>
           </motion.div>
         ) : (
@@ -287,6 +312,7 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <BabyShowerCard
                   name={post.baby_name} parentName={post.parent_names} date={post.month_label}
                   imageUrl={post.image_url || "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&h=300&fit=crop"}
+                  imageUrls={(post as any).image_urls || undefined}
                   gender={post.gender as "boy" | "girl" | "mixed"}
                   birthType={post.birth_type}
                   reactionsCount={post.reactions_count}
@@ -400,21 +426,50 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <h3 className="font-serif text-[20px] mb-5" style={{ color: "hsl(var(--dark))" }}>Celebrate Your Baby 🎉</h3>
                 <div className="space-y-4">
                   <div>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
-                    {imagePreview ? (
-                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => !submitting && fileInputRef.current?.click()} className="relative cursor-pointer">
-                        <img src={imagePreview} alt="Preview" className="w-full h-[180px] object-cover rounded-2xl" />
-                        <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
-                          <IonIcon name="camera" size={28} style={{ color: "white" }} />
+                    <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                    {imagePreviews.length > 0 ? (
+                      <div className="space-y-2.5">
+                        <div className="relative">
+                          <img src={imagePreviews[0]} alt="Preview" className="w-full h-[180px] object-cover rounded-2xl" />
+                          <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photos" />
+                          {!submitting && (
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => removePhoto(0)}
+                              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                              style={{ background: "rgba(0,0,0,0.6)" }}>
+                              <IonIcon name="close" size={16} style={{ color: "white" }} />
+                            </motion.button>
+                          )}
                         </div>
-                        <UploadProgress progress={uploadProgress} rounded="rounded-2xl" label="Uploading photo" />
-                      </motion.div>
+                        <div className="flex gap-2">
+                          {imagePreviews.slice(1).map((src, i) => (
+                            <div key={i} className="relative w-[62px] h-[62px] rounded-xl overflow-hidden">
+                              <img src={src} alt={`Photo ${i + 2}`} className="w-full h-full object-cover" />
+                              {!submitting && (
+                                <motion.button whileTap={{ scale: 0.85 }} onClick={() => removePhoto(i + 1)}
+                                  className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                                  style={{ background: "rgba(0,0,0,0.6)" }}>
+                                  <IonIcon name="close" size={11} style={{ color: "white" }} />
+                                </motion.button>
+                              )}
+                            </div>
+                          ))}
+                          {imagePreviews.length < MAX_PHOTOS && (
+                            <motion.button whileTap={{ scale: 0.94 }} onClick={() => !submitting && fileInputRef.current?.click()}
+                              className="w-[62px] h-[62px] rounded-xl flex items-center justify-center"
+                              style={{ background: "hsl(var(--bg))", border: "1.5px dashed hsl(var(--border))" }}>
+                              <IonIcon name="add" size={20} style={{ color: "hsl(var(--text-muted))" }} />
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
                     ) : (
                       <motion.button whileTap={{ scale: 0.97 }} onClick={() => fileInputRef.current?.click()}
                         className="w-full h-[140px] rounded-2xl flex flex-col items-center justify-center gap-2"
                         style={{ background: "hsl(var(--bg))", border: "2px dashed hsl(var(--border))" }}>
                         <IonIcon name="camera-outline" size={28} style={{ color: "hsl(var(--text-muted))" }} />
-                        <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>Add a photo</span>
+                        <span className="text-[13px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                          Add photos (up to {MAX_PHOTOS})
+                        </span>
                       </motion.button>
                     )}
                   </div>
@@ -560,15 +615,15 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                 <motion.button
                   key={month.label}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => handleMonthTap(month.label, isCurrent)}
+                  onClick={() => handleMonthTap(month.label, isCurrent, month.isPast)}
                   className="relative flex-shrink-0 rounded-[20px] overflow-hidden text-left"
                   style={{
                     width: 160,
                     aspectRatio: "3/4",
                     scrollSnapAlign: "start",
                     boxShadow: "0 4px 20px -4px rgba(0,0,0,0.15)",
-                    opacity: isCurrent ? 1 : 0.55,
-                    filter: isCurrent ? "none" : "grayscale(0.4)",
+                    opacity: isCurrent ? 1 : month.isPast ? 0.85 : 0.55,
+                    filter: isCurrent || month.isPast ? "none" : "grayscale(0.4)",
                   }}
                 >
                   {/* Background image */}
@@ -598,8 +653,18 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                       </span>
                     </div>
                   )}
-                  {/* Lock icon for non-current */}
-                  {!isCurrent && (
+                  {/* Past months are read-only, future months are locked */}
+                  {!isCurrent && month.isPast && (
+                    <div className="absolute top-3 right-3">
+                      <span
+                        className="text-[10px] font-sans font-semibold px-2.5 py-1 rounded-full"
+                        style={{ background: "rgba(255,255,255,0.85)", color: "hsl(var(--dark))" }}
+                      >
+                        View
+                      </span>
+                    </div>
+                  )}
+                  {!isCurrent && !month.isPast && (
                     <div className="absolute top-3 right-3">
                       <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
                         <IonIcon name="lock-closed" size={12} style={{ color: "rgba(255,255,255,0.7)" }} />
