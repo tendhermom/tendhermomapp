@@ -14,7 +14,7 @@ interface HelpSupportScreenProps {
 
 const SUPPORT_EMAIL_PRIMARY = "support@tendhermom.com";
 const SUPPORT_EMAIL_SECONDARY = "tendhermom@gmail.com";
-const WHATSAPP_DISPLAY = "Whatsapp.com/@tendhermom";
+const WHATSAPP_DISPLAY = "@tendhermom";
 const WHATSAPP_URL = "https://whatsapp.com/@tendhermom";
 
 const CATEGORIES = [
