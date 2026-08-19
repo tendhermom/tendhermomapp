@@ -29,6 +29,7 @@
 - [Gamification](mem://features/gamification) — 5-level colored progression system, referral credits
 - [Health Tracker](mem://features/health-tracker) — Weeks 4-40 logging, preeclampsia/systolic >140 warnings
 - [AI Chat](mem://features/ai-chat) — TopBar coral icon, 2 questions/week Basic vs Unlimited Premium
+- [Payments](mem://features/payments) — Paystack subscriptions (RevenueCat removed), plan codes, webhook flow
 - [Premium Plan](mem://features/premium-plan) — Weekly/Monthly/Yearly pricing, PremiumGate unified UI
 - [Referral System](mem://features/referral-system) — 5 premium referrals trigger 60-day premium reward
 - [PWA Offline](mem://architecture/pwa-offline) — VitePWA CacheFirst static, NetworkFirst Supabase
