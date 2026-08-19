@@ -7,14 +7,12 @@ import { useAuthStore } from "@/stores/authStore";
 import { hapticSelection, hapticSuccess, hapticError } from "@/lib/despia";
 import {
   PLANS,
-  isBillingAvailable,
-  startPurchase,
-  restorePurchases,
-  openCustomerCenter,
-  onEntitlementChange,
+  startCheckout,
+  consumeCheckoutReturn,
   confirmPremiumWithBackend,
   type PlanId,
-} from "@/lib/revenuecat";
+} from "@/lib/paystack";
+
 
 interface PaywallDrawerProps {
   open: boolean;
@@ -41,7 +39,6 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
   const [restoring, setRestoring] = useState(false);
   const [status, setStatus] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
-  const nativeAvailable = isBillingAvailable();
 
   useEffect(() => {
     if (!open) {
@@ -50,65 +47,63 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     }
   }, [open]);
 
+  // If the mum just came back from Paystack checkout, confirm and unlock.
   useEffect(() => {
-    return onEntitlementChange(async () => {
-      const result = await confirmPremiumWithBackend();
-      setBusy(false);
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      const result = await consumeCheckoutReturn();
+      if (cancelled || !result) return;
       if (result.plan_type === "premium") {
         hapticSuccess();
         setStatus({ kind: "success", text: "Welcome to TendherMom Plus ✨" });
         if (user?.id) await fetchProfile(user.id);
         setTimeout(() => onOpenChange(false), 1200);
       }
-    });
-  }, [user?.id, fetchProfile, onOpenChange]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user?.id, fetchProfile, onOpenChange]);
 
   const plan = PLANS.find((p) => p.id === selected)!;
 
   const handleSubscribe = async () => {
     if (busy) return;
     setStatus(null);
-    if (!nativeAvailable) {
-      hapticError();
-      setStatus({ kind: "info", text: "Open TendherMom on your phone to subscribe — purchases run through the App Store or Google Play." });
-      return;
-    }
     setBusy(true);
     hapticSelection();
-    const result = await startPurchase(selected, user?.id ?? "");
+    const result = await startCheckout(selected);
     if (!result.started) {
       hapticError();
-      setStatus({ kind: "error", text: result.error || "Could not start the purchase." });
+      setStatus({ kind: "error", text: result.error || "Could not start the payment." });
       setBusy(false);
       return;
     }
-    setTimeout(() => setBusy(false), 30_000);
+    // Navigating to Paystack's secure checkout page.
   };
 
   const handleRestore = async () => {
     if (restoring) return;
     setRestoring(true);
     setStatus(null);
-    const result = await restorePurchases();
+    const result = await confirmPremiumWithBackend(null, 1);
     setRestoring(false);
     if (result.error) {
       setStatus({ kind: "error", text: result.error });
       return;
     }
-    if (result.premium) {
+    if (result.plan_type === "premium") {
       hapticSuccess();
       setStatus({ kind: "success", text: "Plus restored ✨" });
       if (user?.id) await fetchProfile(user.id);
       setTimeout(() => onOpenChange(false), 1200);
     } else {
-      setStatus({ kind: "info", text: "No active subscription to restore." });
+      setStatus({ kind: "info", text: "No active subscription found for your account." });
     }
   };
 
-  const handleManage = async () => {
-    const result = await openCustomerCenter(user?.id);
-    if (!result.started) setStatus({ kind: "error", text: result.error || "Could not open settings." });
-  };
+
 
   return (
     <>
@@ -286,14 +281,15 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                     opacity: busy ? 0.7 : 1,
                   }}
                 >
-                  {busy ? "Processing…" : `Continue — ${plan.price}${plan.period}`}
+                  {busy ? "Opening secure checkout…" : `Continue — ${plan.price}${plan.period}`}
                 </motion.button>
 
                 <p
                   className="text-center text-[11px] font-sans leading-relaxed px-1"
                   style={{ color: "hsl(var(--text-muted))" }}
                 >
-                  Auto-renewable subscription. Cancel anytime in your device settings.
+                  Secured by Paystack — card, bank transfer or USSD. Renews automatically;
+                  cancel anytime from TendherMom Plus.
                 </p>
 
                 <div className="flex items-center justify-center gap-3 flex-wrap">
@@ -302,16 +298,9 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                     className="text-[12px] font-sans font-semibold"
                     style={{ color: "hsl(var(--green))" }}
                   >
-                    {restoring ? "Restoring…" : "Restore purchases"}
+                    {restoring ? "Checking…" : "I already paid"}
                   </button>
-                  <span className="text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>·</span>
-                  <button
-                    onClick={handleManage}
-                    className="text-[12px] font-sans font-semibold"
-                    style={{ color: "hsl(var(--green))" }}
-                  >
-                    Manage
-                  </button>
+
                   {onSeeAllFeatures && (
                     <>
                       <span className="text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>·</span>

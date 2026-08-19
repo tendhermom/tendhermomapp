@@ -536,8 +536,9 @@ const ProfileScreen = ({ onNavigate }: ProfileScreenProps) => {
                     <div className="flex items-start gap-2.5">
                       <IonIcon name="card-outline" size={16} style={{ color: "hsl(var(--coral))", marginTop: 2 }} />
                       <p className="text-[12px] font-sans flex-1 leading-relaxed" style={{ color: "hsl(var(--dark))" }}>
-                        Active TendherMom Plus subscriptions must be cancelled separately
-                        through the App Store or Google Play.
+                        Cancel any active TendherMom Plus subscription first, from
+                        the TendherMom Plus screen.
+
                       </p>
                     </div>
                   </div>

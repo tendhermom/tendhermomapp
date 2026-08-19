@@ -21,7 +21,7 @@ interface UserProfile {
 
 /**
  * Premium is granted when the profile is a flagged tester, or when the
- * RevenueCat "Pro" entitlement is active and not past its expiry.
+ * Paystack subscription is active and not past its expiry.
  */
 const resolvePlanType = (data: any): "free" | "premium" => {
   if (data?.is_tester) return "premium";
@@ -97,7 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             lmp_date: data.lmp_date,
             birth_date: data.birth_date,
             baby_name: data.baby_name,
-            // Premium is entitlement-driven: an active RevenueCat "Pro"
+            // Premium is entitlement-driven: an active Paystack
             // entitlement (synced by the webhook) or a flagged test account.
             plan_type: resolvePlanType(data),
             current_stage: (data.current_stage as UserProfile["current_stage"]) || "second_trimester",

@@ -467,6 +467,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          plan_code: string
+          plan_id: string
+          reference: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          plan_code: string
+          plan_id: string
+          reference: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          plan_code?: string
+          plan_id?: string
+          reference?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -549,6 +588,10 @@ export type Database = {
           is_tester: boolean
           last_active_at: string
           lmp_date: string | null
+          paystack_customer_code: string | null
+          paystack_email_token: string | null
+          paystack_plan_code: string | null
+          paystack_subscription_code: string | null
           phone: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
           plus_expires_at: string | null
@@ -581,6 +624,10 @@ export type Database = {
           is_tester?: boolean
           last_active_at?: string
           lmp_date?: string | null
+          paystack_customer_code?: string | null
+          paystack_email_token?: string | null
+          paystack_plan_code?: string | null
+          paystack_subscription_code?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           plus_expires_at?: string | null
@@ -613,6 +660,10 @@ export type Database = {
           is_tester?: boolean
           last_active_at?: string
           lmp_date?: string | null
+          paystack_customer_code?: string | null
+          paystack_email_token?: string | null
+          paystack_plan_code?: string | null
+          paystack_subscription_code?: string | null
           phone?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           plus_expires_at?: string | null

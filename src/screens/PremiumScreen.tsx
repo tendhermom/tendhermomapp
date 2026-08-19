@@ -5,14 +5,15 @@ import IonIcon from "@/components/IonIcon";
 import { useAuthStore } from "@/stores/authStore";
 import {
   PLANS,
-  isBillingAvailable,
-  startPurchase,
-  restorePurchases,
-  openCustomerCenter,
-  onEntitlementChange,
+  startCheckout,
+  consumeCheckoutReturn,
   confirmPremiumWithBackend,
+  getSubscriptionStatus,
+  cancelSubscription,
   type PlanId,
-} from "@/lib/revenuecat";
+  type SubscriptionStatus,
+} from "@/lib/paystack";
+
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 import LegalModal, { type LegalDoc } from "@/components/LegalModal";
 
@@ -70,61 +71,82 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("yearly");
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
-  const [nativeAvailable, setNativeAvailable] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
   useEffect(() => {
-    setNativeAvailable(isBillingAvailable());
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
     screenShield.enable();
     return () => { screenShield.disable(); };
   }, [user?.id]);
 
-  // The Despia runtime fires onRevenueCatPurchase when the store confirms —
-  // the backend still decides whether access is granted.
+  // Coming back from Paystack's checkout page — confirm and unlock.
   useEffect(() => {
-    return onEntitlementChange(async () => {
-      const result = await confirmPremiumWithBackend();
+    let cancelled = false;
+    (async () => {
+      const result = await consumeCheckoutReturn();
+      if (cancelled || !result) return;
       if (result.plan_type === "premium") {
         hapticSuccess();
         setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
+        if (user?.id) await fetchProfile(user.id);
+      } else if (result.error) {
+        setStatusMsg({ kind: "error", text: result.error });
+      } else {
+        setStatusMsg({
+          kind: "info",
+          text: "We haven't received your payment yet. If you were charged, tap \"I already paid\" in a moment.",
+        });
       }
-      if (user?.id) await fetchProfile(user.id);
       setPurchasing(false);
-    });
+    })();
+    return () => { cancelled = true; };
   }, [user?.id, fetchProfile]);
+
+  // Load subscription details for members.
+  useEffect(() => {
+    if (!isPremium) return;
+    let cancelled = false;
+    getSubscriptionStatus().then((s) => {
+      if (!cancelled && !s.error) setSubscription(s);
+    });
+    return () => { cancelled = true; };
+  }, [isPremium, user?.id]);
 
   const handlePurchase = async () => {
     if (purchasing) return;
     setStatusMsg(null);
-
-    if (!nativeAvailable) {
-      setStatusMsg({
-        kind: "info",
-        text: "Open TendherMom on your phone to subscribe — purchases run through the App Store or Google Play.",
-      });
-      return;
-    }
-
     setPurchasing(true);
     hapticSelection();
-    const result = await startPurchase(selectedPlan, user?.id ?? "");
+    const result = await startCheckout(selectedPlan);
     if (!result.started) {
-      setStatusMsg({ kind: "error", text: result.error || "Purchase failed. Please try again." });
+      setStatusMsg({ kind: "error", text: result.error || "Could not start the payment. Please try again." });
       hapticError();
       setPurchasing(false);
-      return;
     }
-    // Purchase sheet is open natively; onRevenueCatPurchase resolves the rest.
-    setTimeout(() => setPurchasing(false), 30_000);
+    // Otherwise the browser is navigating to Paystack's secure checkout.
   };
 
-  const handleManage = async () => {
-    const result = await openCustomerCenter(user?.id);
-    if (!result.started) {
-      setStatusMsg({ kind: "error", text: result.error || "Could not open subscription settings." });
+  const handleCancel = async () => {
+    if (cancelling) return;
+    setCancelling(true);
+    setStatusMsg(null);
+    const result = await cancelSubscription();
+    setCancelling(false);
+    if (result.error) {
+      hapticError();
+      setStatusMsg({ kind: "error", text: result.error });
+      return;
     }
+    hapticSuccess();
+    setStatusMsg({
+      kind: "info",
+      text: result.message || "Your subscription will not renew. You keep Plus until the period ends.",
+    });
+    const fresh = await getSubscriptionStatus();
+    if (!fresh.error) setSubscription(fresh);
   };
 
   const handleRestore = async () => {
@@ -132,24 +154,33 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     setRestoring(true);
     setStatusMsg(null);
     try {
-      const result = await restorePurchases();
+      const result = await confirmPremiumWithBackend(null, 2, 1200);
       if (result.error) {
         setStatusMsg({ kind: "error", text: result.error });
         return;
       }
-      if (result.premium) {
+      if (result.plan_type === "premium") {
         hapticSuccess();
-        setStatusMsg({ kind: "success", text: "Plus restored ✨" });
+        setStatusMsg({ kind: "success", text: "Plus is active ✨" });
         if (user?.id) await fetchProfile(user.id);
       } else {
-        setStatusMsg({ kind: "info", text: "No active subscription to restore." });
+        setStatusMsg({ kind: "info", text: "No active subscription found for your account." });
       }
     } catch (e: any) {
-      setStatusMsg({ kind: "error", text: e?.message || "Restore failed." });
+      setStatusMsg({ kind: "error", text: e?.message || "Could not check your subscription." });
     } finally {
       setRestoring(false);
     }
   };
+
+  const renewalLabel = subscription?.expires_at
+    ? new Date(subscription.expires_at).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
 
   return (
     <motion.div
@@ -387,25 +418,21 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             }}
           >
             {purchasing
-              ? "Processing…"
+              ? "Opening secure checkout…"
               : `Subscribe — ${PLANS.find((p) => p.id === selectedPlan)?.price}${PLANS.find((p) => p.id === selectedPlan)?.period}`}
           </motion.button>
 
-          {/* Apple-required legal disclosure */}
+          {/* Billing disclosure */}
           <p
             className="text-center text-[11px] font-sans leading-relaxed px-2"
             style={{ color: "hsl(var(--text-muted))" }}
           >
-            Auto-renewable subscription. Cancel anytime in your device settings.
-            Payment is charged to your{" "}
-            {/iPad|iPhone|iPod/.test(typeof navigator !== "undefined" ? navigator.userAgent : "")
-              ? "Apple ID"
-              : "Google Play account"}{" "}
-            and renews automatically unless cancelled at least 24 hours before the
-            period ends.
+            Payments are processed securely by Paystack — pay with card, bank transfer,
+            USSD or mobile money. Your subscription renews automatically and you can
+            cancel anytime from this screen.
           </p>
 
-          {/* Restore Purchases — Apple compliance requirement */}
+          {/* Already paid — re-check entitlement */}
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleRestore}
@@ -418,8 +445,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
               opacity: restoring ? 0.6 : 1,
             }}
           >
-            {restoring ? "Restoring…" : "Restore Purchases"}
+            {restoring ? "Checking…" : "I already paid — refresh"}
           </motion.button>
+
 
           <div className="flex items-center justify-center gap-3 pt-1">
             <button
@@ -498,29 +526,40 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
               </div>
               <div className="flex-1">
                 <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
-                  Plus Active
+                  {subscription?.status === "cancelled" ? "Plus — not renewing" : "Plus Active"}
                 </p>
                 <p className="text-[12px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                  Manage in your device settings
+                  {subscription?.tester
+                    ? "Test account — always on"
+                    : renewalLabel
+                    ? subscription?.status === "cancelled"
+                      ? `Access until ${renewalLabel}`
+                      : `Renews on ${renewalLabel}`
+                    : "Billed through Paystack"}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Customer Center — restore, change plan, cancel, request refund */}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleManage}
-            className="w-full py-[14px] rounded-2xl text-[14px] font-sans font-semibold text-white"
-            style={{
-              background: "linear-gradient(135deg, hsl(153 42% 28%), hsl(153 42% 36%))",
-              boxShadow: "0 6px 24px -6px hsla(153, 42%, 28%, 0.35)",
-            }}
-          >
-            Manage Subscription
-          </motion.button>
+          {/* Cancel — access continues until the paid period ends */}
+          {subscription?.has_subscription && subscription?.status !== "cancelled" && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="w-full py-[14px] rounded-2xl text-[14px] font-sans font-semibold"
+              style={{
+                background: "transparent",
+                border: "1.5px solid hsl(var(--border))",
+                color: "hsl(var(--coral))",
+                opacity: cancelling ? 0.6 : 1,
+              }}
+            >
+              {cancelling ? "Cancelling…" : "Cancel subscription"}
+            </motion.button>
+          )}
 
-          {/* Restore Purchases — visible even for premium users (Apple compliance) */}
+          {/* Refresh entitlement */}
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleRestore}
@@ -533,8 +572,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
               opacity: restoring ? 0.6 : 1,
             }}
           >
-            {restoring ? "Restoring…" : "Restore Purchases"}
+            {restoring ? "Checking…" : "Refresh subscription status"}
           </motion.button>
+
         </motion.div>
       )}
       <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
