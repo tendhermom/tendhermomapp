@@ -76,11 +76,10 @@ const BabyShowerCard = ({
       ? GIFTED_META
       : BASE_REACTIONS.find((r) => r.type === userReaction);
 
-  // Gift is always available to visitors — availability of account details is
-  // resolved when they tap Gift (fetched from the poster's Gift Settings).
-  const pickerReactions: ReactionMeta[] = !isOwner
-    ? [...BASE_REACTIONS, GIFT_REACTION]
-    : BASE_REACTIONS;
+  // Gift is always available — availability of account details is resolved
+  // when Gift is tapped (fetched from the poster's Gift Settings).
+  const pickerReactions: ReactionMeta[] = [...BASE_REACTIONS, GIFT_REACTION];
+
 
   // Always open the picker so Gift stays reachable even after reacting
   const handleTap = () => setShowPicker(true);
@@ -206,17 +205,21 @@ const BabyShowerCard = ({
             />
             {activeReaction ? activeReaction.label : "React"}
           </motion.button>
-          {!isOwner && (
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              onClick={() => onGiveGift?.()}
-              className="py-1.5 px-2.5 rounded-xl text-[12px] font-semibold font-sans flex items-center justify-center gap-1"
-              style={{ background: "hsl(var(--light-coral))", color: "hsl(var(--coral))" }}
-            >
-              <IonIcon name="gift" size={14} style={{ color: "hsl(var(--coral))" }} />
-              Gift
-            </motion.button>
-          )}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={(e) => { e.stopPropagation(); onGiveGift?.(); }}
+            aria-label="Give a gift"
+            className="py-1.5 px-2.5 rounded-xl text-[12px] font-semibold font-sans flex items-center justify-center gap-1"
+            style={{
+              background: "linear-gradient(135deg, hsl(42 96% 62%), hsl(32 92% 54%))",
+              color: "white",
+              boxShadow: "0 4px 12px -4px hsla(35,90%,45%,0.55)",
+            }}
+          >
+            <IonIcon name="gift" size={14} style={{ color: "white" }} />
+            Gift
+          </motion.button>
+
           {reactionsCount > 0 && (
             <span className="text-[11px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
               {reactionsCount}
