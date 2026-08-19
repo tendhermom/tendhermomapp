@@ -1,7 +1,7 @@
 project_id = "rnxarweuquyftywklsxa"
 
-# RevenueCat webhook — authenticated with REVENUECAT_WEBHOOK_SECRET, not a JWT
-[functions.revenuecat-webhook]
+# Paystack webhook — authenticated with the x-paystack-signature HMAC, not a JWT
+[functions.paystack-webhook]
 verify_jwt = false
 
 [functions.create-verified-user]

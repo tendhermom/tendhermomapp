@@ -38,7 +38,7 @@ const sections = [
     icon: "diamond-outline",
     title: "4. Premium Subscriptions",
     content:
-      "Premium features (Inactivity Alert, Unlimited AI, Gift Button, Rescue Map) require a subscription (₦300/week, ₦1,000/month, or ₦10,000/year). Payments are processed securely via Apple Pay for iOS users and Google Pay for Android users, subject to their respective privacy policies and terms. TENDHERMOM LTD does not store your payment card details and is not liable for payment failures, network errors, or unauthorized bank charges.",
+      "Premium features (Inactivity Alert, Unlimited AI, Gift Button, Rescue Map) require a subscription (₦300/week, ₦1,000/month, or ₦10,000/year). Payments are processed securely by Paystack (card, bank transfer, USSD or mobile money), subject to Paystack's privacy policy and terms. Subscriptions renew automatically until cancelled from the TendherMom Plus screen. TENDHERMOM LTD does not store your payment card details and is not liable for payment failures, network errors, or unauthorized bank charges.",
   },
   {
     icon: "gift-outline",
@@ -46,7 +46,7 @@ const sections = [
     items: [
       { bold: "Facilitation Only:", text: "TENDHERMOM LTD facilitates wishlist sharing but is not responsible for the delivery of physical gifts or the conduct of gift-givers." },
       { bold: "Non-Refundable:", text: "All financial gifts sent to users via TendherMom are final and non-refundable." },
-      { bold: "Fees:", text: "You acknowledge that Apple Pay and Google Pay may deduct standard transaction fees from gifts received." },
+      { bold: "Fees:", text: "You acknowledge that payment providers may deduct standard transaction fees." },
     ],
   },
   {
