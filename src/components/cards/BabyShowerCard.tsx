@@ -76,11 +76,10 @@ const BabyShowerCard = ({
       ? GIFTED_META
       : BASE_REACTIONS.find((r) => r.type === userReaction);
 
-  // Gift is always available to visitors — availability of account details is
-  // resolved when they tap Gift (fetched from the poster's Gift Settings).
-  const pickerReactions: ReactionMeta[] = !isOwner
-    ? [...BASE_REACTIONS, GIFT_REACTION]
-    : BASE_REACTIONS;
+  // Gift is always available — availability of account details is resolved
+  // when Gift is tapped (fetched from the poster's Gift Settings).
+  const pickerReactions: ReactionMeta[] = [...BASE_REACTIONS, GIFT_REACTION];
+
 
   // Always open the picker so Gift stays reachable even after reacting
   const handleTap = () => setShowPicker(true);
