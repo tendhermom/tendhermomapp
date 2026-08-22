@@ -24,7 +24,7 @@
 - [Strategic Pivot](mem://project/strategic-pivot) — Doctor booking decommissioned in favor of Health Hubs directory
 - [Navigation Structure](mem://navigation/structure) — Clean 5-tab bottom bar, dashboard organization
 - [Top Bar](mem://navigation/top-bar) — Brand center, AI (coral) and Notifications right, no left toggles
-- [SOS](mem://features/sos) — Tiered limits, Termii SMS dispatch, clean UI without warning signs
+- [SOS](mem://features/sos) — Termii dispatch, 234-number normalization, dnd→generic fallback, sender ID/route approval status
 - [Baby Shower](mem://features/baby-shower) — Premium gated horizontal carousel, cash gifts
 - [Gamification](mem://features/gamification) — 5-level colored progression system, referral credits
 - [Health Tracker](mem://features/health-tracker) — Weeks 4-40 logging, preeclampsia/systolic >140 warnings
