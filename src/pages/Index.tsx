@@ -106,6 +106,10 @@ const Index = () => {
     }
   }, [activeTab]);
 
+  // When the mum confirms Exit we stop re-seeding the sentinel so the
+  // WebView's history is exhausted and the shell can finish the app.
+  const exitGuardDisarmed = useRef(false);
+
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
     // Any new navigation means the mum stayed — restore exit protection.
