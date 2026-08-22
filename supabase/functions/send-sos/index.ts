@@ -235,8 +235,14 @@ serve(async (req) => {
     console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s)`);
 
     if (successCount === 0) {
+      // Surface the first real rejection reason so the client can show why
+      // delivery failed (e.g. unregistered sender ID, invalid number).
+      const firstFailure = Object.values(channelResults)
+        .flatMap((channels) => Object.values(channels))
+        .find((s) => s.startsWith("failed: "));
+      const detail = firstFailure ? firstFailure.replace(/^failed: /, "") : "unknown delivery error";
       return new Response(
-        JSON.stringify({ error: "No emergency messages could be delivered", channel_results: channelResults }),
+        JSON.stringify({ error: "No emergency messages could be delivered", detail, channel_results: channelResults }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
