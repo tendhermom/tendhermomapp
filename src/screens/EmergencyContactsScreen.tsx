@@ -664,7 +664,7 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[430px] z-[81] rounded-t-[28px] overflow-hidden"
+              className="fixed left-0 right-0 mx-auto bottom-0 w-full max-w-[430px] z-[81] rounded-t-[28px] overflow-hidden"
               style={{
                 background: "hsl(var(--card, var(--bg)))",
                 boxShadow: "0 -12px 40px -12px hsl(var(--dark) / 0.25)",
