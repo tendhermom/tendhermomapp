@@ -108,6 +108,11 @@ const Index = () => {
 
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
+    // Any new navigation means the mum stayed — restore exit protection.
+    if (exitGuardDisarmed.current) {
+      exitGuardDisarmed.current = false;
+      try { window.history.pushState({ tendher: true }, ""); } catch {}
+    }
     setStack((prev) => {
       const current = prev[prev.length - 1];
       if (screen === current) return prev;

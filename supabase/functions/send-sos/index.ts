@@ -27,66 +27,69 @@ interface SOSRequest {
   is_test: boolean;
 }
 
-async function sendTermiiSMS(phone: string, message: string, apiKey: string): Promise<{ success: boolean; response?: any; error?: string }> {
+// Termii requires the destination in international format WITHOUT a "+"
+// (docs example: "23490126727"). Contacts are stored as "+234 ..." or
+// local "0801 ...", so normalize before every send.
+function normalizeNgPhone(raw: string): string | null {
+  const digits = (raw || "").replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  if (digits.startsWith("234")) return digits;
+  if (digits.startsWith("0")) return "234" + digits.slice(1);
+  return digits;
+}
+
+interface TermiiResult { success: boolean; response?: unknown; error?: string }
+
+async function termiiAttempt(to: string, message: string, apiKey: string, channel: "dnd" | "generic" | "whatsapp"): Promise<TermiiResult> {
   try {
     const response = await fetch(TERMII_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        to: phone,
+        to,
         from: SMS_SENDER_ID,
         sms: message,
         type: "plain",
-        channel: "dnd",
+        channel,
         api_key: apiKey,
       }),
       signal: AbortSignal.timeout(8000),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     const accepted = response.ok && !data?.error && !data?.message?.toLowerCase?.().includes("fail");
     if (!accepted) {
-      console.error(`[SOS] Termii SMS failed for ${phone}:`, data);
-      return { success: false, error: `HTTP ${response.status}`, response: data };
+      const reason = data?.message || data?.error || `HTTP ${response.status}`;
+      console.error(`[SOS] Termii ${channel} rejected ${to}:`, data);
+      return { success: false, error: String(reason), response: data };
     }
-    console.log(`[SOS] Termii SMS sent to ${phone}:`, data);
+    console.log(`[SOS] Termii ${channel} accepted ${to}:`, data);
     return { success: true, response: data };
   } catch (err) {
-    console.error(`[SOS] Termii SMS error for ${phone}:`, err);
+    console.error(`[SOS] Termii ${channel} error for ${to}:`, err);
     return { success: false, error: String(err) };
   }
 }
 
-async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string): Promise<{ success: boolean; response?: any; error?: string }> {
-  // WhatsApp requires a configured device on Termii dashboard
-  // When the device is set up, this will use the whatsapp channel
-  try {
-    const response = await fetch(TERMII_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: phone,
-        from: SMS_SENDER_ID,
-        sms: message,
-        type: "plain",
-        channel: "whatsapp",
-        api_key: apiKey,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-
-    const data = await response.json();
-    const accepted = response.ok && !data?.error && !data?.message?.toLowerCase?.().includes("fail");
-    if (!accepted) {
-      console.error(`[SOS] Termii WhatsApp failed for ${phone}:`, data);
-      return { success: false, error: `HTTP ${response.status}`, response: data };
-    }
-    console.log(`[SOS] Termii WhatsApp sent to ${phone}:`, data);
-    return { success: true, response: data };
-  } catch (err) {
-    console.error(`[SOS] Termii WhatsApp error for ${phone}:`, err);
-    return { success: false, error: String(err) };
+async function sendTermiiSMS(phone: string, message: string, apiKey: string): Promise<TermiiResult> {
+  const to = normalizeNgPhone(phone);
+  if (!to) return { success: false, error: "invalid phone number" };
+  // DND route first (delivers to DND numbers); if rejected, fall back to
+  // the generic route once before declaring the contact unreachable.
+  let result = await termiiAttempt(to, message, apiKey, "dnd");
+  if (!result.success) {
+    console.warn(`[SOS] dnd route failed for ${to} (${result.error}) — retrying generic`);
+    result = await termiiAttempt(to, message, apiKey, "generic");
   }
+  return result;
+}
+
+async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string): Promise<TermiiResult> {
+  // WhatsApp requires a configured device on the Termii dashboard; `from`
+  // must be that device name once it exists.
+  const to = normalizeNgPhone(phone);
+  if (!to) return { success: false, error: "invalid phone number" };
+  return termiiAttempt(to, message, apiKey, "whatsapp");
 }
 
 serve(async (req) => {
