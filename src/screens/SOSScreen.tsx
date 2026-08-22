@@ -153,7 +153,19 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Non-2xx responses carry the delivery detail — surface it so a
+        // failure explains itself instead of a generic message.
+        let detail = "";
+        try {
+          const ctx = (error as { context?: Response }).context;
+          if (ctx) {
+            const body = await ctx.json();
+            detail = body?.detail || body?.error || "";
+          }
+        } catch {}
+        throw new Error(detail || error.message);
+      }
 
       // Log the alert
       await supabase.from("emergency_alerts").insert({
@@ -180,7 +192,10 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         tags: { feature: "sos", severity: "critical" },
         extra: { contactCount: contacts.length, hasCoords: !!coords },
       });
-      setSosError("Could not send alert. Please call emergency services directly: 112");
+      const reason = err instanceof Error && err.message && !err.message.startsWith("Edge Function")
+        ? ` (${err.message})`
+        : "";
+      setSosError(`Could not send alert${reason}. Please call emergency services directly: 112`);
     } finally {
       setIsSending(false);
       preventSleep.disable();

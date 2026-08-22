@@ -106,8 +106,17 @@ const Index = () => {
     }
   }, [activeTab]);
 
+  // When the mum confirms Exit we stop re-seeding the sentinel so the
+  // WebView's history is exhausted and the shell can finish the app.
+  const exitGuardDisarmed = useRef(false);
+
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
+    // Any new navigation means the mum stayed — restore exit protection.
+    if (exitGuardDisarmed.current) {
+      exitGuardDisarmed.current = false;
+      try { window.history.pushState({ tendher: true }, ""); } catch {}
+    }
     setStack((prev) => {
       const current = prev[prev.length - 1];
       if (screen === current) return prev;
@@ -125,8 +134,14 @@ const Index = () => {
 
   const confirmExit = useCallback(() => {
     setExitPromptOpen(false);
-    // Leave our sentinel behind and hand control back to the shell/browser.
-    try { window.history.go(-2); } catch { try { window.history.back(); } catch {} }
+    exitGuardDisarmed.current = true;
+    // Unwind every history entry we own. history.go() clamps at the first
+    // entry, so this lands on the app's root load with canGoBack = false —
+    // the next back press (or the shell) then closes the app instead of
+    // re-opening the prompt.
+    try { window.history.go(-(window.history.length - 1)); } catch { try { window.history.back(); } catch {} }
+    // Belt-and-braces: close() works where the shell allows script closing.
+    setTimeout(() => { try { window.close(); } catch {} }, 150);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -157,6 +172,9 @@ const Index = () => {
     try { window.history.pushState({ tendher: true, seed: true }, ""); } catch {}
 
     const onPop = () => {
+      // Exit was confirmed — the guard is disarmed, so let pops unwind the
+      // history without re-seeding or re-opening the prompt.
+      if (exitGuardDisarmed.current) return;
       if (stackRef.current.length > 1) {
         setStack((prev) => prev.slice(0, -1));
         // Re-seed a single entry so the next back press also fires popstate.
