@@ -192,7 +192,10 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         tags: { feature: "sos", severity: "critical" },
         extra: { contactCount: contacts.length, hasCoords: !!coords },
       });
-      setSosError("Could not send alert. Please call emergency services directly: 112");
+      const reason = err instanceof Error && err.message && !err.message.startsWith("Edge Function")
+        ? ` (${err.message})`
+        : "";
+      setSosError(`Could not send alert${reason}. Please call emergency services directly: 112`);
     } finally {
       setIsSending(false);
       preventSleep.disable();
