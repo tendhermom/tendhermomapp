@@ -131,9 +131,6 @@ const Index = () => {
 
 
   const [exitPromptOpen, setExitPromptOpen] = useState(false);
-  // When the mum confirms Exit we stop re-seeding the sentinel so the
-  // WebView's history is exhausted and the shell can finish the app.
-  const exitGuardDisarmed = useRef(false);
 
   const confirmExit = useCallback(() => {
     setExitPromptOpen(false);
