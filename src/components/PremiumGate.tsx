@@ -96,17 +96,17 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
               </motion.div>
             </AnimatePresence>
 
-            {/* Premium badge — solid pill for guaranteed legibility */}
+            {/* Premium badge — one shared pill style everywhere the gate appears */}
             <div className="absolute top-3 right-3 z-10">
               <div
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-sans font-bold tracking-wide"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-sans font-bold tracking-[0.08em]"
                 style={{
                   background: "hsl(var(--surface))",
                   color: "hsl(var(--coral))",
                   boxShadow: "0 2px 10px -2px hsla(0,0%,0%,0.18)",
                 }}
               >
-                <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
+                <IonIcon name="diamond" size={11} style={{ color: "hsl(var(--coral))" }} />
                 PLUS
               </div>
             </div>
@@ -200,8 +200,8 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
         <h3 className="text-[16px] font-serif mb-1" style={{ color: "hsl(var(--dark))" }}>
           Unlock {feature}
         </h3>
-        <p className="text-[12px] font-sans max-w-[260px] mx-auto mb-4" style={{ color: "hsl(var(--text-muted))" }}>
-          {description || `${feature} is available for TendherMom Plus members. Upgrade to get full access.`}
+        <p className="text-[12px] font-sans max-w-[260px] mx-auto mb-4 leading-relaxed" style={{ color: "hsl(var(--text-muted))" }}>
+          {description || `${feature} is available for TendherMom Plus members. Upgrade once and enjoy full access.`}
         </p>
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -213,13 +213,13 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
             boxShadow: "0 8px 28px -6px hsla(11, 74%, 56%, 0.5)",
           }}
         >
-          <IonIcon name="lock-open-outline" size={18} style={{ color: "white" }} />
-          Unlock Plus
+          <IonIcon name="diamond-outline" size={18} style={{ color: "white" }} />
+          Upgrade to Plus
         </motion.button>
 
-        {/* Price hint */}
+        {/* Price + reassurance */}
         <p className="text-[10px] font-sans mt-3" style={{ color: "hsl(var(--text-muted))" }}>
-          Starting from <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>₦300/week</span>
+          From <span className="font-semibold" style={{ color: "hsl(var(--green))" }}>₦300/week</span> · Secure payment · Cancel anytime
         </p>
       </motion.div>
 
