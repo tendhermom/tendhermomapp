@@ -1,7 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
+import PhotoViewer from "@/components/PhotoViewer";
 import type { PostComment } from "@/stores/communityStore";
+
+// Skeleton placeholder shown while comments load
+const CommentSkeleton = () => (
+  <div className="flex gap-3 animate-pulse">
+    <div className="w-9 h-9 rounded-full shrink-0" style={{ background: "hsl(var(--light-green))" }} />
+    <div className="flex-1 space-y-2 pt-0.5">
+      <div className="h-2.5 rounded-full w-2/5" style={{ background: "hsl(var(--light-green))" }} />
+      <div className="h-2.5 rounded-full w-4/5" style={{ background: "hsl(var(--light-green))" }} />
+    </div>
+  </div>
+);
 
 interface CommentsSheetProps {
   open: boolean;
@@ -50,6 +62,8 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Full-screen viewer when a commenter's photo is tapped
+  const [viewer, setViewer] = useState<{ photo: string; name: string } | null>(null);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
@@ -124,8 +138,10 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
             {/* Scrollable comments list */}
             <div className="flex-1 overflow-y-auto px-5 space-y-3 min-h-0">
               {loading ? (
-                <div className="flex justify-center py-6">
-                  <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
+                <div className="space-y-4 py-2">
+                  <CommentSkeleton />
+                  <CommentSkeleton />
+                  <CommentSkeleton />
                 </div>
               ) : comments.length === 0 ? (
                 <p className="text-center text-[13px] font-sans py-6" style={{ color: "hsl(var(--text-muted))" }}>
@@ -135,17 +151,29 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                 comments.map((c) => (
                   <div key={c.id} className="flex gap-3">
                     {c.author_avatar ? (
-                      <img
-                        src={c.author_avatar}
-                        alt={c.author_name || "Commenter"}
-                        className="w-7 h-7 rounded-full object-cover shrink-0"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => setViewer({ photo: c.author_avatar!, name: c.author_name || "TendherMom member" })}
+                        className="shrink-0 self-start"
+                        aria-label={`View ${c.author_name || "commenter"}'s photo`}
+                      >
+                        <img
+                          src={c.author_avatar}
+                          alt={c.author_name || "Commenter"}
+                          className="w-9 h-9 rounded-full object-cover"
+                          style={{ boxShadow: "0 0 0 1.5px hsl(var(--light-green))" }}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      </motion.button>
                     ) : (
                       <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold font-sans shrink-0"
-                        style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold font-sans shrink-0 self-start"
+                        style={{
+                          background: "hsl(var(--light-green))",
+                          color: "hsl(var(--green))",
+                          boxShadow: "0 0 0 1.5px hsl(var(--light-green))",
+                        }}
                       >
                         {(c.author_name || "A")[0].toUpperCase()}
                       </div>
@@ -211,6 +239,14 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
               </motion.button>
             </div>
           </motion.div>
+
+          {/* Tap-to-view commenter photo */}
+          <PhotoViewer
+            photos={viewer ? [viewer.photo] : []}
+            open={!!viewer}
+            onClose={() => setViewer(null)}
+            caption={viewer?.name}
+          />
         </motion.div>
       )}
     </AnimatePresence>
