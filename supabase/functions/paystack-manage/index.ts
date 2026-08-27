@@ -112,11 +112,9 @@ Deno.serve(async (req) => {
 
   const res = await paystackFetch("/subscription/disable", {
     method: "POST",
-    body: JSON.stringify({
-      code: profile.paystack_subscription_code,
-      token: profile.paystack_email_token,
-    }),
+    body: JSON.stringify({ code: sub.code, token: sub.token }),
   });
+
 
   if (!res.ok) {
     console.error("[paystack-manage] disable failed", res.status, JSON.stringify(res.body));
