@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import { StatusBarThemes, hapticSelection, closeApp } from "@/lib/despia";
 import { consumePendingDeepLink, onDeepLink } from "@/lib/deeplinks";
+import { consumeBack } from "@/lib/backStack";
 import { useAuthStore } from "@/stores/authStore";
 
 // Eagerly load the 5 main tab screens for instant navigation
