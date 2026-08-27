@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-import { StatusBarThemes, hapticSelection } from "@/lib/despia";
+import { StatusBarThemes, hapticSelection, closeApp } from "@/lib/despia";
 import { consumePendingDeepLink, onDeepLink } from "@/lib/deeplinks";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -91,6 +91,24 @@ const Index = () => {
     }
   }, [user]);
 
+  // Coming back from Paystack — unlock Plus even when the mum lands on Home
+  // instead of the subscription screen.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { consumeCheckoutReturn } = await import("@/lib/paystack");
+      const result = await consumeCheckoutReturn();
+      if (cancelled || !result) return;
+      if (result.plan_type === "premium") {
+        useAuthStore.getState().fetchProfile(user.id);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+
+
   useEffect(() => {
     const emergencyScreens = ["sos", "emergency-contacts"];
     const lightScreens = ["community", "baby-shower"];
@@ -110,6 +128,16 @@ const Index = () => {
   // WebView's history is exhausted and the shell can finish the app.
   const exitGuardDisarmed = useRef(false);
 
+  // Screens with internal steps (e.g. Rescue Map) register a handler here.
+  // Returning true means the screen consumed the back press.
+  const backHandlerRef = useRef<(() => boolean) | null>(null);
+  const registerBackHandler = useCallback((handler: (() => boolean) | null) => {
+    backHandlerRef.current = handler;
+    return () => {
+      if (backHandlerRef.current === handler) backHandlerRef.current = null;
+    };
+  }, []);
+
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
     // Any new navigation means the mum stayed — restore exit protection.
@@ -117,6 +145,7 @@ const Index = () => {
       exitGuardDisarmed.current = false;
       try { window.history.pushState({ tendher: true }, ""); } catch {}
     }
+    backHandlerRef.current = null;
     setStack((prev) => {
       const current = prev[prev.length - 1];
       if (screen === current) return prev;
@@ -135,18 +164,17 @@ const Index = () => {
   const confirmExit = useCallback(() => {
     setExitPromptOpen(false);
     exitGuardDisarmed.current = true;
-    // Unwind every history entry we own. history.go() clamps at the first
-    // entry, so this lands on the app's root load with canGoBack = false —
-    // the next back press (or the shell) then closes the app instead of
-    // re-opening the prompt.
-    try { window.history.go(-(window.history.length - 1)); } catch { try { window.history.back(); } catch {} }
-    // Belt-and-braces: close() works where the shell allows script closing.
-    setTimeout(() => { try { window.close(); } catch {} }, 150);
+    // Start the next launch clean.
+    try { localStorage.removeItem(NAV_STORAGE_KEY); } catch {}
+    closeApp();
   }, []);
 
   const handleBack = useCallback(() => {
+    // Let the active screen unwind its own step first.
+    if (backHandlerRef.current?.()) return;
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   }, []);
+
 
   // Deep links — tendhermom:// and https://tendhermomapps.lovable.app/go/<target>
   useEffect(() => {
@@ -175,12 +203,19 @@ const Index = () => {
       // Exit was confirmed — the guard is disarmed, so let pops unwind the
       // history without re-seeding or re-opening the prompt.
       if (exitGuardDisarmed.current) return;
+      // Let the active screen unwind one internal step first (e.g. Rescue Map:
+      // results → services → categories) before we pop the whole screen.
+      if (backHandlerRef.current?.()) {
+        try { window.history.pushState({ tendher: true }, ""); } catch {}
+        return;
+      }
       if (stackRef.current.length > 1) {
         setStack((prev) => prev.slice(0, -1));
         // Re-seed a single entry so the next back press also fires popstate.
         try { window.history.pushState({ tendher: true }, ""); } catch {}
         return;
       }
+
       // At a root tab: confirm before leaving so an accidental back press
       // never drops a mum out of the app mid-task.
       try { window.history.pushState({ tendher: true }, ""); } catch {}
@@ -216,7 +251,7 @@ const Index = () => {
       case "gamification":
         return <GamificationScreen onBack={handleBack} />;
       case "health-hubs":
-        return <HealthHubsScreen onBack={handleBack} onNavigate={handleNavigate} />;
+        return <HealthHubsScreen onBack={handleBack} onNavigate={handleNavigate} registerBackHandler={registerBackHandler} />;
       case "premium":
         return <PremiumScreen onBack={handleBack} />;
       case "moderation":

@@ -40,7 +40,10 @@ import imgLaboratory from "@/assets/hubs/laboratory.jpg";
 interface HealthHubsScreenProps {
   onBack: () => void;
   onNavigate?: (screen: string) => void;
+  /** Lets the shell route hardware back presses through our step ladder. */
+  registerBackHandler?: (handler: (() => boolean) | null) => (() => void) | void;
 }
+
 
 interface Place {
   place_id: string;
@@ -156,7 +159,7 @@ const readCachedResults = (keyword: string): Place[] | null => {
   }
 };
 
-const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
+const HealthHubsScreen = ({ onBack, registerBackHandler }: HealthHubsScreenProps) => {
   const cachedLoc = readCachedLocation();
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(cachedLoc);
   const [locationLoading, setLocationLoading] = useState(!cachedLoc);
@@ -260,9 +263,45 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
     searchPlaces(subKey);
   };
 
+  /**
+   * One step backwards, in the exact reverse order the mum arrived:
+   *   map results → services of the chosen category → categories → Home.
+   * Returns true when a step was consumed here.
+   */
+  const goBackOneStep = useCallback((): boolean => {
+    if (activeSub) {
+      setActiveSub(null);
+      setPlaces([]);
+      setSearched(false);
+      setStatus(null);
+      return true;
+    }
+    if (selectedCat) {
+      setSelectedCat(null);
+      return true;
+    }
+    return false;
+  }, [activeSub, selectedCat]);
+
+  // Hardware / shell back press walks the same ladder as the on-screen arrow.
+  useEffect(() => {
+    if (!registerBackHandler) return;
+    const cleanup = registerBackHandler(goBackOneStep);
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+      else registerBackHandler(null);
+    };
+  }, [registerBackHandler, goBackOneStep]);
+
+  const handleBackPress = () => {
+    hapticSelection();
+    if (!goBackOneStep()) onBack();
+  };
+
   const openDirections = (place: Place) => {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&destination_place_id=${place.place_id}`, "_blank");
   };
+
 
   const category = selectedCat ? CATEGORIES.find((c) => c.key === selectedCat) : null;
 
@@ -273,7 +312,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
     return (
       <motion.div className="space-y-6 pb-4 pt-1" initial="hidden" animate="show" variants={stagger}>
         <motion.div variants={fadeUp} className="flex items-center gap-3">
-          <button onClick={onBack} className="ios-press -ml-1">
+          <button onClick={handleBackPress} className="ios-press -ml-1">
             <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
           </button>
           <div className="flex-1">
@@ -343,7 +382,7 @@ const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
         <div className="absolute top-3 left-2">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => { setSelectedCat(null); setActiveSub(null); setPlaces([]); setSearched(false); }}
+            onClick={handleBackPress}
             className="flex items-center gap-0.5 ios-press px-2 py-1 rounded-full"
             style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
           >

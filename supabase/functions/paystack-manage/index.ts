@@ -30,39 +30,91 @@ Deno.serve(async (req) => {
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "plan_type, plus_status, plus_expires_at, paystack_plan_code, paystack_subscription_code, paystack_email_token, is_tester",
+      "email, plan_type, plus_status, plus_expires_at, paystack_plan_code, paystack_subscription_code, paystack_email_token, paystack_customer_code, is_tester",
     )
     .eq("id", user.id)
     .maybeSingle();
 
   if (!profile) return json({ error: "Profile not found" }, 404);
 
-  const status = () => ({
+  /**
+   * The subscription code only lands on the profile via the subscription.create
+   * webhook. When that never arrived, resolve it live from Paystack using the
+   * mum's email so she can always stop the recurring debit.
+   */
+  const resolveSubscription = async (): Promise<{ code: string; token: string } | null> => {
+    if (profile.paystack_subscription_code && profile.paystack_email_token) {
+      return { code: profile.paystack_subscription_code, token: profile.paystack_email_token };
+    }
+    if (!secretKey()) return null;
+
+    let customerCode = profile.paystack_customer_code as string | null;
+    const email = (profile.email || user.email || "").trim();
+    if (!customerCode && email) {
+      const cust = await paystackFetch(`/customer/${encodeURIComponent(email)}`);
+      customerCode = cust.ok ? cust.body?.data?.customer_code ?? null : null;
+    }
+    if (!customerCode) return null;
+
+    const subs = await paystackFetch(`/subscription?customer=${encodeURIComponent(customerCode)}`);
+    const active = (subs.ok ? subs.body?.data ?? [] : []).find((s: any) =>
+      ["active", "attention"].includes(String(s?.status ?? "").toLowerCase()),
+    );
+    if (!active?.subscription_code || !active?.email_token) return null;
+
+    await admin
+      .from("profiles")
+      .update({
+        paystack_customer_code: customerCode,
+        paystack_subscription_code: active.subscription_code,
+        paystack_email_token: active.email_token,
+      })
+      .eq("id", user.id);
+
+    profile.paystack_subscription_code = active.subscription_code;
+    profile.paystack_email_token = active.email_token;
+    return { code: active.subscription_code, token: active.email_token };
+  };
+
+  const status = (hasSub?: boolean) => ({
     plan_type: profile.plan_type,
     status: profile.plus_status ?? null,
     expires_at: profile.plus_expires_at ?? null,
     plan_code: profile.paystack_plan_code ?? null,
-    has_subscription: Boolean(profile.paystack_subscription_code),
+    has_subscription: hasSub ?? Boolean(profile.paystack_subscription_code),
     tester: Boolean(profile.is_tester),
   });
 
-  if (action === "status") return json(status());
+  if (action === "status") {
+    // Resolve lazily so the manage UI knows a recurring debit exists even when
+    // the webhook never stored the code.
+    if (!profile.is_tester && profile.plan_type === "premium" && !profile.paystack_subscription_code) {
+      await resolveSubscription();
+    }
+    return json(status());
+  }
 
   // cancel
   if (profile.is_tester) return json({ ...status(), cancelled: false, message: "Tester account." });
 
-  if (!profile.paystack_subscription_code || !profile.paystack_email_token) {
-    return json({ error: "No active subscription to cancel." }, 400);
-  }
   if (!secretKey()) return json({ error: "Payments are not configured yet." }, 503);
+
+  const sub = await resolveSubscription();
+  if (!sub) {
+    return json({
+      ...status(false),
+      cancelled: false,
+      message:
+        "We couldn't find a recurring subscription on your account — nothing will be debited again. Your Plus access stays until it expires.",
+    });
+  }
+
 
   const res = await paystackFetch("/subscription/disable", {
     method: "POST",
-    body: JSON.stringify({
-      code: profile.paystack_subscription_code,
-      token: profile.paystack_email_token,
-    }),
+    body: JSON.stringify({ code: sub.code, token: sub.token }),
   });
+
 
   if (!res.ok) {
     console.error("[paystack-manage] disable failed", res.status, JSON.stringify(res.body));

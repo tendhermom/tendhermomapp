@@ -10,6 +10,7 @@ import {
   confirmPremiumWithBackend,
   getSubscriptionStatus,
   cancelSubscription,
+  pendingReference,
   type PlanId,
   type SubscriptionStatus,
 } from "@/lib/paystack";
@@ -154,7 +155,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     setRestoring(true);
     setStatusMsg(null);
     try {
-      const result = await confirmPremiumWithBackend(null, 2, 1200);
+      // Use the reference from the checkout we came back from when we still
+      // have it — the backend also re-checks Paystack when there is none.
+      const result = await confirmPremiumWithBackend(pendingReference(), 2, 1200);
       if (result.error) {
         setStatusMsg({ kind: "error", text: result.error });
         return;
@@ -542,7 +545,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
           </div>
 
           {/* Cancel — access continues until the paid period ends */}
-          {subscription?.has_subscription && subscription?.status !== "cancelled" && (
+          {!subscription?.tester && subscription?.status !== "cancelled" && (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleCancel}
@@ -555,7 +558,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                 opacity: cancelling ? 0.6 : 1,
               }}
             >
-              {cancelling ? "Cancelling…" : "Cancel subscription"}
+              {cancelling ? "Stopping…" : "Stop recurring debit"}
             </motion.button>
           )}
 
