@@ -399,6 +399,33 @@ export const torch = {
   off: () => despiaCommand("torch", "off"),
 };
 
+// ─── App Exit ─────────────────────────────────────────────────
+
+/**
+ * Ask the native shell to finish the app. Android honours this; iOS does not
+ * allow an app to terminate itself, so there we simply unwind our history and
+ * leave the mum at the app root.
+ *
+ * Returns true when a native close was attempted.
+ */
+export const closeApp = (): boolean => {
+  const native = isDespiaNative();
+  if (native) {
+    // Despia exposes a few close aliases across shell versions — try them all;
+    // the shell ignores protocols it doesn't implement.
+    for (const proto of ["closeapp", "exitapp", "quitapp"]) {
+      try { despiaCommand(proto); } catch {}
+    }
+    try { (window as any).Android?.closeApp?.(); } catch {}
+    return true;
+  }
+  // Browser fallback: unwind our own history, then try to close the tab.
+  try { window.history.go(-(window.history.length - 1)); } catch {}
+  setTimeout(() => { try { window.close(); } catch {} }, 150);
+  return false;
+};
+
+
 // ─── Safe Area Helpers ────────────────────────────────────────
 
 export const getSafeAreaInset = (
