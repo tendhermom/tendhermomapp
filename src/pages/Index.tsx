@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
 import { StatusBarThemes, hapticSelection, closeApp } from "@/lib/despia";
 import { consumePendingDeepLink, onDeepLink } from "@/lib/deeplinks";
+import { consumeBack } from "@/lib/backStack";
 import { useAuthStore } from "@/stores/authStore";
 
 // Eagerly load the 5 main tab screens for instant navigation
@@ -170,6 +171,9 @@ const Index = () => {
   }, []);
 
   const handleBack = useCallback(() => {
+    // Overlays (photo viewer, comments sheet) close first, in reverse order,
+    // so the view underneath stays mounted at its exact scroll position.
+    if (consumeBack()) return;
     // Let the active screen unwind its own step first.
     if (backHandlerRef.current?.()) return;
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
@@ -205,6 +209,10 @@ const Index = () => {
       if (exitGuardDisarmed.current) return;
       // Let the active screen unwind one internal step first (e.g. Rescue Map:
       // results → services → categories) before we pop the whole screen.
+      if (consumeBack()) {
+        try { window.history.pushState({ tendher: true }, ""); } catch {}
+        return;
+      }
       if (backHandlerRef.current?.()) {
         try { window.history.pushState({ tendher: true }, ""); } catch {}
         return;
