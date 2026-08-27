@@ -91,6 +91,24 @@ const Index = () => {
     }
   }, [user]);
 
+  // Coming back from Paystack — unlock Plus even when the mum lands on Home
+  // instead of the subscription screen.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { consumeCheckoutReturn } = await import("@/lib/paystack");
+      const result = await consumeCheckoutReturn();
+      if (cancelled || !result) return;
+      if (result.plan_type === "premium") {
+        useAuthStore.getState().fetchProfile(user.id);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+
+
   useEffect(() => {
     const emergencyScreens = ["sos", "emergency-contacts"];
     const lightScreens = ["community", "baby-shower"];
