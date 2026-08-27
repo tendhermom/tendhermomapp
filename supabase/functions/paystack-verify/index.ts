@@ -47,16 +47,101 @@ Deno.serve(async (req) => {
   let body: any = {};
   try {
     body = await req.json();
-  } catch { /* verify without a reference = status refresh */ }
+  } catch { /* verify without a reference = deep re-check */ }
 
-  const reference = typeof body?.reference === "string" ? body.reference.trim() : "";
+  let reference = typeof body?.reference === "string" ? body.reference.trim() : "";
 
+  // ── No reference: deep re-check ("I already paid") ───────────
+  // Never answer from the profile alone — that is exactly how a paid mum ends
+  // up being told she has no subscription. Ask Paystack directly.
   if (!reference) {
-    const active =
+    const activeNow =
       profile?.plan_type === "premium" &&
       (!profile?.plus_expires_at || new Date(profile.plus_expires_at).getTime() > Date.now());
-    return json({ plan_type: active ? "premium" : "free", expires_at: profile?.plus_expires_at ?? null });
+    if (activeNow) {
+      return json({ plan_type: "premium", expires_at: profile?.plus_expires_at ?? null });
+    }
+
+    if (!secretKey()) return json({ error: "Payments are not configured yet." }, 503);
+
+    // 1. Re-verify the mum's recent checkout references.
+    const { data: recent } = await admin
+      .from("payment_transactions")
+      .select("reference")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    for (const row of recent ?? []) {
+      const res = await paystackFetch(`/transaction/verify/${encodeURIComponent(row.reference)}`);
+      if (res.ok && String(res.body?.data?.status ?? "").toLowerCase() === "success") {
+        reference = row.reference;
+        break;
+      }
+    }
+
+    // 2. Still nothing — look the customer up by email and honour any
+    //    active subscription or successful charge on the account.
+    if (!reference) {
+      const { data: p2 } = await admin
+        .from("profiles")
+        .select("email")
+        .eq("id", user.id)
+        .maybeSingle();
+      const email = (p2?.email || user.email || "").trim();
+
+      if (email) {
+        const cust = await paystackFetch(`/customer/${encodeURIComponent(email)}`);
+        const customerCode = cust.ok ? cust.body?.data?.customer_code ?? null : null;
+
+        if (customerCode) {
+          const subs = await paystackFetch(`/subscription?customer=${encodeURIComponent(customerCode)}`);
+          const active = (subs.ok ? subs.body?.data ?? [] : []).find((s: any) =>
+            ["active", "non-renewing", "attention"].includes(String(s?.status ?? "").toLowerCase()),
+          );
+
+          if (active) {
+            const plan = planByCode(active?.plan?.plan_code) ?? PLANS.monthly;
+            const next = active?.next_payment_date ? new Date(active.next_payment_date) : null;
+            const expiresAt =
+              next && !Number.isNaN(next.getTime())
+                ? new Date(next.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString()
+                : expiryFor(plan);
+
+            await admin
+              .from("profiles")
+              .update({
+                plan_type: "premium",
+                plus_provider: "paystack",
+                plus_status: String(active?.status ?? "").toLowerCase() === "active" ? "active" : "cancelled",
+                plus_expires_at: expiresAt,
+                plus_product_id: plan.code,
+                plus_last_event: "verify_customer_lookup",
+                paystack_plan_code: plan.code,
+                paystack_customer_code: customerCode,
+                paystack_subscription_code: active?.subscription_code ?? null,
+                paystack_email_token: active?.email_token ?? null,
+              })
+              .eq("id", user.id);
+
+            return json({ plan_type: "premium", expires_at: expiresAt });
+          }
+
+          // No subscription object — fall back to a recent successful charge.
+          const txns = await paystackFetch(
+            `/transaction?customer=${encodeURIComponent(customerCode)}&status=success&perPage=5`,
+          );
+          const paid = (txns.ok ? txns.body?.data ?? [] : [])[0];
+          if (paid?.reference) reference = String(paid.reference);
+        }
+      }
+    }
+
+    if (!reference) {
+      return json({ plan_type: "free", expires_at: null });
+    }
   }
+
 
   if (!secretKey()) return json({ error: "Payments are not configured yet." }, 503);
 
