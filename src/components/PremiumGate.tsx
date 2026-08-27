@@ -70,10 +70,12 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
       transition={{ type: "spring", stiffness: 280, damping: 28 }}
       className="space-y-5"
     >
-      {/* Preview Carousel */}
+      {/* Preview — clean illustration on top, solid TendherMom green panel below
+          so the headline is always crisp and legible. */}
       {slides.length > 0 && (
         <div className="relative rounded-[20px] overflow-hidden" style={{ boxShadow: "0 8px 32px -8px hsla(0,0%,0%,0.12)" }}>
-          <div className="relative" style={{ aspectRatio: "5/4" }}>
+          {/* Illustration */}
+          <div className="relative" style={{ aspectRatio: "16/10", background: "hsl(var(--light-green))" }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSlide}
@@ -89,70 +91,62 @@ const PremiumGate = ({ feature, description, onUpgrade }: PremiumGateProps) => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                   width={640}
-                  height={512}
-                />
-                {/* Gradient overlay */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: "linear-gradient(to top, hsl(var(--green)) 0%, hsla(var(--green), 0.82) 42%, hsla(var(--green), 0.08) 78%)",
-                  }}
+                  height={400}
                 />
               </motion.div>
             </AnimatePresence>
 
-            {/* Slide content */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSlide}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                   <h3 className="text-[18px] font-serif leading-tight" style={{ color: "hsl(var(--surface))" }}>
-                    {currentSlide.title}
-                  </h3>
-                   <p className="text-[12px] font-sans mt-1 leading-relaxed" style={{ color: "hsl(var(--surface) / 0.82)" }}>
-                    {currentSlide.description}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Dots indicator */}
-              {slides.length > 1 && (
-                <div className="flex gap-1.5 mt-3">
-                  {slides.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => goToSlide(i)}
-                      className="h-[3px] rounded-full transition-all duration-300"
-                      style={{
-                        width: i === activeSlide ? 20 : 8,
-                        background: i === activeSlide ? "hsl(var(--coral))" : "rgba(255,255,255,0.3)",
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Premium badge */}
+            {/* Premium badge — solid pill for guaranteed legibility */}
             <div className="absolute top-3 right-3 z-10">
               <div
                 className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-sans font-bold tracking-wide"
                 style={{
-                  background: "hsla(0,0%,0%,0.4)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
+                  background: "hsl(var(--surface))",
                   color: "hsl(var(--coral))",
+                  boxShadow: "0 2px 10px -2px hsla(0,0%,0%,0.18)",
                 }}
               >
                 <IonIcon name="diamond" size={10} style={{ color: "hsl(var(--coral))" }} />
                 PLUS
               </div>
             </div>
+          </div>
+
+          {/* Solid green content panel */}
+          <div className="relative p-5" style={{ background: "linear-gradient(160deg, hsl(var(--green)), hsl(152 38% 24%))" }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="text-[19px] font-serif leading-tight" style={{ color: "hsl(var(--surface))" }}>
+                  {currentSlide.title}
+                </h3>
+                <p className="text-[12px] font-sans mt-1.5 leading-relaxed" style={{ color: "hsl(var(--surface) / 0.85)" }}>
+                  {currentSlide.description}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Dots indicator */}
+            {slides.length > 1 && (
+              <div className="flex gap-1.5 mt-3">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToSlide(i)}
+                    className="h-[3px] rounded-full transition-all duration-300"
+                    style={{
+                      width: i === activeSlide ? 20 : 8,
+                      background: i === activeSlide ? "hsl(var(--coral))" : "rgba(255,255,255,0.3)",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
