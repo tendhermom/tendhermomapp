@@ -110,6 +110,16 @@ const Index = () => {
   // WebView's history is exhausted and the shell can finish the app.
   const exitGuardDisarmed = useRef(false);
 
+  // Screens with internal steps (e.g. Rescue Map) register a handler here.
+  // Returning true means the screen consumed the back press.
+  const backHandlerRef = useRef<(() => boolean) | null>(null);
+  const registerBackHandler = useCallback((handler: (() => boolean) | null) => {
+    backHandlerRef.current = handler;
+    return () => {
+      if (backHandlerRef.current === handler) backHandlerRef.current = null;
+    };
+  }, []);
+
   const handleNavigate = useCallback((screen: string) => {
     hapticSelection();
     // Any new navigation means the mum stayed — restore exit protection.
@@ -117,6 +127,7 @@ const Index = () => {
       exitGuardDisarmed.current = false;
       try { window.history.pushState({ tendher: true }, ""); } catch {}
     }
+    backHandlerRef.current = null;
     setStack((prev) => {
       const current = prev[prev.length - 1];
       if (screen === current) return prev;
@@ -135,18 +146,17 @@ const Index = () => {
   const confirmExit = useCallback(() => {
     setExitPromptOpen(false);
     exitGuardDisarmed.current = true;
-    // Unwind every history entry we own. history.go() clamps at the first
-    // entry, so this lands on the app's root load with canGoBack = false —
-    // the next back press (or the shell) then closes the app instead of
-    // re-opening the prompt.
-    try { window.history.go(-(window.history.length - 1)); } catch { try { window.history.back(); } catch {} }
-    // Belt-and-braces: close() works where the shell allows script closing.
-    setTimeout(() => { try { window.close(); } catch {} }, 150);
+    // Start the next launch clean.
+    try { localStorage.removeItem(NAV_STORAGE_KEY); } catch {}
+    closeApp();
   }, []);
 
   const handleBack = useCallback(() => {
+    // Let the active screen unwind its own step first.
+    if (backHandlerRef.current?.()) return;
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   }, []);
+
 
   // Deep links — tendhermom:// and https://tendhermomapps.lovable.app/go/<target>
   useEffect(() => {
