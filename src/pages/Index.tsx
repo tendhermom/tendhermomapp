@@ -208,6 +208,10 @@ const Index = () => {
       if (exitGuardDisarmed.current) return;
       // Let the active screen unwind one internal step first (e.g. Rescue Map:
       // results → services → categories) before we pop the whole screen.
+      if (consumeBack()) {
+        try { window.history.pushState({ tendher: true }, ""); } catch {}
+        return;
+      }
       if (backHandlerRef.current?.()) {
         try { window.history.pushState({ tendher: true }, ""); } catch {}
         return;
