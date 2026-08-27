@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
 import PhotoViewer from "@/components/PhotoViewer";
+import { pushBackHandler } from "@/lib/backStack";
 import type { PostComment } from "@/stores/communityStore";
 
 // Skeleton placeholder shown while comments load
@@ -173,7 +174,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
             </div>
 
             {/* Scrollable comments list */}
-            <div className="flex-1 overflow-y-auto px-5 space-y-3 min-h-0">
+            <div ref={listRef} className="flex-1 overflow-y-auto px-5 space-y-3 min-h-0">
               {loading ? (
                 <div className="space-y-4 py-2">
                   <CommentSkeleton />
@@ -190,7 +191,7 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                     {c.author_avatar ? (
                       <motion.button
                         whileTap={{ scale: 0.92 }}
-                        onClick={() => setViewer({ photo: c.author_avatar!, name: c.author_name || "TendherMom member" })}
+                        onClick={() => openPhoto(c.author_avatar!, c.author_name || "TendherMom member")}
                         className="shrink-0 self-start"
                         aria-label={`View ${c.author_name || "commenter"}'s photo`}
                       >
