@@ -159,7 +159,7 @@ const readCachedResults = (keyword: string): Place[] | null => {
   }
 };
 
-const HealthHubsScreen = ({ onBack }: HealthHubsScreenProps) => {
+const HealthHubsScreen = ({ onBack, registerBackHandler }: HealthHubsScreenProps) => {
   const cachedLoc = readCachedLocation();
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(cachedLoc);
   const [locationLoading, setLocationLoading] = useState(!cachedLoc);
