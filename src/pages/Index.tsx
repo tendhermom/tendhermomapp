@@ -170,6 +170,9 @@ const Index = () => {
   }, []);
 
   const handleBack = useCallback(() => {
+    // Overlays (photo viewer, comments sheet) close first, in reverse order,
+    // so the view underneath stays mounted at its exact scroll position.
+    if (consumeBack()) return;
     // Let the active screen unwind its own step first.
     if (backHandlerRef.current?.()) return;
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
