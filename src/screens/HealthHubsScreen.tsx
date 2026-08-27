@@ -312,7 +312,7 @@ const HealthHubsScreen = ({ onBack, registerBackHandler }: HealthHubsScreenProps
     return (
       <motion.div className="space-y-6 pb-4 pt-1" initial="hidden" animate="show" variants={stagger}>
         <motion.div variants={fadeUp} className="flex items-center gap-3">
-          <button onClick={onBack} className="ios-press -ml-1">
+          <button onClick={handleBackPress} className="ios-press -ml-1">
             <IonIcon name="chevron-back" size={24} style={{ color: "hsl(var(--dark))" }} />
           </button>
           <div className="flex-1">
@@ -382,7 +382,7 @@ const HealthHubsScreen = ({ onBack, registerBackHandler }: HealthHubsScreenProps
         <div className="absolute top-3 left-2">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => { setSelectedCat(null); setActiveSub(null); setPlaces([]); setSearched(false); }}
+            onClick={handleBackPress}
             className="flex items-center gap-0.5 ios-press px-2 py-1 rounded-full"
             style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
           >
