@@ -70,10 +70,7 @@ export type Database = {
       }
       baby_shower_posts: {
         Row: {
-          account_name: string | null
-          account_number: string | null
           baby_name: string
-          bank_name: string | null
           birth_date: string | null
           birth_type: string
           created_at: string
@@ -89,10 +86,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          account_name?: string | null
-          account_number?: string | null
           baby_name: string
-          bank_name?: string | null
           birth_date?: string | null
           birth_type?: string
           created_at?: string
@@ -108,10 +102,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          account_name?: string | null
-          account_number?: string | null
           baby_name?: string
-          bank_name?: string | null
           birth_date?: string | null
           birth_type?: string
           created_at?: string
