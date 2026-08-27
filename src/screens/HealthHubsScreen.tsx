@@ -40,7 +40,10 @@ import imgLaboratory from "@/assets/hubs/laboratory.jpg";
 interface HealthHubsScreenProps {
   onBack: () => void;
   onNavigate?: (screen: string) => void;
+  /** Lets the shell route hardware back presses through our step ladder. */
+  registerBackHandler?: (handler: (() => boolean) | null) => (() => void) | void;
 }
+
 
 interface Place {
   place_id: string;
