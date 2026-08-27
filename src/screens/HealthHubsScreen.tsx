@@ -263,9 +263,45 @@ const HealthHubsScreen = ({ onBack, registerBackHandler }: HealthHubsScreenProps
     searchPlaces(subKey);
   };
 
+  /**
+   * One step backwards, in the exact reverse order the mum arrived:
+   *   map results → services of the chosen category → categories → Home.
+   * Returns true when a step was consumed here.
+   */
+  const goBackOneStep = useCallback((): boolean => {
+    if (activeSub) {
+      setActiveSub(null);
+      setPlaces([]);
+      setSearched(false);
+      setStatus(null);
+      return true;
+    }
+    if (selectedCat) {
+      setSelectedCat(null);
+      return true;
+    }
+    return false;
+  }, [activeSub, selectedCat]);
+
+  // Hardware / shell back press walks the same ladder as the on-screen arrow.
+  useEffect(() => {
+    if (!registerBackHandler) return;
+    const cleanup = registerBackHandler(goBackOneStep);
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+      else registerBackHandler(null);
+    };
+  }, [registerBackHandler, goBackOneStep]);
+
+  const handleBackPress = () => {
+    hapticSelection();
+    if (!goBackOneStep()) onBack();
+  };
+
   const openDirections = (place: Place) => {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&destination_place_id=${place.place_id}`, "_blank");
   };
+
 
   const category = selectedCat ? CATEGORIES.find((c) => c.key === selectedCat) : null;
 
