@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TabBar from "@/components/navigation/TabBar";
-import { StatusBarThemes, hapticSelection } from "@/lib/despia";
+import { StatusBarThemes, hapticSelection, closeApp } from "@/lib/despia";
 import { consumePendingDeepLink, onDeepLink } from "@/lib/deeplinks";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -233,7 +233,7 @@ const Index = () => {
       case "gamification":
         return <GamificationScreen onBack={handleBack} />;
       case "health-hubs":
-        return <HealthHubsScreen onBack={handleBack} onNavigate={handleNavigate} />;
+        return <HealthHubsScreen onBack={handleBack} onNavigate={handleNavigate} registerBackHandler={registerBackHandler} />;
       case "premium":
         return <PremiumScreen onBack={handleBack} />;
       case "moderation":
