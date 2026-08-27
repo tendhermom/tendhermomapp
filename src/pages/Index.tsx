@@ -185,12 +185,19 @@ const Index = () => {
       // Exit was confirmed — the guard is disarmed, so let pops unwind the
       // history without re-seeding or re-opening the prompt.
       if (exitGuardDisarmed.current) return;
+      // Let the active screen unwind one internal step first (e.g. Rescue Map:
+      // results → services → categories) before we pop the whole screen.
+      if (backHandlerRef.current?.()) {
+        try { window.history.pushState({ tendher: true }, ""); } catch {}
+        return;
+      }
       if (stackRef.current.length > 1) {
         setStack((prev) => prev.slice(0, -1));
         // Re-seed a single entry so the next back press also fires popstate.
         try { window.history.pushState({ tendher: true }, ""); } catch {}
         return;
       }
+
       // At a root tab: confirm before leaving so an accidental back press
       // never drops a mum out of the app mid-task.
       try { window.history.pushState({ tendher: true }, ""); } catch {}
