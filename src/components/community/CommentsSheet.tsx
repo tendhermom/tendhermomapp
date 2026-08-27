@@ -134,12 +134,22 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
               ) : (
                 comments.map((c) => (
                   <div key={c.id} className="flex gap-3">
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold font-sans shrink-0"
-                      style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
-                    >
-                      {(c.author_name || "A")[0].toUpperCase()}
-                    </div>
+                    {c.author_avatar ? (
+                      <img
+                        src={c.author_avatar}
+                        alt={c.author_name || "Commenter"}
+                        className="w-7 h-7 rounded-full object-cover shrink-0"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold font-sans shrink-0"
+                        style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+                      >
+                        {(c.author_name || "A")[0].toUpperCase()}
+                      </div>
+                    )}
                     <div>
                       <p className="text-[13px] font-sans">
                         <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{c.author_name}</span>
