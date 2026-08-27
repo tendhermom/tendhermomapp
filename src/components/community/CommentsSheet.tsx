@@ -69,6 +69,43 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
 
+  // Scroll container of the comments list — its position is restored after the
+  // photo viewer closes so back always returns the mum exactly where she was.
+  const listRef = useRef<HTMLDivElement>(null);
+  const savedScroll = useRef(0);
+
+  // Back press while the sheet is open closes the sheet (after any overlay).
+  useEffect(() => {
+    if (!open) return;
+    return pushBackHandler(() => {
+      onClose();
+      return true;
+    });
+  }, [open, onClose]);
+
+  // Back press while a commenter's photo is open closes only the photo.
+  useEffect(() => {
+    if (!viewer) return;
+    return pushBackHandler(() => {
+      setViewer(null);
+      return true;
+    });
+  }, [viewer]);
+
+  // Restore the list scroll position once the viewer is dismissed.
+  useEffect(() => {
+    if (viewer) return;
+    const el = listRef.current;
+    if (el && savedScroll.current) {
+      requestAnimationFrame(() => { el.scrollTop = savedScroll.current; });
+    }
+  }, [viewer]);
+
+  const openPhoto = (photo: string, name: string) => {
+    savedScroll.current = listRef.current?.scrollTop ?? 0;
+    setViewer({ photo, name });
+  };
+
   // Detect virtual keyboard via visualViewport
   useEffect(() => {
     if (!open) return;
