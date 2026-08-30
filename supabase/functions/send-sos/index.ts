@@ -14,8 +14,12 @@ const FALLBACK_SENDER_ID = "N-Alert";
 
 // Sender ID + route ladder. First accepted combination wins; we record which
 // one worked so the logs show what actually delivers on this account.
+// Verified live on this Termii account (30 Aug 2026): sender ID "TendherMom"
+// is ACTIVE and the generic route delivers; the dnd route is not enabled, so
+// it is tried first (best for DND-registered numbers) and then falls through.
 const SMS_LADDER: { from: string; channel: "dnd" | "generic" }[] = [
   { from: SMS_SENDER_ID, channel: "dnd" },
+  { from: SMS_SENDER_ID, channel: "generic" },
   { from: FALLBACK_SENDER_ID, channel: "dnd" },
   { from: FALLBACK_SENDER_ID, channel: "generic" },
 ];

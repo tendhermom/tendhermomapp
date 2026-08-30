@@ -8,8 +8,10 @@ SOS alerts dispatch through the `send-sos` edge function (Termii v3 API, `https:
 
 Rules:
 - Termii rejects `+` prefixes and local `0...` formats — all numbers are normalized server-side to `234...` digits-only before sending (`normalizeNgPhone`).
-- SMS tries the `dnd` route first, falls back once to `generic`; a contact is only counted as notified when Termii confirms acceptance.
-- Failures return the real Termii rejection reason in the 502 `detail` field; the SOS screen shows it in the error toast.
-- Free for everyone: abuse-guard rate limit 10 alerts / 10 min, max 5 contacts. Voice channel is marked unsupported. WhatsApp needs a Termii device configured (`from` must be the device name).
+- A send only counts as delivered when Termii returns a `message_id`; the alert log records sender, route and message id.
+- Sender/route ladder: `TendherMom`/dnd → `TendherMom`/generic → `N-Alert`/dnd → `N-Alert`/generic. First accepted wins.
+- Free for everyone: abuse-guard rate limit 10 alerts / 10 min, max 5 contacts. Voice unsupported; WhatsApp needs a Termii device.
+- The client no longer writes its own `emergency_alerts` row — the edge function is the single source of truth.
+- `termii-status` edge function (admin-only) returns live balance, sender IDs and recent message delivery statuses.
 
-Account status (2026-08-22): Termii API key valid, balance ~₦2,800. Sender ID `TendherMom` had never been registered — approval requested via the sender-id API (Termii account manager to confirm). Termii also reported "Route not configured ... route=GENERIC" — SMS routes must be enabled on the workspace (dashboard or account manager) before delivery succeeds.
+Account status (verified 2026-08-30): sender ID `TendherMom` status **active**, balance ~₦2,720. Recent messages send on the `generic` route with statuses Sent/Delivered; number 2349114577624 is repeatedly **Rejected** by its carrier (recipient-side/DND issue, not app code). The dnd route is not enabled on the workspace.
