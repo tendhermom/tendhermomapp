@@ -58,21 +58,24 @@ const mount = () => {
       <App />
     </ErrorBoundary>
   );
-  document.getElementById("app-boot-shield")?.remove();
+  // Remove the boot shield only after React has painted, so there is no
+  // white flash between the static shield and the app's first frame.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById("app-boot-shield")?.remove();
+    });
+  });
 };
 
 guardAgainstStaleRestore();
 
-// Versioned build gate: after each deployment this purges caches/workers and
-// performs exactly one hard refresh, so stale auth UI can never resurface.
-void applyBuildVersionGate().then((refreshing) => {
-  if (refreshing) return; // page is navigating away — don't mount the old bundle
-  mount();
-  void setupPwa();
-}).catch(() => {
-  // A failed cache check must not block the current app, but unlike the old
-  // timer this cannot race with a refresh that is still in progress.
-  mount();
-  void setupPwa();
-});
+// Mount immediately — never block first paint on a network check (this was
+// the source of the 30–60s white-screen delay on slow connections).
+mount();
+void setupPwa();
+
+// Stale-build check runs in the background after mount. When a newer
+// deployment is detected it purges caches and performs exactly one hard
+// refresh; otherwise the running app is untouched.
+void applyBuildVersionGate().catch(() => {});
 
