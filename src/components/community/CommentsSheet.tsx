@@ -22,6 +22,9 @@ interface CommentsSheetProps {
   comments: PostComment[];
   loading: boolean;
   onAddComment: (text: string) => Promise<boolean>;
+  /** Signed-in mum — her own comments show a Delete action. */
+  currentUserId?: string;
+  onDeleteComment?: (commentId: string) => Promise<boolean>;
 }
 
 const DRAFT_KEY = "tendher_comment_draft_v1";
