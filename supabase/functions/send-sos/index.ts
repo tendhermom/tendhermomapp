@@ -258,7 +258,7 @@ serve(async (req) => {
     });
 
     const successCount = Object.values(channelResults).reduce((acc, channels) => {
-      return acc + Object.values(channels).filter((s) => s === "sent").length;
+      return acc + Object.values(channels).filter((s) => s.startsWith("sent")).length;
     }, 0);
 
     console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s)`);
