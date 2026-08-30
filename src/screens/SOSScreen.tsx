@@ -401,6 +401,16 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         </AnimatePresence>
       </motion.div>
 
+      {/* Last Alert — delivery status panel */}
+      {deliveryReport && !showSent && (
+        <div>
+          <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>
+            Last Alert
+          </h2>
+          {renderDeliveryPanel(deliveryReport)}
+        </div>
+      )}
+
       {/* Emergency Contacts Card */}
       <div>
         <div className="flex items-center justify-between mb-3">
