@@ -36,12 +36,13 @@ const queryClient = new QueryClient({
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(var(--bg))" }}>
     <img
-      src="/pwa-192.png"
+      src="/boot-logo.jpg"
       alt="TendherMom"
-      className="h-16 w-16 rounded-2xl object-cover animate-pulse"
+      className="h-28 w-28 rounded-[26px] object-contain animate-pulse"
     />
   </div>
 );
+
 
 const AuthListener = () => {
   const { fetchProfile, setUser, setLoading } = useAuthStore();
