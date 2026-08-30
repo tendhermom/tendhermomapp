@@ -392,6 +392,13 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
           comments={comments}
           loading={loadingComments}
           onAddComment={handleAddComment}
+          currentUserId={user?.id}
+          onDeleteComment={async (commentId) => {
+            if (!commentsPostId) return false;
+            const ok = await useCommunityStore.getState().deleteComment(commentId, commentsPostId);
+            if (ok) setComments((prev) => prev.filter((c) => c.id !== commentId));
+            return ok;
+          }}
         />
 
         {/* Leave confirmation sheet */}
