@@ -224,7 +224,9 @@ serve(async (req) => {
         if (channel === "sms") {
           dispatchPromises.push(
             sendTermiiSMS(contact.phone, smsMessage, termiiApiKey).then((result) => {
-              channelResults[contact.name]["sms"] = result.success ? "sent" : `failed: ${result.error}`;
+              channelResults[contact.name]["sms"] = result.success
+                ? `sent via ${result.sender}/${result.route} id=${result.message_id}`
+                : `failed: ${result.error}`;
             })
           );
         } else if (channel === "whatsapp") {
