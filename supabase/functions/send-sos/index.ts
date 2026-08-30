@@ -219,6 +219,17 @@ serve(async (req) => {
 
     // Dispatch messages in parallel to all contacts across all channels
     const channelResults: Record<string, Record<string, string>> = {};
+    // Structured delivery records so the client can render a per-contact
+    // status panel with the Termii message_id or the exact error.
+    const deliveries: {
+      contact: string;
+      channel: string;
+      success: boolean;
+      message_id?: string;
+      sender?: string;
+      route?: string;
+      error?: string;
+    }[] = [];
     const dispatchPromises: Promise<void>[] = [];
 
     for (const contact of limitedContacts) {
@@ -231,6 +242,15 @@ serve(async (req) => {
               channelResults[contact.name]["sms"] = result.success
                 ? `sent via ${result.sender}/${result.route} id=${result.message_id}`
                 : `failed: ${result.error}`;
+              deliveries.push({
+                contact: contact.name,
+                channel: "sms",
+                success: result.success,
+                message_id: result.message_id,
+                sender: result.sender,
+                route: result.route,
+                error: result.error,
+              });
             })
           );
         } else if (channel === "whatsapp") {
@@ -238,12 +258,22 @@ serve(async (req) => {
           dispatchPromises.push(
             sendTermiiWhatsApp(whatsappNumber, smsMessage, termiiApiKey).then((result) => {
               channelResults[contact.name]["whatsapp"] = result.success ? "sent" : `failed: ${result.error}`;
+              deliveries.push({
+                contact: contact.name,
+                channel: "whatsapp",
+                success: result.success,
+                message_id: result.message_id,
+                sender: result.sender,
+                route: result.route,
+                error: result.error,
+              });
             })
           );
         } else if (channel === "voice") {
           // Voice calls not yet implemented — log and mark as unsupported
           console.log(`[SOS] Voice call to ${contact.name} (${contact.phone}) — not yet implemented`);
           channelResults[contact.name]["voice"] = "unsupported";
+          deliveries.push({ contact: contact.name, channel: "voice", success: false, error: "Voice calls coming soon" });
         }
       }
     }
@@ -275,13 +305,21 @@ serve(async (req) => {
         .find((s) => s.startsWith("failed: "));
       const detail = firstFailure ? firstFailure.replace(/^failed: /, "") : "unknown delivery error";
       return new Response(
-        JSON.stringify({ error: "No emergency messages could be delivered", detail, channel_results: channelResults }),
+        JSON.stringify({ error: "No emergency messages could be delivered", detail, channel_results: channelResults, deliveries }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
-      JSON.stringify({ success: true, contacts_notified: limitedContacts.length, messages_sent: successCount, channel_results: channelResults, is_test }),
+      JSON.stringify({
+        success: true,
+        contacts_notified: limitedContacts.length,
+        messages_sent: successCount,
+        channel_results: channelResults,
+        deliveries,
+        sent_at: now.toISOString(),
+        is_test,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

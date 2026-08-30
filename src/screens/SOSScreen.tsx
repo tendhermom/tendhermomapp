@@ -7,6 +7,22 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { hapticHeavy, hapticWarning, hapticSuccess, screenShield, preventSleep, backgroundLocation } from "@/lib/despia";
 import { Sentry } from "@/lib/sentry";
+import { normalizeNgPhone, formatNgPhone } from "@/lib/phoneNg";
+
+interface DeliveryRecord {
+  contact: string;
+  channel: string;
+  success: boolean;
+  message_id?: string;
+  sender?: string;
+  route?: string;
+  error?: string;
+}
+
+interface DeliveryReport {
+  sentAt: Date;
+  deliveries: DeliveryRecord[];
+}
 
 interface EmergencyContact {
   id: string;
@@ -40,6 +56,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const [sentInfo, setSentInfo] = useState({ count: 0, time: "" });
   const [sosError, setSosError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
+  const [deliveryReport, setDeliveryReport] = useState<DeliveryReport | null>(null);
 
   // Fetch contacts
   useEffect(() => {
@@ -91,9 +108,27 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     return () => clearTimeout(timeout);
   }, []);
 
+  // Validate every SMS-enabled contact's number before allowing dispatch
+  const invalidContacts = useCallback(
+    () =>
+      contacts.filter(
+        (c) => (c.sms_enabled || c.whatsapp_enabled) && !normalizeNgPhone(c.phone)
+      ),
+    [contacts]
+  );
+
   const handleSOSTap = useCallback(() => {
     if (contacts.length === 0) {
       setContactsError("Add at least one emergency contact below before sending an SOS.");
+      hapticWarning();
+      return;
+    }
+    const invalid = invalidContacts();
+    if (invalid.length > 0) {
+      const names = invalid.map((c) => c.name).join(", ");
+      setContactsError(
+        `Invalid phone number for ${names}. Open Manage and use the format 0801 234 5678 or +234 801 234 5678.`
+      );
       hapticWarning();
       return;
     }
@@ -101,7 +136,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     setSosError(null);
     hapticWarning();
     setShowConfirm(true);
-  }, [contacts]);
+  }, [contacts, invalidContacts]);
 
   // Auto-trigger the confirm sheet when arriving from a red triage outcome.
   useEffect(() => {
@@ -129,10 +164,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       data: { contactCount: contacts.length, hasCoords: !!coords },
     });
     try {
-    const contactsPayload = contacts.map((c) => ({
+      // Normalize every number to Termii's required 234XXXXXXXXXX format
+      // before the request leaves the app.
+      const contactsPayload = contacts.map((c) => ({
         name: c.name,
-        phone: c.phone,
-        whatsapp: c.whatsapp_number || c.phone,
+        phone: normalizeNgPhone(c.phone) || c.phone,
+        whatsapp: normalizeNgPhone(c.whatsapp_number || c.phone) || c.whatsapp_number || c.phone,
         channels: [
           ...(c.sms_enabled ? ["sms" as const] : []),
           ...(c.whatsapp_enabled ? ["whatsapp" as const] : []),
@@ -140,8 +177,10 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         ],
       }));
 
+      const requestSentAt = new Date();
+
       // Call edge function
-      const { error } = await supabase.functions.invoke("send-sos", {
+      const { data, error } = await supabase.functions.invoke("send-sos", {
         body: {
           user_id: user?.id,
           user_name: user?.full_name,
@@ -162,9 +201,19 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           if (ctx) {
             const body = await ctx.json();
             detail = body?.detail || body?.error || "";
+            if (Array.isArray(body?.deliveries) && body.deliveries.length > 0) {
+              setDeliveryReport({ sentAt: requestSentAt, deliveries: body.deliveries });
+            }
           }
         } catch {}
         throw new Error(detail || error.message);
+      }
+
+      if (data?.deliveries) {
+        setDeliveryReport({
+          sentAt: data.sent_at ? new Date(data.sent_at) : requestSentAt,
+          deliveries: data.deliveries as DeliveryRecord[],
+        });
       }
 
       // The edge function already logs this alert with the real per-channel
@@ -206,6 +255,62 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     if (c.email_enabled) badges.push("Voice");
     return badges;
   };
+
+  // Delivery status panel — shows when the request was sent and, per
+  // contact/channel, the Termii message_id (accepted) or the exact error.
+  const renderDeliveryPanel = (report: DeliveryReport, compact = false) => (
+    <div
+      className={compact ? "w-full mb-4 rounded-2xl overflow-hidden text-left" : "tend-card overflow-hidden"}
+      style={compact ? { background: "hsl(var(--background))" } : undefined}
+    >
+      <div
+        className="px-[14px] py-[10px] flex items-center justify-between"
+        style={{ background: "hsl(var(--light-green))" }}
+      >
+        <span className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>
+          Delivery Status
+        </span>
+        <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+          Sent {report.sentAt.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+        </span>
+      </div>
+      {report.deliveries.map((d, i) => (
+        <div
+          key={`${d.contact}-${d.channel}-${i}`}
+          className="flex items-start gap-2.5 px-[14px] py-[10px]"
+          style={{ borderTop: i > 0 ? "0.5px solid hsl(var(--border))" : "none" }}
+        >
+          <IonIcon
+            name={d.success ? "checkmark-circle" : "alert-circle"}
+            size={16}
+            style={{ color: d.success ? "hsl(var(--green))" : "hsl(var(--coral))", marginTop: 1 }}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                {d.contact}
+              </span>
+              <span
+                className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full uppercase"
+                style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+              >
+                {d.channel}
+              </span>
+            </div>
+            {d.success ? (
+              <p className="text-[10px] font-sans mt-0.5 break-all" style={{ color: "hsl(var(--text-muted))" }}>
+                Accepted{d.sender ? ` via ${d.sender}/${d.route}` : ""} · ID {d.message_id}
+              </p>
+            ) : (
+              <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--coral))" }}>
+                Failed — {d.error || "unknown error"}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-6 pb-4 pt-1">
@@ -295,6 +400,16 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Last Alert — delivery status panel */}
+      {deliveryReport && !showSent && (
+        <div>
+          <h2 className="font-serif text-[20px] mb-3" style={{ color: "hsl(var(--dark))" }}>
+            Last Alert
+          </h2>
+          {renderDeliveryPanel(deliveryReport)}
+        </div>
+      )}
 
       {/* Emergency Contacts Card */}
       <div>
@@ -529,11 +644,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                 <h3 className="font-serif text-[22px] mb-2" style={{ color: "hsl(var(--dark))" }}>
                   Alert Sent!
                 </h3>
-                <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
+                <p className="text-[14px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
                   Sent to {sentInfo.count} contact{sentInfo.count !== 1 ? "s" : ""} at {sentInfo.time} via SMS
                   {contacts.some((c) => c.whatsapp_enabled) ? ", WhatsApp" : ""}
                   {contacts.some((c) => c.email_enabled) ? " and Voice Call" : ""}.
                 </p>
+                {deliveryReport && renderDeliveryPanel(deliveryReport, true)}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setShowSent(false)}
