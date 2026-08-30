@@ -3,7 +3,10 @@
 // or cached shell can ever paint a legacy screen (e.g. the old sign-in page)
 // before the current build renders.
 
+import { BUILD_ID } from "./buildVersion";
+
 const LEGACY_WORKER_PATHS = ["/sw.js", "/service-worker.js"];
+
 
 const isLegacyAppCache = (name: string) =>
   /(^|-)precache-v\d+-|(^|-)runtime-|(^|-)googleAnalytics-/.test(name);
@@ -56,8 +59,14 @@ export const setupPwaSync = () => {
 export const guardAgainstStaleRestore = () => {
   if (typeof window === "undefined") return;
   window.addEventListener("pageshow", (event) => {
-    if ((event as PageTransitionEvent).persisted) {
-      window.location.replace(`${window.location.pathname}${window.location.search}${window.location.hash}`);
-    }
+    if (!(event as PageTransitionEvent).persisted) return;
+    // Only force a fresh load when the restored document belongs to an older
+    // build. Reloading on every bfcache restore adds a blank frame and makes
+    // the app look like it is booting twice.
+    let stored: string | null = null;
+    try { stored = window.localStorage.getItem("tendher_build_id"); } catch { /* ignore */ }
+    if (!stored || stored === BUILD_ID) return;
+    window.location.replace(`${window.location.pathname}${window.location.search}${window.location.hash}`);
   });
 };
+

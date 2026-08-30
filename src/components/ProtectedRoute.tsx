@@ -23,13 +23,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, []);
 
   if (session === undefined) {
-    // Loading state
+    // Same branded moment as the boot shield / splash — never a different visual.
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(var(--bg))" }}>
-        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
+        <img src="/boot-logo.jpg" alt="TendherMom" className="h-28 w-28 rounded-[26px] object-contain animate-pulse" />
       </div>
     );
   }
+
 
   if (!session) {
     // First-time users (just completed intro, never logged in) go to signup
