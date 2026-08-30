@@ -145,10 +145,17 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
         { event: "INSERT", schema: "public", table: "community_posts", filter: `channel=eq.${activeCommunity}` },
         throttledRefetch
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "post_comments" },
+        () => { void syncComments(); }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [activeCommunity, throttledRefetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCommunity, throttledRefetch, commentsPostId]);
+
 
   // Handle tapping a community card
   const handleCommunityTap = (communityId: ChannelId) => {
@@ -228,6 +235,17 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
     setComments(data);
     setLoadingComments(false);
   };
+
+  /** Live sync: refresh the open comments list and the feed's comment counts. */
+  const syncComments = async () => {
+    if (commentsPostId) {
+      const data = await fetchComments(commentsPostId);
+      setComments(data);
+    }
+    throttledRefetch();
+  };
+
+
 
   // Restore the exact spot on mount: load the saved feed and re-open comments
   const restoredRef = useRef(false);

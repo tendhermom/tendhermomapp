@@ -152,19 +152,40 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const handleReaction = async (postId: string, type: "congrats" | "love" | "gifted") => {
     if (!user) return;
     const existing = userReactions[postId];
+    // Snapshot so we can restore the exact state if the save fails
+    const prevReactions = userReactions;
+    const prevCount = posts.find((p) => p.id === postId)?.reactions_count ?? 0;
+
+    // 1) Highlight immediately — the icon and the count update before any network call
     if (existing === type) {
-      await supabase.from("reactions").delete().eq("post_id", postId).eq("user_id", user.id);
       setUserReactions((prev) => { const next = { ...prev }; delete next[postId]; return next; });
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: Math.max(0, p.reactions_count - 1) } : p)));
     } else if (existing) {
-      await (supabase.from("reactions") as any).update({ type }).eq("post_id", postId).eq("user_id", user.id);
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
     } else {
-      await (supabase.from("reactions") as any).insert({ post_id: postId, user_id: user.id, type });
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: p.reactions_count + 1 } : p)));
     }
-    // Reconcile with the real stored total so the count survives a refresh
+
+    // 2) Persist
+    let error: any = null;
+    if (existing === type) {
+      ({ error } = await supabase.from("reactions").delete().eq("post_id", postId).eq("user_id", user.id));
+    } else if (existing) {
+      ({ error } = await (supabase.from("reactions") as any).update({ type }).eq("post_id", postId).eq("user_id", user.id));
+    } else {
+      ({ error } = await (supabase.from("reactions") as any).insert({ post_id: postId, user_id: user.id, type }));
+    }
+
+    if (error) {
+      // Roll back so the highlight always matches what is really saved
+      setUserReactions(prevReactions);
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: prevCount } : p)));
+      toast.error("Couldn't save your reaction. Please try again.");
+      return;
+    }
+
+    // 3) Reconcile with the real stored total so the count survives a refresh
     await refreshReactionCount(postId);
   };
 
@@ -178,6 +199,28 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: count } : p)));
     }
   };
+
+  // Live reaction counts — everyone's celebrations stay in sync without a refresh
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("baby-shower-reactions")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "reactions" },
+        (payload: any) => {
+          const postId = (payload.new as any)?.post_id || (payload.old as any)?.post_id;
+          if (!postId) return;
+          const actorId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          if (actorId === user.id) return; // her own change is already reflected
+          void refreshReactionCount(postId);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
   // ─── Who reacted / gifted ───
   const openReactions = async (post: BabyShowerPost) => {
