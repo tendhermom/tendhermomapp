@@ -158,6 +158,53 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
     }
   };
 
+  // ─── Who reacted / gifted ───
+  const openReactions = async (post: BabyShowerPost) => {
+    setReactionsPost(post);
+    setReactionsList(null);
+    const { data } = await supabase
+      .from("reactions")
+      .select("user_id, type, created_at")
+      .eq("post_id", post.id)
+      .order("created_at", { ascending: false });
+    const rows = (data || []) as any[];
+    const ids = [...new Set(rows.map((r) => r.user_id))];
+    let names: Record<string, { name: string; avatar?: string }> = {};
+    if (ids.length > 0) {
+      const { data: profiles } = await (supabase as any).rpc("get_public_profiles", { _user_ids: ids });
+      (profiles || []).forEach((p: any) => {
+        names[p.id] = { name: p.full_name || "TendherMom member", avatar: p.avatar_url || undefined };
+      });
+    }
+    setReactionsList(
+      rows.map((r) => ({
+        user_id: r.user_id,
+        type: r.type,
+        name: names[r.user_id]?.name || "TendherMom member",
+        avatar: names[r.user_id]?.avatar,
+      }))
+    );
+  };
+
+  // ─── Delete own celebration ───
+  const handleDeletePost = async () => {
+    if (!deletePost || !user) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("baby_shower_posts")
+      .delete()
+      .eq("id", deletePost.id)
+      .eq("user_id", user.id);
+    setDeleting(false);
+    if (error) {
+      toast.error("Couldn't delete your post");
+      return;
+    }
+    setPosts((prev) => prev.filter((p) => p.id !== deletePost.id));
+    setDeletePost(null);
+    toast.success("Your celebration was removed");
+  };
+
   const openGiveGift = async (post: BabyShowerPost) => {
     setGiveGiftPost(post);
     setGiftAccount(null);
