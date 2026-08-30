@@ -393,6 +393,7 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
           loading={loadingComments}
           onAddComment={handleAddComment}
           currentUserId={user?.id}
+          postOwnerId={posts.find((p) => p.id === commentsPostId)?.user_id}
           onDeleteComment={async (commentId) => {
             if (!commentsPostId) return false;
             const ok = await useCommunityStore.getState().deleteComment(commentId, commentsPostId);

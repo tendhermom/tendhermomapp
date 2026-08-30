@@ -28,6 +28,7 @@ export interface PostComment {
   created_at: string;
   author_name?: string;
   author_avatar?: string;
+  author_is_plus?: boolean;
 }
 
 interface CommunityState {
@@ -210,6 +211,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       ...c,
       author_name: profileMap.get(c.user_id)?.full_name || "Anonymous",
       author_avatar: profileMap.get(c.user_id)?.avatar_url || undefined,
+      author_is_plus: !!profileMap.get(c.user_id)?.is_plus,
     }));
   },
 

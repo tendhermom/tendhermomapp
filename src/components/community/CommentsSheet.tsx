@@ -24,6 +24,8 @@ interface CommentsSheetProps {
   onAddComment: (text: string) => Promise<boolean>;
   /** Signed-in mum — her own comments show a Delete action. */
   currentUserId?: string;
+  /** Owner of the post — she can remove any comment on her own post. */
+  postOwnerId?: string;
   onDeleteComment?: (commentId: string) => Promise<boolean>;
 }
 
@@ -42,7 +44,7 @@ const formatCommentTime = (dateStr: string) => {
     : d.toLocaleDateString();
 };
 
-const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, currentUserId, onDeleteComment }: CommentsSheetProps) => {
+const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, currentUserId, postOwnerId, onDeleteComment }: CommentsSheetProps) => {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   // Keep any half-typed comment if the app is minimised and reopened
@@ -106,6 +108,9 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, current
       requestAnimationFrame(() => { el.scrollTop = savedScroll.current; });
     }
   }, [viewer]);
+
+  // True when the mum is removing someone else's comment from her own post.
+  const isModeratingOthers = !!confirmDeleteId && comments.find((c) => c.id === confirmDeleteId)?.user_id !== currentUserId;
 
   const openPhoto = (photo: string, name: string) => {
     savedScroll.current = listRef.current?.scrollTop ?? 0;
@@ -224,17 +229,26 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, current
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-sans">
                         <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{c.author_name}</span>
+                        {c.author_is_plus && (
+                          <span
+                            className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9px] font-bold font-sans uppercase tracking-wider align-middle"
+                            style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+                          >
+                            <IonIcon name="sparkles" size={9} style={{ color: "hsl(var(--green))" }} />
+                            Plus
+                          </span>
+                        )}
                         <span className="ml-2 text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
                           {formatCommentTime(c.created_at)}
                         </span>
                       </p>
                       <p className="text-[13px] font-sans mt-0.5 break-words" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
                     </div>
-                    {onDeleteComment && currentUserId === c.user_id && (
+                    {onDeleteComment && (currentUserId === c.user_id || (!!postOwnerId && currentUserId === postOwnerId)) && (
                       <motion.button
                         whileTap={{ scale: 0.88 }}
                         onClick={() => setConfirmDeleteId(c.id)}
-                        aria-label="Delete your comment"
+                        aria-label={currentUserId === c.user_id ? "Delete your comment" : "Remove this comment from your post"}
                         className="w-8 h-8 shrink-0 self-start rounded-full flex items-center justify-center"
                         style={{ background: "hsl(var(--bg))" }}
                       >
@@ -323,7 +337,9 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, current
                   style={{ background: "hsl(var(--surface))", paddingBottom: "max(env(safe-area-inset-bottom, 24px), 24px)" }}
                 >
                   <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
-                  <h3 className="font-serif text-[19px] text-center" style={{ color: "hsl(var(--dark))" }}>Delete this comment?</h3>
+                  <h3 className="font-serif text-[19px] text-center" style={{ color: "hsl(var(--dark))" }}>
+                    {isModeratingOthers ? "Remove this comment from your post?" : "Delete this comment?"}
+                  </h3>
                   <p className="text-[13px] font-sans text-center mt-1.5" style={{ color: "hsl(var(--text-muted))" }}>
                     It will be removed for everyone. This can't be undone.
                   </p>

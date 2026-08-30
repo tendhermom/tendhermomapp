@@ -164,6 +164,19 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
       setUserReactions((prev) => ({ ...prev, [postId]: type }));
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: p.reactions_count + 1 } : p)));
     }
+    // Reconcile with the real stored total so the count survives a refresh
+    await refreshReactionCount(postId);
+  };
+
+  /** Pull the authoritative reaction total for one celebration. */
+  const refreshReactionCount = async (postId: string) => {
+    const { count } = await supabase
+      .from("reactions")
+      .select("id", { count: "exact", head: true })
+      .eq("post_id", postId);
+    if (typeof count === "number") {
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, reactions_count: count } : p)));
+    }
   };
 
   // ─── Who reacted / gifted ───
