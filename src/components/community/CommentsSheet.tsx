@@ -22,6 +22,9 @@ interface CommentsSheetProps {
   comments: PostComment[];
   loading: boolean;
   onAddComment: (text: string) => Promise<boolean>;
+  /** Signed-in mum — her own comments show a Delete action. */
+  currentUserId?: string;
+  onDeleteComment?: (commentId: string) => Promise<boolean>;
 }
 
 const DRAFT_KEY = "tendher_comment_draft_v1";
@@ -39,7 +42,9 @@ const formatCommentTime = (dateStr: string) => {
     : d.toLocaleDateString();
 };
 
-const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
+const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, currentUserId, onDeleteComment }: CommentsSheetProps) => {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   // Keep any half-typed comment if the app is minimised and reopened
   const [text, setText] = useState(() => {
     try { return localStorage.getItem(DRAFT_KEY) || ""; } catch { return ""; }
@@ -216,15 +221,26 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
                         {(c.author_name || "A")[0].toUpperCase()}
                       </div>
                     )}
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-sans">
                         <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{c.author_name}</span>
                         <span className="ml-2 text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
                           {formatCommentTime(c.created_at)}
                         </span>
                       </p>
-                      <p className="text-[13px] font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
+                      <p className="text-[13px] font-sans mt-0.5 break-words" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
                     </div>
+                    {onDeleteComment && currentUserId === c.user_id && (
+                      <motion.button
+                        whileTap={{ scale: 0.88 }}
+                        onClick={() => setConfirmDeleteId(c.id)}
+                        aria-label="Delete your comment"
+                        className="w-8 h-8 shrink-0 self-start rounded-full flex items-center justify-center"
+                        style={{ background: "hsl(var(--bg))" }}
+                      >
+                        <IonIcon name="trash-outline" size={14} style={{ color: "hsl(var(--text-muted))" }} />
+                      </motion.button>
+                    )}
                   </div>
                 ))
               )}
@@ -285,6 +301,62 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: Comme
             onClose={() => setViewer(null)}
             caption={viewer?.name}
           />
+
+          {/* Delete-your-comment confirmation */}
+          <AnimatePresence>
+            {confirmDeleteId && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[110] flex items-end justify-center"
+                style={{ background: "rgba(0,0,0,0.45)" }}
+                onClick={(e) => { e.stopPropagation(); if (!deleting) setConfirmDeleteId(null); }}
+              >
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 30, stiffness: 320 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full max-w-[430px] rounded-t-3xl px-5 pt-5"
+                  style={{ background: "hsl(var(--surface))", paddingBottom: "max(env(safe-area-inset-bottom, 24px), 24px)" }}
+                >
+                  <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
+                  <h3 className="font-serif text-[19px] text-center" style={{ color: "hsl(var(--dark))" }}>Delete this comment?</h3>
+                  <p className="text-[13px] font-sans text-center mt-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+                    It will be removed for everyone. This can't be undone.
+                  </p>
+                  <div className="flex gap-3 mt-5">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setConfirmDeleteId(null)}
+                      className="flex-1 py-3.5 rounded-2xl text-[15px] font-semibold font-sans"
+                      style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}
+                    >
+                      Keep
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      disabled={deleting}
+                      onClick={async () => {
+                        if (!onDeleteComment) return;
+                        setDeleting(true);
+                        const ok = await onDeleteComment(confirmDeleteId);
+                        setDeleting(false);
+                        if (ok) setConfirmDeleteId(null);
+                        else setError("Couldn't delete that comment. Please try again.");
+                      }}
+                      className="flex-1 py-3.5 rounded-2xl text-[15px] font-semibold font-sans"
+                      style={{ background: "hsl(var(--coral))", color: "white", opacity: deleting ? 0.7 : 1 }}
+                    >
+                      {deleting ? "Deleting…" : "Delete"}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

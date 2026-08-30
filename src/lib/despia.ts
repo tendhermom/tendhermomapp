@@ -410,17 +410,28 @@ export const torch = {
  */
 export const closeApp = (): boolean => {
   const native = isDespiaNative();
+
+  // Whatever the shell, first collapse every history entry we own so nothing
+  // is left for the system back button to walk through.
+  try {
+    const depth = window.history.length - 1;
+    if (depth > 0) window.history.go(-depth);
+  } catch {}
+
   if (native) {
     // Despia exposes a few close aliases across shell versions — try them all;
     // the shell ignores protocols it doesn't implement.
-    for (const proto of ["closeapp", "exitapp", "quitapp"]) {
+    for (const proto of ["closeapp", "exitapp", "quitapp", "close", "exit"]) {
       try { despiaCommand(proto); } catch {}
     }
     try { (window as any).Android?.closeApp?.(); } catch {}
+    try { (window as any).Android?.exitApp?.(); } catch {}
+    try { (navigator as any).app?.exitApp?.(); } catch {}
+    try { (window as any).webkit?.messageHandlers?.closeApp?.postMessage?.("close"); } catch {}
     return true;
   }
-  // Browser fallback: unwind our own history, then try to close the tab.
-  try { window.history.go(-(window.history.length - 1)); } catch {}
+
+  // Browser fallback: try to close the tab once history is unwound.
   setTimeout(() => { try { window.close(); } catch {} }, 150);
   return false;
 };

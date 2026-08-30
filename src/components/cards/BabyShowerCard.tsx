@@ -19,6 +19,10 @@ interface BabyShowerCardProps {
   isOwner?: boolean;
   onGiveGift?: () => void;
   onOpenPhotos?: (photos: string[], index: number) => void;
+  /** Owner-only: remove this celebration */
+  onDelete?: () => void;
+  /** Open the list of mums who reacted or gifted */
+  onViewReactions?: () => void;
 }
 
 type ReactionMeta = { type: string; icon: string; activeIcon: string; label: string; color: string };
@@ -51,6 +55,8 @@ const BabyShowerCard = ({
   isOwner = false,
   onGiveGift,
   onOpenPhotos,
+  onDelete,
+  onViewReactions,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
   const photos = (imageUrls && imageUrls.length > 0 ? imageUrls : [imageUrl]).filter(Boolean);
@@ -174,6 +180,18 @@ const BabyShowerCard = ({
             </span>
           </div>
         )}
+        {/* Owner: remove this celebration */}
+        {isOwner && onDelete && (
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            aria-label="Delete this celebration"
+            className="absolute bottom-1.5 left-2 z-[3] w-7 h-7 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)" }}
+          >
+            <IonIcon name="trash-outline" size={14} style={{ color: "white" }} />
+          </motion.button>
+        )}
       </div>
 
       {/* Info */}
@@ -220,12 +238,22 @@ const BabyShowerCard = ({
             Gift
           </motion.button>
 
-          {reactionsCount > 0 && (
-            <span className="text-[11px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
-              {reactionsCount}
-            </span>
-          )}
         </div>
+
+        {/* Who reacted / gifted */}
+        {onViewReactions && (
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={(e) => { e.stopPropagation(); onViewReactions(); }}
+            className="w-full py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
+            style={{ background: "hsl(var(--bg))", color: "hsl(var(--text-muted))" }}
+          >
+            <IonIcon name="people-outline" size={12} style={{ color: "hsl(var(--text-muted))" }} />
+            {reactionsCount > 0
+              ? `${reactionsCount} ${reactionsCount === 1 ? "reaction" : "reactions"}`
+              : "No reactions yet"}
+          </motion.button>
+        )}
       </div>
 
       {/* Reaction picker */}
