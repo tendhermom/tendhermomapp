@@ -164,10 +164,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
       data: { contactCount: contacts.length, hasCoords: !!coords },
     });
     try {
-    const contactsPayload = contacts.map((c) => ({
+      // Normalize every number to Termii's required 234XXXXXXXXXX format
+      // before the request leaves the app.
+      const contactsPayload = contacts.map((c) => ({
         name: c.name,
-        phone: c.phone,
-        whatsapp: c.whatsapp_number || c.phone,
+        phone: normalizeNgPhone(c.phone) || c.phone,
+        whatsapp: normalizeNgPhone(c.whatsapp_number || c.phone) || c.whatsapp_number || c.phone,
         channels: [
           ...(c.sms_enabled ? ["sms" as const] : []),
           ...(c.whatsapp_enabled ? ["whatsapp" as const] : []),
@@ -175,8 +177,10 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         ],
       }));
 
+      const requestSentAt = new Date();
+
       // Call edge function
-      const { error } = await supabase.functions.invoke("send-sos", {
+      const { data, error } = await supabase.functions.invoke("send-sos", {
         body: {
           user_id: user?.id,
           user_name: user?.full_name,
@@ -197,9 +201,19 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           if (ctx) {
             const body = await ctx.json();
             detail = body?.detail || body?.error || "";
+            if (Array.isArray(body?.deliveries) && body.deliveries.length > 0) {
+              setDeliveryReport({ sentAt: requestSentAt, deliveries: body.deliveries });
+            }
           }
         } catch {}
         throw new Error(detail || error.message);
+      }
+
+      if (data?.deliveries) {
+        setDeliveryReport({
+          sentAt: data.sent_at ? new Date(data.sent_at) : requestSentAt,
+          deliveries: data.deliveries as DeliveryRecord[],
+        });
       }
 
       // The edge function already logs this alert with the real per-channel
