@@ -35,7 +35,11 @@ const queryClient = new QueryClient({
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(var(--bg))" }}>
-    <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--green))", borderTopColor: "transparent" }} />
+    <img
+      src="/pwa-192.png"
+      alt="TendherMom"
+      className="h-16 w-16 rounded-2xl object-cover animate-pulse"
+    />
   </div>
 );
 
@@ -168,45 +172,33 @@ const DIRECT_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password"
 const App = () => {
   const hasLoggedInBefore = safeLocalGet("has_logged_in") === "true";
   const isDirectPath = typeof window !== "undefined" && DIRECT_PATHS.some((p) => window.location.pathname.startsWith(p));
-  const [splashDone, setSplashDone] = useState(hasLoggedInBefore || isDirectPath);
+  // Every cold launch gets one short branded transition. Authentication starts
+  // underneath it, so the splash never adds a second network wait.
+  const [splashDone, setSplashDone] = useState(false);
   const [introDone, setIntroDone] = useState(() => hasLoggedInBefore || isDirectPath || safeLocalGet("intro_completed") === "true");
   const handleSplashFinish = useCallback(() => setSplashDone(true), []);
   const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
-  // Show splash/intro first for new users before anything else
-  if (!splashDone) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <SplashScreen onFinish={handleSplashFinish} />
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  }
-
-
-  if (!introDone) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Suspense fallback={<LoadingSpinner />}>
-            <IntroScreen onComplete={handleIntroComplete} />
-          </Suspense>
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <OfflineBanner />
-        <BiometricLock />
-        <SonnerToaster />
-        <BrowserRouter>
-          <AuthListener />
-          <AppContent />
-        </BrowserRouter>
+        <AuthListener />
+        {!splashDone ? (
+          <SplashScreen onFinish={handleSplashFinish} />
+        ) : !introDone ? (
+          <Suspense fallback={<LoadingSpinner />}>
+            <IntroScreen onComplete={handleIntroComplete} />
+          </Suspense>
+        ) : (
+          <>
+            <OfflineBanner />
+            <BiometricLock />
+            <SonnerToaster />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </>
+        )}
       </TooltipProvider>
     </QueryClientProvider>
   );

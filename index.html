@@ -33,10 +33,18 @@
         background: #fff;
       }
       #app-boot-shield img {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
+        width: 112px;
+        height: 112px;
+        border-radius: 26px;
         object-fit: cover;
+        animation: boot-pulse 700ms ease-in-out infinite alternate;
+      }
+      @keyframes boot-pulse {
+        from { transform: scale(.94); opacity: .86; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-boot-shield img { animation: none; }
       }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

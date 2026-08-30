@@ -12,8 +12,8 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(onFinish, 450);
-    }, 1500);
+      setTimeout(onFinish, 220);
+    }, 1050);
     return () => clearTimeout(timer);
   }, [onFinish]);
 
@@ -23,7 +23,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden"
           style={{ background: "hsl(var(--bg))" }}
         >
@@ -74,13 +74,13 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
           {/* Logo container with premium shadow */}
           <motion.div
             className="relative"
-            initial={{ scale: 0.6, opacity: 0, y: 20 }}
+            initial={{ scale: 0.88, opacity: 1, y: 0 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{
               type: "spring",
               stiffness: 200,
               damping: 18,
-              delay: 0.15,
+              delay: 0,
             }}
           >
             <motion.div
@@ -94,7 +94,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
             <img
               src={logo}
               alt="TendherMom"
-              className="relative w-[120px] h-[120px] rounded-[28px] object-contain"
+              className="relative w-[112px] h-[112px] rounded-[26px] object-contain"
             />
           </motion.div>
 
@@ -104,7 +104,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
             style={{ color: "hsl(var(--dark))" }}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 22 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 22 }}
           >
             Tendher
             <span style={{ color: "hsl(var(--green))" }}>Mom</span>
@@ -116,7 +116,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
             style={{ color: "hsl(var(--text-muted))" }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.75, duration: 0.5, ease: "easeOut" }}
+            transition={{ delay: 0.35, duration: 0.35, ease: "easeOut" }}
           >
             Your pregnancy companion
           </motion.p>
@@ -127,7 +127,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
             style={{ paddingBottom: "calc(var(--safe-area-bottom, 0px) + 48px)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
+            transition={{ delay: 0.35 }}
           >
             <div
               className="h-[3px] w-16 rounded-full overflow-hidden"
@@ -138,7 +138,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
                 style={{ background: "linear-gradient(90deg, hsl(var(--green)), hsl(var(--coral)))" }}
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ delay: 1, duration: 1.3, ease: "easeInOut" }}
+                transition={{ delay: 0.35, duration: 0.65, ease: "easeInOut" }}
               />
             </div>
           </motion.div>
