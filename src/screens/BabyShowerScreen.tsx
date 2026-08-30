@@ -385,6 +385,8 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
                     setViewerIndex(index);
                     setViewerOpen(true);
                   }}
+                  onDelete={() => setDeletePost(post)}
+                  onViewReactions={() => openReactions(post)}
                 />
               </div>
             ))}
@@ -397,6 +399,97 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
           open={viewerOpen}
           onClose={() => setViewerOpen(false)}
         />
+
+        {/* Who reacted / gifted */}
+        <AnimatePresence>
+          {reactionsPost && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100]" style={{ background: "rgba(0,0,0,0.5)" }}
+                onClick={() => { setReactionsPost(null); setReactionsList(null); }} />
+              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-6 pb-[max(env(safe-area-inset-bottom,32px),32px)] no-scrollbar"
+                style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto", maxHeight: "75vh", overflowY: "auto" }}>
+                <h3 className="font-serif text-[20px] mb-1" style={{ color: "hsl(var(--dark))" }}>Celebrated by</h3>
+                <p className="text-[12px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
+                  Mums who reacted or sent a gift to Baby {reactionsPost.baby_name}
+                </p>
+                {reactionsList === null ? (
+                  <div className="flex justify-center py-8">
+                    <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--coral))", borderTopColor: "transparent" }} />
+                  </div>
+                ) : reactionsList.length === 0 ? (
+                  <p className="text-[13px] font-sans text-center py-8" style={{ color: "hsl(var(--text-muted))" }}>
+                    No reactions yet — they'll show here.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {reactionsList.map((r) => (
+                      <div key={`${r.user_id}-${r.type}`} className="flex items-center gap-3">
+                        {r.avatar ? (
+                          <img src={r.avatar} alt={r.name} className="w-9 h-9 rounded-full object-cover shrink-0" loading="lazy" referrerPolicy="no-referrer" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold font-sans shrink-0"
+                            style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}>
+                            {r.name[0].toUpperCase()}
+                          </div>
+                        )}
+                        <p className="flex-1 min-w-0 text-[14px] font-sans font-medium truncate" style={{ color: "hsl(var(--dark))" }}>{r.name}</p>
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold font-sans flex items-center gap-1"
+                          style={{
+                            background: r.type === "gifted" ? "hsl(45 95% 92%)" : "hsl(var(--light-coral))",
+                            color: r.type === "gifted" ? "hsl(35 90% 35%)" : "hsl(var(--coral))",
+                          }}>
+                          <IonIcon name={r.type === "gifted" ? "gift" : r.type === "love" ? "heart" : "ribbon"} size={12}
+                            style={{ color: r.type === "gifted" ? "hsl(35 90% 35%)" : "hsl(var(--coral))" }} />
+                          {r.type === "gifted" ? "Gifted" : r.type === "love" ? "Love" : "Congrats"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => { setReactionsPost(null); setReactionsList(null); }}
+                  className="w-full py-[13px] mt-4 text-[15px] font-semibold font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                  Close
+                </motion.button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Delete own celebration */}
+        <AnimatePresence>
+          {deletePost && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100]" style={{ background: "rgba(0,0,0,0.5)" }}
+                onClick={() => !deleting && setDeletePost(null)} />
+              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-[101] rounded-t-[22px] px-6 pt-5 pb-[max(env(safe-area-inset-bottom,28px),28px)]"
+                style={{ background: "hsl(var(--surface))", maxWidth: 430, margin: "0 auto" }}>
+                <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "hsl(var(--border-subtle))" }} />
+                <h3 className="font-serif text-[20px] text-center" style={{ color: "hsl(var(--dark))" }}>Remove this celebration?</h3>
+                <p className="text-[13px] font-sans text-center mt-1.5" style={{ color: "hsl(var(--text-muted))" }}>
+                  Baby {deletePost.baby_name}'s post and its reactions will be removed. This can't be undone.
+                </p>
+                <div className="flex gap-3 mt-5">
+                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => setDeletePost(null)}
+                    className="flex-1 py-3.5 rounded-2xl text-[15px] font-semibold font-sans"
+                    style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}>
+                    Keep
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.97 }} disabled={deleting} onClick={handleDeletePost}
+                    className="flex-1 py-3.5 rounded-2xl text-[15px] font-semibold font-sans"
+                    style={{ background: "hsl(var(--coral))", color: "white", opacity: deleting ? 0.7 : 1 }}>
+                    {deleting ? "Removing…" : "Remove"}
+                  </motion.button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Give a Gift Sheet — visitor sees poster's bank details (from Gift Settings) to make P2P transfer */}
         <AnimatePresence>
