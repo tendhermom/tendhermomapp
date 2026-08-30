@@ -167,15 +167,10 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         throw new Error(detail || error.message);
       }
 
-      // Log the alert
-      await supabase.from("emergency_alerts").insert({
-        user_id: user!.id,
-        latitude: coords?.lat || null,
-        longitude: coords?.lng || null,
-        contacts_notified: contactsPayload.length,
-        channel_success: {},
-        is_test: false,
-      });
+      // The edge function already logs this alert with the real per-channel
+      // delivery result — no duplicate client-side row.
+
+
 
       const now = new Date();
       setSentInfo({

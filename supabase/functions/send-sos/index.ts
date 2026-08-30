@@ -9,6 +9,16 @@ const corsHeaders = {
 
 const TERMII_API_URL = "https://v3.api.termii.com/api/sms/send";
 const SMS_SENDER_ID = "TendherMom";
+// Termii's pre-approved transactional sender — always usable, bypasses DND.
+const FALLBACK_SENDER_ID = "N-Alert";
+
+// Sender ID + route ladder. First accepted combination wins; we record which
+// one worked so the logs show what actually delivers on this account.
+const SMS_LADDER: { from: string; channel: "dnd" | "generic" }[] = [
+  { from: SMS_SENDER_ID, channel: "dnd" },
+  { from: FALLBACK_SENDER_ID, channel: "dnd" },
+  { from: FALLBACK_SENDER_ID, channel: "generic" },
+];
 
 interface Contact {
   name: string;
