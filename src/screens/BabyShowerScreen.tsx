@@ -88,6 +88,14 @@ const BabyShowerScreen = ({ onBack, onNavigate }: BabyShowerScreenProps) => {
   const [viewerPhotos, setViewerPhotos] = useState<string[]>([]);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
+  // Who reacted / gifted
+  const [reactionsPost, setReactionsPost] = useState<BabyShowerPost | null>(null);
+  const [reactionsList, setReactionsList] = useState<
+    { user_id: string; type: string; name: string; avatar?: string }[] | null
+  >(null);
+  // Delete own celebration
+  const [deletePost, setDeletePost] = useState<BabyShowerPost | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Create form state
   const [babyName, setBabyName] = useState("");
