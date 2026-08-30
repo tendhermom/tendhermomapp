@@ -180,6 +180,18 @@ const BabyShowerCard = ({
             </span>
           </div>
         )}
+        {/* Owner: remove this celebration */}
+        {isOwner && onDelete && (
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            aria-label="Delete this celebration"
+            className="absolute bottom-1.5 left-2 z-[3] w-7 h-7 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)" }}
+          >
+            <IonIcon name="trash-outline" size={14} style={{ color: "white" }} />
+          </motion.button>
+        )}
       </div>
 
       {/* Info */}
