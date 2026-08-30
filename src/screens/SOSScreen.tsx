@@ -7,6 +7,22 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { hapticHeavy, hapticWarning, hapticSuccess, screenShield, preventSleep, backgroundLocation } from "@/lib/despia";
 import { Sentry } from "@/lib/sentry";
+import { normalizeNgPhone, formatNgPhone } from "@/lib/phoneNg";
+
+interface DeliveryRecord {
+  contact: string;
+  channel: string;
+  success: boolean;
+  message_id?: string;
+  sender?: string;
+  route?: string;
+  error?: string;
+}
+
+interface DeliveryReport {
+  sentAt: Date;
+  deliveries: DeliveryRecord[];
+}
 
 interface EmergencyContact {
   id: string;
