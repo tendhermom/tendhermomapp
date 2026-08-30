@@ -236,6 +236,17 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
     setLoadingComments(false);
   };
 
+  /** Live sync: refresh the open comments list and the feed's comment counts. */
+  const syncComments = async () => {
+    if (commentsPostId) {
+      const data = await fetchComments(commentsPostId);
+      setComments(data);
+    }
+    throttledRefetch();
+  };
+
+
+
   // Restore the exact spot on mount: load the saved feed and re-open comments
   const restoredRef = useRef(false);
   useEffect(() => {
