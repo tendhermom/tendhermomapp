@@ -578,11 +578,12 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
                 <h3 className="font-serif text-[22px] mb-2" style={{ color: "hsl(var(--dark))" }}>
                   Alert Sent!
                 </h3>
-                <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
+                <p className="text-[14px] font-sans mb-4" style={{ color: "hsl(var(--text-muted))" }}>
                   Sent to {sentInfo.count} contact{sentInfo.count !== 1 ? "s" : ""} at {sentInfo.time} via SMS
                   {contacts.some((c) => c.whatsapp_enabled) ? ", WhatsApp" : ""}
                   {contacts.some((c) => c.email_enabled) ? " and Voice Call" : ""}.
                 </p>
+                {deliveryReport && renderDeliveryPanel(deliveryReport, true)}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setShowSent(false)}
