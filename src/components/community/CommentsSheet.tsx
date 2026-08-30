@@ -42,7 +42,9 @@ const formatCommentTime = (dateStr: string) => {
     : d.toLocaleDateString();
 };
 
-const CommentsSheet = ({ open, onClose, comments, loading, onAddComment }: CommentsSheetProps) => {
+const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, currentUserId, onDeleteComment }: CommentsSheetProps) => {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   // Keep any half-typed comment if the app is minimised and reopened
   const [text, setText] = useState(() => {
     try { return localStorage.getItem(DRAFT_KEY) || ""; } catch { return ""; }
