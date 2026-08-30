@@ -97,45 +97,30 @@ const purgeCaches = async () => {
 };
 
 /**
- * Returns true when a hard refresh was triggered (caller should stop booting).
- * Runs before React mounts.
+ * Purges stale caches in the background. It NEVER navigates or reloads the
+ * live page — a reload after first paint replays the whole launch sequence
+ * (shield -> splash -> login) and looks like the app booting twice.
+ * A newer deployment is simply picked up on the next cold start.
+ *
+ * Always resolves false (kept for callers that check the old contract).
  */
 export const applyBuildVersionGate = async (): Promise<boolean> => {
   if (typeof window === "undefined") return false;
 
-  // A cache-busted release manifest lets an already-open native WebView detect
-  // a newer deployment even if it retained the previous HTML document.
   const latestPublishedBuild = await getLatestPublishedBuild();
   if (latestPublishedBuild && latestPublishedBuild !== BUILD_ID) {
-    document.getElementById("root")?.replaceChildren();
+    // Newer build exists: clear caches now so the NEXT launch loads it fresh.
     await purgeCaches();
     safeSet(window.localStorage, BUILD_KEY, latestPublishedBuild);
-    safeSet(window.sessionStorage, REFRESH_FLAG, latestPublishedBuild);
-
-    const freshUrl = new URL(window.location.href);
-    freshUrl.searchParams.set("v", latestPublishedBuild);
-    window.location.replace(freshUrl.toString());
-    return true;
+    return false;
   }
 
   const previous = safeGet(window.localStorage, BUILD_KEY);
   if (previous === BUILD_ID) return false;
 
-  // Clear any browser/WebView-restored app DOM before cache cleanup or a
-  // version reload. index.html's boot shield remains visible above the root.
-  document.getElementById("root")?.replaceChildren();
-
   await purgeCaches();
   safeSet(window.localStorage, BUILD_KEY, BUILD_ID);
-
-  // Only one refresh per session, per build — never loop.
-  const alreadyRefreshed = safeGet(window.sessionStorage, REFRESH_FLAG) === BUILD_ID;
-  if (previous === null || alreadyRefreshed) return false;
-
   safeSet(window.sessionStorage, REFRESH_FLAG, BUILD_ID);
+  return false;
 
-  const url = new URL(window.location.href);
-  url.searchParams.set("v", BUILD_ID);
-  window.location.replace(url.toString());
-  return true;
 };
