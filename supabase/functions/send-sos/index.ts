@@ -9,6 +9,16 @@ const corsHeaders = {
 
 const TERMII_API_URL = "https://v3.api.termii.com/api/sms/send";
 const SMS_SENDER_ID = "TendherMom";
+// Termii's pre-approved transactional sender — always usable, bypasses DND.
+const FALLBACK_SENDER_ID = "N-Alert";
+
+// Sender ID + route ladder. First accepted combination wins; we record which
+// one worked so the logs show what actually delivers on this account.
+const SMS_LADDER: { from: string; channel: "dnd" | "generic" }[] = [
+  { from: SMS_SENDER_ID, channel: "dnd" },
+  { from: FALLBACK_SENDER_ID, channel: "dnd" },
+  { from: FALLBACK_SENDER_ID, channel: "generic" },
+];
 
 interface Contact {
   name: string;
@@ -38,16 +48,29 @@ function normalizeNgPhone(raw: string): string | null {
   return digits;
 }
 
-interface TermiiResult { success: boolean; response?: unknown; error?: string }
+interface TermiiResult {
+  success: boolean;
+  response?: unknown;
+  error?: string;
+  message_id?: string;
+  sender?: string;
+  route?: string;
+}
 
-async function termiiAttempt(to: string, message: string, apiKey: string, channel: "dnd" | "generic" | "whatsapp"): Promise<TermiiResult> {
+async function termiiAttempt(
+  to: string,
+  message: string,
+  apiKey: string,
+  channel: "dnd" | "generic" | "whatsapp",
+  from: string,
+): Promise<TermiiResult> {
   try {
     const response = await fetch(TERMII_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         to,
-        from: SMS_SENDER_ID,
+        from,
         sms: message,
         type: "plain",
         channel,
@@ -57,31 +80,35 @@ async function termiiAttempt(to: string, message: string, apiKey: string, channe
     });
 
     const data = await response.json().catch(() => ({}));
-    const accepted = response.ok && !data?.error && !data?.message?.toLowerCase?.().includes("fail");
+    // Termii only truly queues a message when it returns a message_id.
+    // Anything else (even HTTP 200) is a soft rejection.
+    const messageId = data?.message_id ?? data?.["message_id"];
+    const accepted = response.ok && !!messageId && !data?.error;
     if (!accepted) {
       const reason = data?.message || data?.error || `HTTP ${response.status}`;
-      console.error(`[SOS] Termii ${channel} rejected ${to}:`, data);
-      return { success: false, error: String(reason), response: data };
+      console.error(`[SOS] Termii rejected ${to} (from=${from}, route=${channel}):`, data);
+      return { success: false, error: String(reason), response: data, sender: from, route: channel };
     }
-    console.log(`[SOS] Termii ${channel} accepted ${to}:`, data);
-    return { success: true, response: data };
+    console.log(`[SOS] Termii accepted ${to} (from=${from}, route=${channel}) id=${messageId}`);
+    return { success: true, response: data, message_id: String(messageId), sender: from, route: channel };
   } catch (err) {
-    console.error(`[SOS] Termii ${channel} error for ${to}:`, err);
-    return { success: false, error: String(err) };
+    console.error(`[SOS] Termii error for ${to} (from=${from}, route=${channel}):`, err);
+    return { success: false, error: String(err), sender: from, route: channel };
   }
 }
 
 async function sendTermiiSMS(phone: string, message: string, apiKey: string): Promise<TermiiResult> {
   const to = normalizeNgPhone(phone);
   if (!to) return { success: false, error: "invalid phone number" };
-  // DND route first (delivers to DND numbers); if rejected, fall back to
-  // the generic route once before declaring the contact unreachable.
-  let result = await termiiAttempt(to, message, apiKey, "dnd");
-  if (!result.success) {
-    console.warn(`[SOS] dnd route failed for ${to} (${result.error}) — retrying generic`);
-    result = await termiiAttempt(to, message, apiKey, "generic");
+  // Walk the sender/route ladder: our own sender ID first, then Termii's
+  // always-approved transactional sender, then the generic route.
+  let last: TermiiResult = { success: false, error: "no attempt made" };
+  for (const step of SMS_LADDER) {
+    last = await termiiAttempt(to, message, apiKey, step.channel, step.from);
+    if (last.success) return last;
+    console.warn(`[SOS] ${step.from}/${step.channel} failed for ${to}: ${last.error}`);
   }
-  return result;
+  return last;
 }
 
 async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string): Promise<TermiiResult> {
@@ -89,7 +116,7 @@ async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string
   // must be that device name once it exists.
   const to = normalizeNgPhone(phone);
   if (!to) return { success: false, error: "invalid phone number" };
-  return termiiAttempt(to, message, apiKey, "whatsapp");
+  return termiiAttempt(to, message, apiKey, "whatsapp", SMS_SENDER_ID);
 }
 
 serve(async (req) => {
@@ -197,7 +224,9 @@ serve(async (req) => {
         if (channel === "sms") {
           dispatchPromises.push(
             sendTermiiSMS(contact.phone, smsMessage, termiiApiKey).then((result) => {
-              channelResults[contact.name]["sms"] = result.success ? "sent" : `failed: ${result.error}`;
+              channelResults[contact.name]["sms"] = result.success
+                ? `sent via ${result.sender}/${result.route} id=${result.message_id}`
+                : `failed: ${result.error}`;
             })
           );
         } else if (channel === "whatsapp") {
@@ -229,7 +258,7 @@ serve(async (req) => {
     });
 
     const successCount = Object.values(channelResults).reduce((acc, channels) => {
-      return acc + Object.values(channels).filter((s) => s === "sent").length;
+      return acc + Object.values(channels).filter((s) => s.startsWith("sent")).length;
     }, 0);
 
     console.log(`[SOS] Alert dispatched for ${user_name} — ${successCount} message(s) sent to ${limitedContacts.length} contact(s)`);
