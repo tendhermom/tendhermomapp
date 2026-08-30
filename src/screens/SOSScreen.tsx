@@ -56,6 +56,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const [sentInfo, setSentInfo] = useState({ count: 0, time: "" });
   const [sosError, setSosError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
+  const [deliveryReport, setDeliveryReport] = useState<DeliveryReport | null>(null);
 
   // Fetch contacts
   useEffect(() => {
