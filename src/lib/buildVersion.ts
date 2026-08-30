@@ -37,10 +37,18 @@ const getLatestPublishedBuild = async (): Promise<string | null> => {
   try {
     const manifestUrl = new URL("/release.json", window.location.origin);
     manifestUrl.searchParams.set("t", Date.now().toString());
-    const response = await fetch(manifestUrl.toString(), {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    let response: Response;
+    try {
+      response = await fetch(manifestUrl.toString(), {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) return null;
     const payload = await response.json();
     return typeof payload?.buildId === "string" && payload.buildId.length > 0
