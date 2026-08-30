@@ -3,7 +3,10 @@
 // or cached shell can ever paint a legacy screen (e.g. the old sign-in page)
 // before the current build renders.
 
+import { BUILD_ID } from "./buildVersion";
+
 const LEGACY_WORKER_PATHS = ["/sw.js", "/service-worker.js"];
+
 
 const isLegacyAppCache = (name: string) =>
   /(^|-)precache-v\d+-|(^|-)runtime-|(^|-)googleAnalytics-/.test(name);
