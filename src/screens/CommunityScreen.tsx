@@ -145,10 +145,17 @@ const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
         { event: "INSERT", schema: "public", table: "community_posts", filter: `channel=eq.${activeCommunity}` },
         throttledRefetch
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "post_comments" },
+        () => { void syncComments(); }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [activeCommunity, throttledRefetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCommunity, throttledRefetch, commentsPostId]);
+
 
   // Handle tapping a community card
   const handleCommunityTap = (communityId: ChannelId) => {
