@@ -254,7 +254,6 @@ const BabyShowerCard = ({
               : "No reactions yet"}
           </motion.button>
         )}
-        </div>
       </div>
 
       {/* Reaction picker */}
