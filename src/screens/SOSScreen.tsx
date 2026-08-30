@@ -108,9 +108,27 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     return () => clearTimeout(timeout);
   }, []);
 
+  // Validate every SMS-enabled contact's number before allowing dispatch
+  const invalidContacts = useCallback(
+    () =>
+      contacts.filter(
+        (c) => (c.sms_enabled || c.whatsapp_enabled) && !normalizeNgPhone(c.phone)
+      ),
+    [contacts]
+  );
+
   const handleSOSTap = useCallback(() => {
     if (contacts.length === 0) {
       setContactsError("Add at least one emergency contact below before sending an SOS.");
+      hapticWarning();
+      return;
+    }
+    const invalid = invalidContacts();
+    if (invalid.length > 0) {
+      const names = invalid.map((c) => c.name).join(", ");
+      setContactsError(
+        `Invalid phone number for ${names}. Open Manage and use the format 0801 234 5678 or +234 801 234 5678.`
+      );
       hapticWarning();
       return;
     }
@@ -118,7 +136,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     setSosError(null);
     hapticWarning();
     setShowConfirm(true);
-  }, [contacts]);
+  }, [contacts, invalidContacts]);
 
   // Auto-trigger the confirm sheet when arriving from a red triage outcome.
   useEffect(() => {
