@@ -238,11 +238,22 @@ const BabyShowerCard = ({
             Gift
           </motion.button>
 
-          {reactionsCount > 0 && (
-            <span className="text-[11px] font-sans font-medium" style={{ color: "hsl(var(--text-muted))" }}>
-              {reactionsCount}
-            </span>
-          )}
+        </div>
+
+        {/* Who reacted / gifted */}
+        {onViewReactions && (
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={(e) => { e.stopPropagation(); onViewReactions(); }}
+            className="w-full py-1.5 rounded-xl text-[11px] font-semibold font-sans flex items-center justify-center gap-1"
+            style={{ background: "hsl(var(--bg))", color: "hsl(var(--text-muted))" }}
+          >
+            <IonIcon name="people-outline" size={12} style={{ color: "hsl(var(--text-muted))" }} />
+            {reactionsCount > 0
+              ? `${reactionsCount} ${reactionsCount === 1 ? "reaction" : "reactions"}`
+              : "No reactions yet"}
+          </motion.button>
+        )}
         </div>
       </div>
 
