@@ -19,6 +19,10 @@ interface BabyShowerCardProps {
   isOwner?: boolean;
   onGiveGift?: () => void;
   onOpenPhotos?: (photos: string[], index: number) => void;
+  /** Owner-only: remove this celebration */
+  onDelete?: () => void;
+  /** Open the list of mums who reacted or gifted */
+  onViewReactions?: () => void;
 }
 
 type ReactionMeta = { type: string; icon: string; activeIcon: string; label: string; color: string };
