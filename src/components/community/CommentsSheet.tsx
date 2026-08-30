@@ -221,15 +221,26 @@ const CommentsSheet = ({ open, onClose, comments, loading, onAddComment, current
                         {(c.author_name || "A")[0].toUpperCase()}
                       </div>
                     )}
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-sans">
                         <span className="font-semibold" style={{ color: "hsl(var(--dark))" }}>{c.author_name}</span>
                         <span className="ml-2 text-[11px]" style={{ color: "hsl(var(--text-muted))" }}>
                           {formatCommentTime(c.created_at)}
                         </span>
                       </p>
-                      <p className="text-[13px] font-sans mt-0.5" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
+                      <p className="text-[13px] font-sans mt-0.5 break-words" style={{ color: "hsl(var(--dark))" }}>{c.content}</p>
                     </div>
+                    {onDeleteComment && currentUserId === c.user_id && (
+                      <motion.button
+                        whileTap={{ scale: 0.88 }}
+                        onClick={() => setConfirmDeleteId(c.id)}
+                        aria-label="Delete your comment"
+                        className="w-8 h-8 shrink-0 self-start rounded-full flex items-center justify-center"
+                        style={{ background: "hsl(var(--bg))" }}
+                      >
+                        <IonIcon name="trash-outline" size={14} style={{ color: "hsl(var(--text-muted))" }} />
+                      </motion.button>
+                    )}
                   </div>
                 ))
               )}
