@@ -256,6 +256,62 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
     return badges;
   };
 
+  // Delivery status panel — shows when the request was sent and, per
+  // contact/channel, the Termii message_id (accepted) or the exact error.
+  const renderDeliveryPanel = (report: DeliveryReport, compact = false) => (
+    <div
+      className={compact ? "w-full mb-4 rounded-2xl overflow-hidden text-left" : "tend-card overflow-hidden"}
+      style={compact ? { background: "hsl(var(--background))" } : undefined}
+    >
+      <div
+        className="px-[14px] py-[10px] flex items-center justify-between"
+        style={{ background: "hsl(var(--light-green))" }}
+      >
+        <span className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--green))" }}>
+          Delivery Status
+        </span>
+        <span className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+          Sent {report.sentAt.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+        </span>
+      </div>
+      {report.deliveries.map((d, i) => (
+        <div
+          key={`${d.contact}-${d.channel}-${i}`}
+          className="flex items-start gap-2.5 px-[14px] py-[10px]"
+          style={{ borderTop: i > 0 ? "0.5px solid hsl(var(--border))" : "none" }}
+        >
+          <IonIcon
+            name={d.success ? "checkmark-circle" : "alert-circle"}
+            size={16}
+            style={{ color: d.success ? "hsl(var(--green))" : "hsl(var(--coral))", marginTop: 1 }}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                {d.contact}
+              </span>
+              <span
+                className="text-[9px] font-sans font-semibold px-1.5 py-[1px] rounded-full uppercase"
+                style={{ background: "hsl(var(--light-green))", color: "hsl(var(--green))" }}
+              >
+                {d.channel}
+              </span>
+            </div>
+            {d.success ? (
+              <p className="text-[10px] font-sans mt-0.5 break-all" style={{ color: "hsl(var(--text-muted))" }}>
+                Accepted{d.sender ? ` via ${d.sender}/${d.route}` : ""} · ID {d.message_id}
+              </p>
+            ) : (
+              <p className="text-[10px] font-sans mt-0.5" style={{ color: "hsl(var(--coral))" }}>
+                Failed — {d.error || "unknown error"}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-6 pb-4 pt-1">
       {/* Header — Apple large-title style */}
