@@ -305,13 +305,21 @@ serve(async (req) => {
         .find((s) => s.startsWith("failed: "));
       const detail = firstFailure ? firstFailure.replace(/^failed: /, "") : "unknown delivery error";
       return new Response(
-        JSON.stringify({ error: "No emergency messages could be delivered", detail, channel_results: channelResults }),
+        JSON.stringify({ error: "No emergency messages could be delivered", detail, channel_results: channelResults, deliveries }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
-      JSON.stringify({ success: true, contacts_notified: limitedContacts.length, messages_sent: successCount, channel_results: channelResults, is_test }),
+      JSON.stringify({
+        success: true,
+        contacts_notified: limitedContacts.length,
+        messages_sent: successCount,
+        channel_results: channelResults,
+        deliveries,
+        sent_at: now.toISOString(),
+        is_test,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
