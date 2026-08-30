@@ -55,6 +55,8 @@ const BabyShowerCard = ({
   isOwner = false,
   onGiveGift,
   onOpenPhotos,
+  onDelete,
+  onViewReactions,
 }: BabyShowerCardProps) => {
   const [showPicker, setShowPicker] = useState(false);
   const photos = (imageUrls && imageUrls.length > 0 ? imageUrls : [imageUrl]).filter(Boolean);
