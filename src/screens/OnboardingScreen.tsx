@@ -6,6 +6,7 @@ import IonIcon from "@/components/IonIcon";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
 import logo from "@/assets/logo.jpeg";
+import { normalizeNgPhone, ngPhoneError } from "@/lib/phoneNg";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -29,8 +30,6 @@ const FEATURES = [
   },
 ];
 
-const PHONE_REGEX = /^\+234[0-9]{10}$/;
-
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
   center: { x: 0, opacity: 1 },
@@ -51,6 +50,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   // Contact state
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [ownPhone, setOwnPhone] = useState("");
   const [contactRelationship, setContactRelationship] = useState("Husband");
   const [savingContact, setSavingContact] = useState(false);
   const [contactErrors, setContactErrors] = useState<Record<string, string>>({});
