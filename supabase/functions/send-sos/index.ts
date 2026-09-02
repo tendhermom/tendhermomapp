@@ -123,6 +123,41 @@ async function sendTermiiWhatsApp(phone: string, message: string, apiKey: string
   return termiiAttempt(to, message, apiKey, "whatsapp", SMS_SENDER_ID);
 }
 
+// Turn a GPS fix into a short human place ("Unguwan Rimi, Kaduna").
+// Never allowed to delay a life-safety message: hard 3s timeout, and any
+// failure simply drops the place from the text.
+async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  const key = Deno.env.get("GOOGLE_MAPS_API_KEY");
+  if (!key) return null;
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&result_type=neighborhood|sublocality|locality|administrative_area_level_2|administrative_area_level_1&key=${key}`,
+      { signal: AbortSignal.timeout(3000) },
+    );
+    const data = await res.json().catch(() => null);
+    const results: { address_components?: { long_name: string; types: string[] }[] }[] =
+      data?.results ?? [];
+    if (!results.length) return null;
+
+    const pick = (types: string[]) => {
+      for (const r of results) {
+        for (const c of r.address_components ?? []) {
+          if (c.types.some((t) => types.includes(t))) return c.long_name;
+        }
+      }
+      return null;
+    };
+
+    const area = pick(["neighborhood", "sublocality", "sublocality_level_1"]);
+    const city = pick(["locality", "administrative_area_level_2", "administrative_area_level_1"]);
+    const label = [area, city].filter(Boolean).join(", ");
+    return label || null;
+  } catch (err) {
+    console.warn("[SOS] reverse geocode failed:", err);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
