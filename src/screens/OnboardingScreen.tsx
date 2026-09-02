@@ -360,7 +360,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {/* Name */}
           <div>
             <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
-              Full Name
+              Contact's Full Name
             </label>
             <input
               type="text"
@@ -404,7 +404,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {/* Phone */}
           <div>
             <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
-              Phone Number
+              Contact's Phone
             </label>
             <input
               type="tel"

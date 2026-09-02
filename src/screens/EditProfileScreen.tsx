@@ -155,7 +155,7 @@ const EditProfileScreen = ({ onBack }: EditProfileScreenProps) => {
       {/* Form */}
       <div className="space-y-4">
         <Field label="Full Name" value={fullName} onChange={setFullName} placeholder="Your name" />
-        <Field label="Phone Number" value={phone} onChange={setPhone} placeholder="+234..." type="tel" />
+        <Field label="Emergency Phone" value={phone} onChange={setPhone} placeholder="+234..." type="tel" />
         <Field label="Baby's Name" value={babyName} onChange={setBabyName} placeholder="Nickname or name" />
         <div>
           <label className="text-[12px] font-sans font-semibold mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
