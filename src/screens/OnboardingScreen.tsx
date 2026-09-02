@@ -6,6 +6,7 @@ import IonIcon from "@/components/IonIcon";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
 import logo from "@/assets/logo.jpeg";
+import { normalizeNgPhone, ngPhoneError } from "@/lib/phoneNg";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -29,8 +30,6 @@ const FEATURES = [
   },
 ];
 
-const PHONE_REGEX = /^\+234[0-9]{10}$/;
-
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
   center: { x: 0, opacity: 1 },
@@ -51,6 +50,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   // Contact state
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [ownPhone, setOwnPhone] = useState("");
   const [contactRelationship, setContactRelationship] = useState("Husband");
   const [savingContact, setSavingContact] = useState(false);
   const [contactErrors, setContactErrors] = useState<Record<string, string>>({});
@@ -103,27 +103,34 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const handleSaveContact = async () => {
     if (!user) return;
     const errs: Record<string, string> = {};
+    const ownNormalized = normalizeNgPhone(ownPhone);
+    const contactNormalized = normalizeNgPhone(contactPhone);
+    if (!ownPhone.trim()) errs.ownPhone = "Your emergency phone is required";
+    else if (!ownNormalized) errs.ownPhone = ngPhoneError(ownPhone) || "Enter a valid Nigerian number";
     if (!contactName.trim()) errs.name = "Name is required";
     if (!contactPhone.trim()) errs.phone = "Phone is required";
-    else if (!PHONE_REGEX.test(contactPhone.replace(/\s/g, "")))
-      errs.phone = "Enter +234XXXXXXXXXX";
+    else if (!contactNormalized) errs.phone = ngPhoneError(contactPhone) || "Enter a valid Nigerian number";
     setContactErrors(errs);
     if (Object.keys(errs).length) return;
 
     setSavingContact(true);
-    const { error } = await supabase.from("emergency_contacts").insert({
-      user_id: user.id,
-      name: contactName.trim(),
-      phone: contactPhone.replace(/\s/g, ""),
-      relationship: contactRelationship,
-      is_primary: true,
-      sms_enabled: true,
-      whatsapp_enabled: true,
-    });
+    const [{ error }, { error: profileError }] = await Promise.all([
+      supabase.from("emergency_contacts").insert({
+        user_id: user.id,
+        name: contactName.trim(),
+        phone: contactNormalized!,
+        relationship: contactRelationship,
+        is_primary: true,
+        sms_enabled: true,
+        whatsapp_enabled: true,
+      }),
+      supabase.from("profiles").update({ phone: ownNormalized! }).eq("id", user.id),
+    ]);
 
-    if (error) {
+    if (error || profileError) {
       toast.error("Failed to save contact");
     } else {
+      await fetchProfile(user.id);
       finishOnboarding();
     }
     setSavingContact(false);
@@ -321,17 +328,39 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
         </motion.button>
 
         <h1 className="font-serif text-[26px] leading-tight mb-2" style={{ color: "hsl(var(--dark))" }}>
-          Add an emergency contact
+          Set up your emergency help
         </h1>
         <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
-          This person will be alerted when you trigger SOS.
+          Your emergency phone is shared in the SOS message, and this contact is alerted when you trigger SOS.
         </p>
 
         <div className="tend-card p-5 space-y-4">
+          {/* Own emergency phone */}
+          <div>
+            <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
+              Emergency Phone
+            </label>
+            <input
+              type="tel"
+              value={ownPhone}
+              onChange={(e) => setOwnPhone(e.target.value)}
+              placeholder="+234XXXXXXXXXX"
+              className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
+              style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}
+              aria-label="Your emergency phone number"
+            />
+            <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
+              Responders will be asked to call you on this number.
+            </p>
+            {contactErrors.ownPhone && (
+              <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--coral))" }}>{contactErrors.ownPhone}</p>
+            )}
+          </div>
+
           {/* Name */}
           <div>
             <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
-              Full Name
+              Contact's Full Name
             </label>
             <input
               type="text"
@@ -375,7 +404,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {/* Phone */}
           <div>
             <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
-              Phone Number
+              Contact's Phone
             </label>
             <input
               type="tel"

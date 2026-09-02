@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { hapticHeavy, hapticWarning, hapticSuccess, screenShield, preventSleep, backgroundLocation } from "@/lib/despia";
 import { Sentry } from "@/lib/sentry";
-import { normalizeNgPhone, formatNgPhone } from "@/lib/phoneNg";
+import { normalizeNgPhone, formatNgPhone, ngPhoneError } from "@/lib/phoneNg";
 
 interface DeliveryRecord {
   contact: string;
@@ -43,6 +43,7 @@ interface SOSScreenProps {
 
 const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const user = useAuthStore((s) => s.user);
+  const patchUser = useAuthStore((s) => s.patchUser);
   const MAX_CONTACTS = 5;
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
@@ -57,6 +58,29 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
   const [sosError, setSosError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
   const [deliveryReport, setDeliveryReport] = useState<DeliveryReport | null>(null);
+  // Her own number — included in the SOS text so responders know who to call.
+  const [ownPhoneInput, setOwnPhoneInput] = useState("");
+  const [savingOwnPhone, setSavingOwnPhone] = useState(false);
+  const [ownPhoneError, setOwnPhoneError] = useState<string | null>(null);
+  const missingOwnPhone = !normalizeNgPhone(user?.phone || "");
+
+  const saveOwnPhone = async () => {
+    const normalized = normalizeNgPhone(ownPhoneInput);
+    if (!normalized) {
+      setOwnPhoneError(ngPhoneError(ownPhoneInput) || "Enter a valid Nigerian number");
+      return;
+    }
+    setOwnPhoneError(null);
+    setSavingOwnPhone(true);
+    const { error } = await supabase.from("profiles").update({ phone: normalized }).eq("id", user!.id);
+    setSavingOwnPhone(false);
+    if (error) {
+      setOwnPhoneError("Couldn't save. Please try again.");
+      return;
+    }
+    patchUser({ phone: normalized });
+    setOwnPhoneInput("");
+  };
 
   // Fetch contacts
   useEffect(() => {
@@ -333,6 +357,51 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
           </h1>
         </div>
       </motion.div>
+
+      {/* Missing emergency phone — responders need a number to call back */}
+      {!loading && missingOwnPhone && (
+        <div className="tend-card p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "hsl(var(--light-coral))" }}
+            >
+              <IonIcon name="call-outline" size={18} style={{ color: "hsl(var(--coral))" }} />
+            </div>
+            <div>
+              <p className="text-[14px] font-sans font-semibold" style={{ color: "hsl(var(--dark))" }}>
+                Add your Emergency Phone
+              </p>
+              <p className="text-[12.5px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                Your SOS message asks responders to call you on this number.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              value={ownPhoneInput}
+              onChange={(e) => setOwnPhoneInput(e.target.value)}
+              placeholder="+234XXXXXXXXXX"
+              aria-label="Your emergency phone number"
+              className="flex-1 px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
+              style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}
+            />
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={saveOwnPhone}
+              disabled={savingOwnPhone}
+              className="px-4 rounded-2xl text-[14px] font-sans font-semibold text-white disabled:opacity-60"
+              style={{ background: "hsl(var(--green))" }}
+            >
+              {savingOwnPhone ? "Saving…" : "Save"}
+            </motion.button>
+          </div>
+          {ownPhoneError && (
+            <p className="text-[12px] font-sans" style={{ color: "hsl(var(--coral))" }}>{ownPhoneError}</p>
+          )}
+        </div>
+      )}
 
       {/* SOS Button Area */}
       <motion.div
