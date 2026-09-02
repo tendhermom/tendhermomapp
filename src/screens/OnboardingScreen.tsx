@@ -103,27 +103,34 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const handleSaveContact = async () => {
     if (!user) return;
     const errs: Record<string, string> = {};
+    const ownNormalized = normalizeNgPhone(ownPhone);
+    const contactNormalized = normalizeNgPhone(contactPhone);
+    if (!ownPhone.trim()) errs.ownPhone = "Your emergency phone is required";
+    else if (!ownNormalized) errs.ownPhone = ngPhoneError(ownPhone) || "Enter a valid Nigerian number";
     if (!contactName.trim()) errs.name = "Name is required";
     if (!contactPhone.trim()) errs.phone = "Phone is required";
-    else if (!PHONE_REGEX.test(contactPhone.replace(/\s/g, "")))
-      errs.phone = "Enter +234XXXXXXXXXX";
+    else if (!contactNormalized) errs.phone = ngPhoneError(contactPhone) || "Enter a valid Nigerian number";
     setContactErrors(errs);
     if (Object.keys(errs).length) return;
 
     setSavingContact(true);
-    const { error } = await supabase.from("emergency_contacts").insert({
-      user_id: user.id,
-      name: contactName.trim(),
-      phone: contactPhone.replace(/\s/g, ""),
-      relationship: contactRelationship,
-      is_primary: true,
-      sms_enabled: true,
-      whatsapp_enabled: true,
-    });
+    const [{ error }, { error: profileError }] = await Promise.all([
+      supabase.from("emergency_contacts").insert({
+        user_id: user.id,
+        name: contactName.trim(),
+        phone: contactNormalized!,
+        relationship: contactRelationship,
+        is_primary: true,
+        sms_enabled: true,
+        whatsapp_enabled: true,
+      }),
+      supabase.from("profiles").update({ phone: ownNormalized! }).eq("id", user.id),
+    ]);
 
-    if (error) {
+    if (error || profileError) {
       toast.error("Failed to save contact");
     } else {
+      await fetchProfile(user.id);
       finishOnboarding();
     }
     setSavingContact(false);
