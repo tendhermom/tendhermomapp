@@ -328,13 +328,35 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
         </motion.button>
 
         <h1 className="font-serif text-[26px] leading-tight mb-2" style={{ color: "hsl(var(--dark))" }}>
-          Add an emergency contact
+          Set up your emergency help
         </h1>
         <p className="text-[14px] font-sans mb-6" style={{ color: "hsl(var(--text-muted))" }}>
-          This person will be alerted when you trigger SOS.
+          Your emergency phone is shared in the SOS message, and this contact is alerted when you trigger SOS.
         </p>
 
         <div className="tend-card p-5 space-y-4">
+          {/* Own emergency phone */}
+          <div>
+            <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
+              Emergency Phone
+            </label>
+            <input
+              type="tel"
+              value={ownPhone}
+              onChange={(e) => setOwnPhone(e.target.value)}
+              placeholder="+234XXXXXXXXXX"
+              className="w-full px-4 py-3 rounded-2xl text-[14px] font-sans border-none outline-none"
+              style={{ background: "hsl(var(--bg))", color: "hsl(var(--dark))" }}
+              aria-label="Your emergency phone number"
+            />
+            <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--text-muted))" }}>
+              Responders will be asked to call you on this number.
+            </p>
+            {contactErrors.ownPhone && (
+              <p className="text-[12px] font-sans mt-1" style={{ color: "hsl(var(--coral))" }}>{contactErrors.ownPhone}</p>
+            )}
+          </div>
+
           {/* Name */}
           <div>
             <label className="text-[13px] font-semibold font-sans mb-1.5 block" style={{ color: "hsl(var(--dark))" }}>
