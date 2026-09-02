@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import {
   pickNativeContact,
+import { normalizeNgPhone, ngPhoneError } from "@/lib/phoneNg";
   isContactPickerSupported,
   readDespiaContacts,
   hapticSuccess,
@@ -33,7 +34,7 @@ interface EmergencyContactsScreenProps {
 }
 
 const RELATIONSHIPS = ["Husband", "Mother", "Sister", "Friend", "Brother", "Father", "Other"];
-const PHONE_REGEX = /^\+234[0-9]{10}$/;
+
 
 const emptyContact: Omit<EmergencyContact, "id"> = {
   name: "",
