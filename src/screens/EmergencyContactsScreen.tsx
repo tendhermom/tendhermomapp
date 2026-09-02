@@ -211,10 +211,10 @@ const EmergencyContactsScreen = ({ onBack }: EmergencyContactsScreenProps) => {
     const errs: Record<string, string> = {};
     if (!c.name?.trim()) errs.name = "Name is required";
     if (!c.phone?.trim()) errs.phone = "Phone number is required";
-    else if (!PHONE_REGEX.test(c.phone.replace(/\s/g, "")))
-      errs.phone = "Enter a valid Nigerian phone number (+234XXXXXXXXXX)";
-    if (c.whatsapp_enabled && c.whatsapp_number && !PHONE_REGEX.test(c.whatsapp_number.replace(/\s/g, "")))
-      errs.whatsapp_number = "Enter a valid Nigerian phone number";
+    else if (!normalizeNgPhone(c.phone))
+      errs.phone = ngPhoneError(c.phone) || "Enter a valid Nigerian phone number";
+    if (c.whatsapp_enabled && c.whatsapp_number && !normalizeNgPhone(c.whatsapp_number))
+      errs.whatsapp_number = ngPhoneError(c.whatsapp_number) || "Enter a valid Nigerian phone number";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
