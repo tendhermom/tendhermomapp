@@ -201,21 +201,51 @@ serve(async (req) => {
     const limitedContacts = contacts.slice(0, maxContacts);
 
     const now = new Date();
-    const dateStr = now.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
-    const timeStr = now.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" });
 
-    let locationText: string;
-    let mapsLink: string;
-    if (latitude && longitude) {
-      mapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
-      locationText = `Her last known location: ${mapsLink}`;
-    } else {
-      locationText = `Location unavailable — please call ${user_name} directly.`;
-      mapsLink = "";
-    }
+    // ── Build the Termii-approved SOS message ────────────────────────────
+    // "SOS: Amina, 32 weeks pregnant needs urgent help at Unguwan Rimi,
+    //  Kaduna. Call 2348012345678. Map: <link>. Pls respond. Powered by
+    //  TendherMom"
+    // Every segment is optional-safe so the text stays valid when a piece
+    // (GPS, phone, dates) is missing.
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("full_name, phone, lmp_date, due_date, current_stage")
+      .eq("id", userId)
+      .maybeSingle();
 
-    const testPrefix = is_test ? "[TEST ALERT] " : "";
-    const smsMessage = `${testPrefix}EMERGENCY ALERT — TendherMom\n\n${user_name} needs urgent help. She triggered her emergency alert at ${timeStr} on ${dateStr}.\n\n${locationText}\n\nPlease contact her immediately or call emergency services: 112 (Nigeria).\n\nSent via TendherMom`;
+    const firstName = String(profile?.full_name || user_name || "A mum").trim().split(/\s+/)[0];
+
+    const stagePhrase = (() => {
+      const lmp = profile?.lmp_date ? new Date(profile.lmp_date as string) : null;
+      const due = profile?.due_date ? new Date(profile.due_date as string) : null;
+      let weeks: number | null = null;
+      if (lmp && !isNaN(lmp.getTime())) {
+        weeks = Math.floor((now.getTime() - lmp.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      } else if (due && !isNaN(due.getTime())) {
+        weeks = 40 - Math.floor((due.getTime() - now.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      }
+      if (profile?.current_stage === "postpartum" || (weeks !== null && weeks > 42)) {
+        return "recently delivered";
+      }
+      if (weeks !== null && weeks >= 1 && weeks <= 42) return `${weeks} weeks pregnant`;
+      return "";
+    })();
+
+    const placeName = latitude && longitude ? await reverseGeocode(latitude, longitude) : null;
+    const mapsLink = latitude && longitude ? `https://maps.google.com/?q=${latitude},${longitude}` : "";
+
+    const callNumber = normalizeNgPhone(String(profile?.phone || body.user_phone || ""));
+
+    const subject = stagePhrase ? `${firstName}, ${stagePhrase}` : firstName;
+    const parts: string[] = [
+      `SOS: ${subject} needs urgent help${placeName ? ` at ${placeName}` : ""}.`,
+    ];
+    if (callNumber) parts.push(`Call ${callNumber}.`);
+    if (mapsLink) parts.push(`Map: ${mapsLink}.`);
+    parts.push("Pls respond. Powered by TendherMom");
+
+    const smsMessage = `${is_test ? "[TEST] " : ""}${parts.join(" ")}`;
 
     // Dispatch messages in parallel to all contacts across all channels
     const channelResults: Record<string, Record<string, string>> = {};
