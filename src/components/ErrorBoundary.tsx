@@ -111,6 +111,13 @@ class ErrorBoundary extends Component<Props, State> {
             {!this.state.recovering && (
               <button
                 onClick={() => {
+                  // First tap: try to re-render the app in place so the user
+                  // lands back inside it instead of a reload loop.
+                  if (!this.retried) {
+                    this.retried = true;
+                    this.setState({ hasError: false, errorMessage: "" });
+                    return;
+                  }
                   this.setState({ recovering: true });
                   void this.hardReload();
                 }}
@@ -121,7 +128,7 @@ class ErrorBoundary extends Component<Props, State> {
                   color: "white",
                 }}
               >
-                Refresh App
+                {this.retried ? "Refresh App" : "Try Again"}
               </button>
             )}
           </div>
