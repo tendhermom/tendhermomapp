@@ -29,17 +29,28 @@ const AntenatalScreen = lazy(() => import("@/screens/AntenatalScreen"));
 const InsightsScreen = lazy(() => import("@/screens/InsightsScreen"));
 
 const prefetchScreens = () => {
-  requestIdleCallback?.(() => {
+  const warm = () => {
     import("@/screens/AIChatScreen");
     import("@/screens/HealthTrackerScreen");
     import("@/screens/BabyShowerScreen");
     import("@/screens/AntenatalScreen");
-  }) ?? setTimeout(() => {
-    import("@/screens/AIChatScreen");
-    import("@/screens/HealthTrackerScreen");
-    import("@/screens/BabyShowerScreen");
-    import("@/screens/AntenatalScreen");
-  }, 2000);
+  };
+  // Safari (iPhone/iPad) has no requestIdleCallback — referencing it directly
+  // throws a ReferenceError and takes the whole screen down. Feature-detect on
+  // `window` and fall back to a timer.
+  const idle =
+    typeof window !== "undefined"
+      ? (window as unknown as { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
+      : undefined;
+  if (typeof idle === "function") {
+    try {
+      idle(warm);
+      return;
+    } catch {
+      /* fall through to the timer */
+    }
+  }
+  setTimeout(warm, 2000);
 };
 
 const ScreenFallback = () => (
