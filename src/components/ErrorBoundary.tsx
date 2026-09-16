@@ -25,6 +25,8 @@ const RECOVERY_COOLDOWN_MS = 60_000; // don't auto-recover more than once per mi
  *  - Manual "Refresh App" always nukes the SW + caches before reloading.
  */
 class ErrorBoundary extends Component<Props, State> {
+  private retried = false;
+
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, errorMessage: "", recovering: false };
