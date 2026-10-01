@@ -13,7 +13,7 @@ const corsHeaders = {
 };
 
 const TERMII_API_URL = "https://v3.api.termii.com/api/sms/send";
-const SMS_SENDER_ID = "TendherMom";
+const SMS_SENDER_ID = "N-Alert";
 const SELF_CHECKIN_HOURS = 24;
 const ESCALATION_HOURS = 48;
 const RECENT_ALERT_WINDOW_DAYS = 5; // don't re-alert same contact within 5 days
