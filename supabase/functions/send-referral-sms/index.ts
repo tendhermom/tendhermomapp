@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const TERMII_API_URL = "https://v3.api.termii.com/api/sms/send";
-const SMS_SENDER_ID = "TendherMom";
+const SMS_SENDER_ID = "N-Alert";
 const APP_LINK = "https://tendhermomapps.lovable.app";
 
 serve(async (req) => {

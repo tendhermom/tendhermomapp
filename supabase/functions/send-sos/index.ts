@@ -8,15 +8,13 @@ const corsHeaders = {
 };
 
 const TERMII_API_URL = "https://v3.api.termii.com/api/sms/send";
-const SMS_SENDER_ID = "TendherMom";
 // Termii's pre-approved transactional sender — always usable, bypasses DND.
-const FALLBACK_SENDER_ID = "N-Alert";
+// Primary sender as of Oct 2026.
+const SMS_SENDER_ID = "N-Alert";
+const FALLBACK_SENDER_ID = "TendherMom";
 
 // Sender ID + route ladder. First accepted combination wins; we record which
 // one worked so the logs show what actually delivers on this account.
-// Verified live on this Termii account (30 Aug 2026): sender ID "TendherMom"
-// is ACTIVE and the generic route delivers; the dnd route is not enabled, so
-// it is tried first (best for DND-registered numbers) and then falls through.
 const SMS_LADDER: { from: string; channel: "dnd" | "generic" }[] = [
   { from: SMS_SENDER_ID, channel: "dnd" },
   { from: SMS_SENDER_ID, channel: "generic" },
