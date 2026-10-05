@@ -115,6 +115,7 @@ Deno.serve(async (req) => {
                 plus_provider: "paystack",
                 plus_status: String(active?.status ?? "").toLowerCase() === "active" ? "active" : "cancelled",
                 plus_expires_at: expiresAt,
+                paystack_next_payment_at: next && !Number.isNaN(next.getTime()) ? next.toISOString() : null,
                 plus_product_id: plan.code,
                 plus_last_event: "verify_customer_lookup",
                 paystack_plan_code: plan.code,

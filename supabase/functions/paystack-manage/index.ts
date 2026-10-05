@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "email, plan_type, plus_status, plus_expires_at, paystack_plan_code, paystack_subscription_code, paystack_email_token, paystack_customer_code, is_tester",
+      "email, plan_type, plus_status, plus_expires_at, paystack_plan_code, paystack_subscription_code, paystack_email_token, paystack_customer_code, paystack_next_payment_at, is_tester",
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
     plan_type: profile.plan_type,
     status: profile.plus_status ?? null,
     expires_at: profile.plus_expires_at ?? null,
+    next_payment_at: profile.paystack_next_payment_at ?? null,
     plan_code: profile.paystack_plan_code ?? null,
     has_subscription: hasSub ?? Boolean(profile.paystack_subscription_code),
     tester: Boolean(profile.is_tester),
@@ -90,6 +91,18 @@ Deno.serve(async (req) => {
     // the webhook never stored the code.
     if (!profile.is_tester && profile.plan_type === "premium" && !profile.paystack_subscription_code) {
       await resolveSubscription();
+    }
+    // Refresh Paystack's real next charge date (the stored expiry includes a grace buffer).
+    if (!profile.is_tester && profile.paystack_subscription_code && secretKey()) {
+      const sub = await paystackFetch(`/subscription/${encodeURIComponent(profile.paystack_subscription_code)}`);
+      const next = sub.ok ? sub.body?.data?.next_payment_date ?? null : null;
+      if (next && !Number.isNaN(new Date(next).getTime())) {
+        const iso = new Date(next).toISOString();
+        if (iso !== profile.paystack_next_payment_at) {
+          await admin.from("profiles").update({ paystack_next_payment_at: iso }).eq("id", user.id);
+        }
+        profile.paystack_next_payment_at = iso;
+      }
     }
     return json(status());
   }

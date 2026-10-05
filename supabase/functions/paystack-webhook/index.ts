@@ -78,6 +78,10 @@ Deno.serve(async (req) => {
     plus_last_event: event,
   };
 
+  if (nextPayment && !Number.isNaN(nextPayment.getTime())) {
+    update.paystack_next_payment_at = nextPayment.toISOString();
+  }
+
   const grantUntil = (from?: Date | null) =>
     nextPayment
       ? new Date(nextPayment.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString()
