@@ -46,17 +46,29 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
   }, [open]);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    let file = e.target.files?.[0];
+    const input = e.target;
+    let file = input.files?.[0];
+    input.value = ""; // allow re-picking the same photo
     if (!file) return;
     setStatus(null);
-    if (file.size > 10 * 1024 * 1024) {
-      setStatus({ kind: "error", text: "Image must be under 10MB" });
+    if (file.size > 25 * 1024 * 1024) {
+      setStatus({ kind: "error", text: "That photo is too large. Please pick one under 25MB." });
       return;
     }
-    file = await compressImage(file, { maxDimension: 1200, quality: 0.8, maxSizeKB: 500 });
+    try {
+      file = await compressImage(file, { maxDimension: 1200, quality: 0.8, maxSizeKB: 500 });
+    } catch {
+      /* keep the original */
+    }
+    const isHeic = /hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+    if (isHeic) {
+      setStatus({ kind: "error", text: "This photo format isn't supported. Please choose a JPG or PNG, or take a screenshot of it." });
+      return;
+    }
     setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
+    reader.onerror = () => setStatus({ kind: "error", text: "Couldn't read that photo. Please try another." });
     reader.readAsDataURL(file);
   };
 
@@ -74,10 +86,17 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
     if (imageFile) {
       setUploading(true);
       setUploadProgress(0);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setUploading(false); setUploadProgress(null); return; }
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) {
+        setUploading(false);
+        setUploadProgress(null);
+        setStatus({ kind: "error", text: "Your session has expired. Please sign in again to post photos." });
+        return;
+      }
 
-      const ext = imageFile.name.split(".").pop();
+      const mime = imageFile.type || "image/jpeg";
+      const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : mime === "image/gif" ? "gif" : "jpg";
       const path = `${user.id}/${Date.now()}.${ext}`;
 
       try {
@@ -88,8 +107,9 @@ const CreatePostModal = ({ open, onClose, onSubmit, posting, channelLabel }: Cre
           onProgress: (p) => setUploadProgress(p),
         });
         imageUrl = publicUrl;
-      } catch {
-        setStatus({ kind: "error", text: "Couldn't upload image. Please try again." });
+      } catch (err) {
+        console.error("[community.upload] failed", err);
+        setStatus({ kind: "error", text: "Couldn't upload the photo. Check your connection and try again." });
         setUploading(false);
         setUploadProgress(null);
         return;
