@@ -176,8 +176,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     }
   };
 
-  const renewalLabel = subscription?.expires_at
-    ? new Date(subscription.expires_at).toLocaleDateString(undefined, {
+  const nextDebit = nextDebitDate(subscription);
+  const renewalLabel = nextDebit
+    ? nextDebit.toLocaleDateString(undefined, {
         day: "numeric",
         month: "long",
         year: "numeric",

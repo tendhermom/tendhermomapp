@@ -144,6 +144,8 @@ export interface SubscriptionStatus {
   plan_type?: "free" | "premium";
   status?: string | null;
   expires_at?: string | null;
+  /** Paystack's actual next charge date. */
+  next_payment_at?: string | null;
   plan_code?: string | null;
   has_subscription?: boolean;
   tester?: boolean;
@@ -177,3 +179,23 @@ export async function cancelSubscription(): Promise<{ cancelled: boolean; messag
 /** Human-friendly plan name from a stored plan code. */
 export const planLabelForCode = (code?: string | null) =>
   PLANS.find((p) => p.code === code)?.label ?? "Plus";
+
+/** Grace buffer the backend adds on top of the paid period (access only, not billing). */
+export const GRACE_DAYS = 2;
+
+/**
+ * Date of the next recurring debit. Prefers Paystack's own next_payment_date;
+ * otherwise strips the access grace buffer from the stored expiry.
+ */
+export function nextDebitDate(sub?: Pick<SubscriptionStatus, "next_payment_at" | "expires_at"> | null): Date | null {
+  if (!sub) return null;
+  if (sub.next_payment_at) {
+    const d = new Date(sub.next_payment_at);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  if (sub.expires_at) {
+    const d = new Date(sub.expires_at);
+    if (!Number.isNaN(d.getTime())) return new Date(d.getTime() - GRACE_DAYS * 86_400_000);
+  }
+  return null;
+}
