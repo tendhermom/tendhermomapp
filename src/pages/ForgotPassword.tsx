@@ -53,9 +53,9 @@ const ForgotPassword = () => {
               className="text-center space-y-5 mt-8"
             >
               <div className="relative inline-block">
-                <div className="absolute inset-0 rounded-full blur-[30px]" style={{ background: "hsla(var(--green), 0.15)", transform: "scale(2.5)" }} />
+                <div className="absolute inset-0 rounded-full blur-[30px]" style={{ background: "hsla(153,42%,30%,0.15)", transform: "scale(2.5)" }} />
                 <div className="relative w-20 h-20 rounded-[24px] mx-auto flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, hsla(var(--green), 0.12), hsla(var(--green), 0.06))", boxShadow: "0 8px 32px -8px hsla(var(--green), 0.15)" }}>
+                  style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.12), hsla(153,42%,30%,0.06))", boxShadow: "0 8px 32px -8px hsla(153,42%,30%,0.15)" }}>
                   <IonIcon name="mail-outline" size={36} style={{ color: "hsl(var(--green))" }} />
                 </div>
               </div>
@@ -126,7 +126,7 @@ const ForgotPassword = () => {
                   { icon: "time-outline", label: "Quick Reset" },
                 ].map((f) => (
                   <div key={f.label} className="flex items-center gap-1 px-2.5 py-1 rounded-full"
-                    style={{ background: "hsl(var(--surface))", boxShadow: "0 2px 12px -2px hsla(var(--dark), 0.06)" }}>
+                    style={{ background: "hsl(var(--surface))", boxShadow: "0 2px 12px -2px rgba(0,0,0,0.06)" }}>
                     <IonIcon name={f.icon} size={12} style={{ color: "hsl(var(--coral))" }} />
                     <span className="text-[10px] font-sans font-medium" style={{ color: "hsl(var(--dark))" }}>{f.label}</span>
                   </div>

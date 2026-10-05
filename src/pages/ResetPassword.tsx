@@ -14,12 +14,36 @@ const ResetPassword = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [status, setStatus] = useState<InlineStatusMsg | null>(null);
 
+  const [linkState, setLinkState] = useState<"checking" | "ready" | "expired">("checking");
+
   useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash.includes("type=recovery")) {
-      // No banner here — the screen redirects immediately.
-      navigate("/login");
-    }
+    let cancelled = false;
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const query = new URLSearchParams(window.location.search);
+    const finish = (state: "ready" | "expired") => { if (!cancelled) setLinkState(state); };
+
+    (async () => {
+      if (hash.get("error") || query.get("error")) return finish("expired");
+      const code = query.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        return finish(error ? "expired" : "ready");
+      }
+      const access_token = hash.get("access_token");
+      const refresh_token = hash.get("refresh_token");
+      if (access_token && refresh_token) {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (error) return finish("expired");
+        }
+        return finish("ready");
+      }
+      const { data } = await supabase.auth.getSession();
+      if (data.session) return finish("ready");
+      navigate("/login", { replace: true });
+    })();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
@@ -62,13 +86,13 @@ const ResetPassword = () => {
             <div className="relative">
               <div
                 className="absolute inset-0 rounded-full blur-[30px]"
-                style={{ background: "hsla(var(--green), 0.15)", transform: "scale(2)" }}
+                style={{ background: "hsla(153,42%,30%,0.15)", transform: "scale(2)" }}
               />
               <div
                 className="relative w-20 h-20 rounded-[24px] flex items-center justify-center"
                 style={{
-                  background: "linear-gradient(135deg, hsla(var(--green), 0.12), hsla(var(--green), 0.06))",
-                  boxShadow: "0 8px 32px -8px hsla(var(--green), 0.15)",
+                  background: "linear-gradient(135deg, hsla(153,42%,30%,0.12), hsla(153,42%,30%,0.06))",
+                  boxShadow: "0 8px 32px -8px hsla(153,42%,30%,0.15)",
                 }}
               >
                 <IonIcon name="shield-checkmark-outline" size={36} style={{ color: "hsl(var(--green))" }} />
@@ -86,7 +110,26 @@ const ResetPassword = () => {
             </p>
           </div>
 
-          {/* Form */}
+          {linkState === "expired" ? (
+            <div className="text-center space-y-4">
+              <p className="text-[14px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                This reset link has expired or was already used. Request a new one and open it on this device.
+              </p>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                type="button"
+                onClick={() => navigate("/forgot-password", { replace: true })}
+                className="w-full py-4 rounded-2xl text-[15px] font-semibold font-sans"
+                style={{ background: "hsl(var(--green))", color: "white" }}
+              >
+                Send a new link
+              </motion.button>
+            </div>
+          ) : linkState === "checking" ? (
+            <div className="flex justify-center py-8">
+              <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: "hsla(153,42%,30%,0.2)", borderTopColor: "hsl(var(--green))" }} />
+            </div>
+          ) : (
           <form onSubmit={handleReset} className="space-y-4">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -98,7 +141,7 @@ const ResetPassword = () => {
               </label>
               <div
                 className="group relative rounded-2xl p-[1.5px] transition-all focus-within:shadow-[0_10px_30px_-12px_hsla(153,42%,30%,0.35)]"
-                style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.18), hsla(153,42%,30%,0.04) 55%, transparent)" }}
+                style={{ background: "hsla(153,42%,30%,0.16)" }}
               >
                 <div className="relative rounded-[15px]" style={{ background: "#FFFFFF" }}>
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.10), hsla(153,42%,30%,0.04))" }}>
@@ -131,7 +174,7 @@ const ResetPassword = () => {
               </label>
               <div
                 className="group relative rounded-2xl p-[1.5px] transition-all focus-within:shadow-[0_10px_30px_-12px_hsla(153,42%,30%,0.35)]"
-                style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.18), hsla(153,42%,30%,0.04) 55%, transparent)" }}
+                style={{ background: "hsla(153,42%,30%,0.16)" }}
               >
                 <div className="relative rounded-[15px]" style={{ background: "#FFFFFF" }}>
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsla(153,42%,30%,0.10), hsla(153,42%,30%,0.04))" }}>
@@ -198,6 +241,7 @@ const ResetPassword = () => {
               )}
             </motion.button>
           </form>
+          )}
         </motion.div>
       </div>
     </div>

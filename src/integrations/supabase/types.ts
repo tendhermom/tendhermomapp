@@ -581,6 +581,7 @@ export type Database = {
           lmp_date: string | null
           paystack_customer_code: string | null
           paystack_email_token: string | null
+          paystack_next_payment_at: string | null
           paystack_plan_code: string | null
           paystack_subscription_code: string | null
           phone: string | null
@@ -617,6 +618,7 @@ export type Database = {
           lmp_date?: string | null
           paystack_customer_code?: string | null
           paystack_email_token?: string | null
+          paystack_next_payment_at?: string | null
           paystack_plan_code?: string | null
           paystack_subscription_code?: string | null
           phone?: string | null
@@ -653,6 +655,7 @@ export type Database = {
           lmp_date?: string | null
           paystack_customer_code?: string | null
           paystack_email_token?: string | null
+          paystack_next_payment_at?: string | null
           paystack_plan_code?: string | null
           paystack_subscription_code?: string | null
           phone?: string | null
