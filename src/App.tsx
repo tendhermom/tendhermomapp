@@ -170,6 +170,15 @@ const safeLocalGet = (key: string): string | null => {
 // back through onboarding instead of the sign-in screen.
 const DIRECT_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/privacy", "/terms", "/technical-popups", "/health-safety"];
 
+// A password-reset link can land on "/" (e.g. when opened from the email in
+// another browser). Send it straight to the reset screen before anything renders.
+if (typeof window !== "undefined" && !window.location.pathname.startsWith("/reset-password")) {
+  const h = window.location.hash;
+  if (h.includes("type=recovery")) {
+    window.history.replaceState({}, "", `/reset-password${h}`);
+  }
+}
+
 const App = () => {
   const hasLoggedInBefore = safeLocalGet("has_logged_in") === "true";
   const isDirectPath = typeof window !== "undefined" && DIRECT_PATHS.some((p) => window.location.pathname.startsWith(p));
