@@ -296,8 +296,17 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
           })}
         </motion.div>
 
-        <motion.div variants={fadeUp} className="pt-1">
-          <MedicalDisclaimer />
+        <motion.div variants={fadeUp} className="pt-1 space-y-2.5">
+          <MedicalDisclaimer withSources />
+          <button
+            onClick={() => navigate("/clinical-sources")}
+            className="ios-press flex items-center gap-1.5 px-1"
+          >
+            <IonIcon name="library-outline" size={13} style={{ color: "hsl(var(--green))" }} />
+            <span className="text-[11.5px] font-sans font-medium" style={{ color: "hsl(var(--green))" }}>
+              Medical sources & references
+            </span>
+          </button>
         </motion.div>
       </motion.div>
     );
@@ -579,6 +588,13 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
         </motion.button>
 
         <MedicalDisclaimer />
+
+        <SourcesSheet
+          open={sourcesOpen}
+          onClose={() => setSourcesOpen(false)}
+          refs={sourceRefs}
+          title="Sources for this guidance"
+        />
       </motion.div>
     );
   }
