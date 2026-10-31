@@ -1,8 +1,12 @@
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import IonIcon from "@/components/IonIcon";
 import MedicalDisclaimer from "@/components/MedicalDisclaimer";
+import SourcesSheet from "@/components/SourcesSheet";
 import PATHWAYS, { CATEGORIES, type TriagePathway, type TriageOutcome, type Severity } from "@/data/triagePathways";
+import { TRIAGE_REFS, refsForOutcome } from "@/data/triageRefs";
+import { refsByNums } from "@/lib/clinicalRefs";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { hapticSelection, hapticSuccess, hapticWarning } from "@/lib/despia";
