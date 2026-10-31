@@ -145,6 +145,7 @@ const AppContent = () => {
       <Route path="/terms" element={<Suspense fallback={<LoadingSpinner />}><Terms /></Suspense>} />
       <Route path="/technical-popups" element={<Suspense fallback={<LoadingSpinner />}><TechnicalPopups /></Suspense>} />
       <Route path="/health-safety" element={<Suspense fallback={<LoadingSpinner />}><HealthSafety /></Suspense>} />
+      <Route path="/clinical-sources" element={<Suspense fallback={<LoadingSpinner />}><ClinicalSourcesScreen /></Suspense>} />
       <Route
         path="/"
         element={
@@ -169,7 +170,7 @@ const safeLocalGet = (key: string): string | null => {
 // Routes that must always render directly (auth + legal), never behind
 // the splash/intro gate — otherwise a cleared storage sends a returning user
 // back through onboarding instead of the sign-in screen.
-const DIRECT_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/privacy", "/terms", "/technical-popups", "/health-safety"];
+const DIRECT_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/privacy", "/terms", "/technical-popups", "/health-safety", "/clinical-sources"];
 
 // A password-reset link can land on "/" (e.g. when opened from the email in
 // another browser). Send it straight to the reset screen before anything renders.
