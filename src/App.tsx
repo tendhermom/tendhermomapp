@@ -19,6 +19,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const TechnicalPopups = lazy(() => import("./pages/TechnicalPopups"));
 const HealthSafety = lazy(() => import("./pages/HealthSafety"));
+const ClinicalSourcesScreen = lazy(() => import("./pages/ClinicalSourcesScreen"));
 
 const Index = lazy(() => import("./pages/Index"));
 
