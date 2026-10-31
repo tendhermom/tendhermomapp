@@ -472,6 +472,37 @@ export function refTag(r: ClinicalRef): string {
   return `${r.org.split(",")[0]} et al.`.replace(" et al. et al.", " et al.");
 }
 
+/** Compact chip label, e.g. "WHO 2017", "NICE NG133", "RCOG GT57", "Daru 2018". */
+export function refShort(r: ClinicalRef): string {
+  const year = r.year.split(",")[0].split("–")[0];
+  switch (r.kind) {
+    case "who":
+      return r.num === 13 ? `UNICEF ${year}` : `WHO ${year}`;
+    case "nice": {
+      const m = r.title.match(/\b((?:NG|CG|PH|QS|TA)\d+)\b/);
+      return m ? `NICE ${m[1]}` : `NICE ${year}`;
+    }
+    case "rcog": {
+      const m = r.title.match(/Green-top Guideline No\.\s*(\d+)/);
+      return m ? `RCOG GT${m[1]}` : `RCOG ${year}`;
+    }
+    case "acog": {
+      const m = r.title.match(/Bulletin No\.\s*(\d+)/);
+      return m ? `ACOG PB${m[1]}` : `ACOG ${year}`;
+    }
+    case "esc":
+      return `ESC ${year}`;
+    case "fda":
+      return `FDA ${year}`;
+    case "nigeria":
+      return r.num === 42 ? `FMOH ${year}` : `NDHS ${year}`;
+    default: {
+      const surname = r.org.split(",")[0].split(" ")[0];
+      return `${surname} ${year}`;
+    }
+  }
+}
+
 export function refsByNums(nums: readonly number[]): ClinicalRef[] {
   return CLINICAL_REFS.filter((r) => nums.includes(r.num)).sort(
     (a, b) => a.num - b.num,
