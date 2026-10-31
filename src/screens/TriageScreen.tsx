@@ -452,6 +452,10 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   // ========================
   if (outcome) {
     const config = SEVERITY_CONFIG[outcome.severity];
+    const severityNums = refsForOutcome(selectedPathway?.id ?? "", outcome.severity);
+    const allNums = TRIAGE_REFS[selectedPathway?.id ?? ""]?.all ?? [];
+    const sheetNums = [...severityNums, ...allNums.filter((n) => !severityNums.includes(n))];
+    const sourceRefs = refsByNums(sheetNums);
     return (
       <motion.div
         className="space-y-5 pb-4"
@@ -506,6 +510,32 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
             </p>
           </div>
         </motion.div>
+
+        {sourceRefs.length > 0 && (
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setSourcesOpen(true)}
+            className="w-full rounded-[16px] p-4 flex items-center gap-3 ios-press text-left"
+            style={{
+              background: "hsl(var(--surface))",
+              boxShadow: "0 2px 12px -2px hsla(0,0%,0%,0.06)",
+            }}
+          >
+            <div className="w-[38px] h-[38px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: "hsl(var(--light-green))" }}>
+              <IonIcon name="library-outline" size={18} style={{ color: "hsl(var(--green))" }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold font-sans" style={{ color: "hsl(var(--dark))" }}>Clinical sources</p>
+              <p className="text-[11px] font-sans truncate" style={{ color: "hsl(var(--text-muted))" }}>
+                WHO, NICE, RCOG & more · {sourceRefs.length} reference{sourceRefs.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <IonIcon name="chevron-forward" size={15} style={{ color: "hsl(var(--text-muted))" }} />
+          </motion.button>
+        )}
 
         {outcome.severity === "red" && (
           <motion.button
