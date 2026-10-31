@@ -193,7 +193,7 @@ const AIChatScreen = ({ onBack, onNavigate }: AIChatScreenProps) => {
       </div>
 
       {/* Disclaimer */}
-      <MedicalDisclaimer variant="card" className="mb-3" />
+      <MedicalDisclaimer variant="card" className="mb-3" withSources />
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 hide-scrollbar pb-3">

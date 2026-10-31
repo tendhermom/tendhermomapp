@@ -156,7 +156,7 @@ const SmartGuidance = ({ entries, currentWeek }: SmartGuidanceProps) => {
           </motion.div>
         );
       })}
-      <MedicalDisclaimer className="pt-1" />
+      <MedicalDisclaimer className="pt-1" withSources />
     </motion.div>
   );
 };

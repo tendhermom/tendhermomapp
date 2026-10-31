@@ -612,7 +612,7 @@ const SOSScreen = ({ onNavigate }: SOSScreenProps) => {
         </div>
       </motion.div>
 
-      <MedicalDisclaimer />
+      <MedicalDisclaimer withSources />
 
       {/* Confirm Bottom Sheet */}
       <AnimatePresence>
