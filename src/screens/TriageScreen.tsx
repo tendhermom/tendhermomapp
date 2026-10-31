@@ -104,6 +104,7 @@ const INTAKE_QUESTION = {
 };
 
 const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [selectedPathway, setSelectedPathway] = useState<TriagePathway | null>(null);
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
@@ -112,6 +113,7 @@ const TriageScreen = ({ onNavigate }: TriageScreenProps) => {
   const [pendingOutcome, setPendingOutcome] = useState<TriageOutcome | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   // Build a pathway with the intake question prepended and routed to the original first Q.
   const augmentedPathway = useMemo<TriagePathway | null>(() => {
