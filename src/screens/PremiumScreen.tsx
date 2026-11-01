@@ -207,7 +207,10 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     try {
       // Use the reference from the checkout we came back from when we still
       // have it — the backend also re-checks Paystack when there is none.
-      const result = await confirmPremiumWithBackend(pendingReference(), 2, 1200);
+      // Apple devices re-check the App Store entitlement instead.
+      const result = appleBilling
+        ? await restoreApplePurchase()
+        : await confirmPremiumWithBackend(pendingReference(), 2, 1200);
       if (result.error) {
         setStatusMsg({ kind: "error", text: result.error });
         return;
