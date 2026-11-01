@@ -21,6 +21,8 @@ import {
   startApplePurchase,
   restoreApplePurchase,
   openManageCenter,
+  syncIfNativeEntitlementActive,
+  PLUS_UPDATED_EVENT,
 } from "@/lib/revenuecat";
 
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
@@ -118,6 +120,24 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     return () => { cancelled = true; };
   }, [appleBilling, user?.id, fetchProfile]);
 
+  // Apple devices: self-heal the entitlement on open (reinstalls, missed
+  // webhooks) and refresh whenever the native management sheet changes it.
+  useEffect(() => {
+    if (!appleBilling) return;
+    let cancelled = false;
+    void syncIfNativeEntitlementActive().then(() => {
+      if (!cancelled && user?.id) fetchProfile(user.id);
+    });
+    const onPlusUpdated = () => {
+      if (user?.id) void fetchProfile(user.id);
+    };
+    window.addEventListener(PLUS_UPDATED_EVENT, onPlusUpdated);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(PLUS_UPDATED_EVENT, onPlusUpdated);
+    };
+  }, [appleBilling, user?.id, fetchProfile]);
+
   // Load subscription details for members (Paystack only — Apple billing is
   // shown from the profile and managed through the App Store).
   useEffect(() => {
@@ -127,7 +147,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       if (!cancelled && !s.error) setSubscription(s);
     });
     return () => { cancelled = true; };
-  }, [isPremium, user?.id]);
+  }, [isPremium, user?.id, appleBilling]);
 
   const handlePurchase = async () => {
     if (purchasing) return;
