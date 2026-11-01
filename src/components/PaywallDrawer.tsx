@@ -12,6 +12,11 @@ import {
   confirmPremiumWithBackend,
   type PlanId,
 } from "@/lib/paystack";
+import {
+  isAppleBilling,
+  startApplePurchase,
+  restoreApplePurchase,
+} from "@/lib/revenuecat";
 
 
 interface PaywallDrawerProps {
@@ -34,6 +39,8 @@ const BENEFITS = [
 const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: PaywallDrawerProps) => {
   const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
+  // Apple devices use App Store IAP (RevenueCat); Android & web use Paystack.
+  const appleBilling = isAppleBilling();
   const [selected, setSelected] = useState<PlanId>("yearly");
   const [busy, setBusy] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -48,8 +55,9 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
   }, [open]);
 
   // If the mum just came back from Paystack checkout, confirm and unlock.
+  // (On Apple devices checkout happens in the native App Store sheet instead.)
   useEffect(() => {
-    if (!open) return;
+    if (!open || appleBilling) return;
     let cancelled = false;
     (async () => {
       const result = await consumeCheckoutReturn();
@@ -64,7 +72,7 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     return () => {
       cancelled = true;
     };
-  }, [open, user?.id, fetchProfile, onOpenChange]);
+  }, [open, appleBilling, user?.id, fetchProfile, onOpenChange]);
 
   const plan = PLANS.find((p) => p.id === selected)!;
 
@@ -73,6 +81,33 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     setStatus(null);
     setBusy(true);
     hapticSelection();
+
+    if (appleBilling) {
+      if (!user?.id) {
+        setBusy(false);
+        return;
+      }
+      const result = await startApplePurchase(user.id, selected);
+      setBusy(false);
+      if (result.cancelled) {
+        setStatus({ kind: "info", text: "Checkout closed — no charge was made." });
+        return;
+      }
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        setStatus({ kind: "success", text: "Welcome to TendherMom Plus ✨" });
+        if (user?.id) await fetchProfile(user.id);
+        setTimeout(() => onOpenChange(false), 1200);
+      } else {
+        hapticError();
+        setStatus({
+          kind: "error",
+          text: result.error || "We couldn't confirm your purchase yet. Please try again in a moment.",
+        });
+      }
+      return;
+    }
+
     const result = await startCheckout(selected);
     if (!result.started) {
       hapticError();
@@ -87,7 +122,9 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     if (restoring) return;
     setRestoring(true);
     setStatus(null);
-    const result = await confirmPremiumWithBackend(null, 1);
+    const result = appleBilling
+      ? await restoreApplePurchase()
+      : await confirmPremiumWithBackend(null, 1);
     setRestoring(false);
     if (result.error) {
       setStatus({ kind: "error", text: result.error });
@@ -218,12 +255,20 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-[15px] font-serif" style={{ color: "hsl(var(--dark))" }}>
-                            {p.price}
-                          </p>
-                          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                            {p.period}
-                          </p>
+                          {appleBilling ? (
+                            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                              Apple ID billing
+                            </p>
+                          ) : (
+                            <>
+                              <p className="text-[15px] font-serif" style={{ color: "hsl(var(--dark))" }}>
+                                {p.price}
+                              </p>
+                              <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                                {p.period}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </motion.button>
                     );
@@ -281,15 +326,22 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                     opacity: busy ? 0.7 : 1,
                   }}
                 >
-                  {busy ? "Opening secure checkout…" : `Continue — ${plan.price}${plan.period}`}
+                  {busy
+                    ? appleBilling
+                      ? "Opening the App Store…"
+                      : "Opening secure checkout…"
+                    : appleBilling
+                    ? "Continue — checkout in the App Store"
+                    : `Continue — ${plan.price}${plan.period}`}
                 </motion.button>
 
                 <p
                   className="text-center text-[11px] font-sans leading-relaxed px-1"
                   style={{ color: "hsl(var(--text-muted))" }}
                 >
-                  Secured by Paystack — card, bank transfer or USSD. Renews automatically;
-                  cancel anytime from TendherMom Plus.
+                  {appleBilling
+                    ? "Billed securely through your Apple ID. Renews automatically — manage or cancel anytime in your iPhone/iPad subscription settings."
+                    : "Secured by Paystack — card, bank transfer or USSD. Renews automatically; cancel anytime from TendherMom Plus."}
                 </p>
 
                 <div className="flex items-center justify-center gap-3 flex-wrap">

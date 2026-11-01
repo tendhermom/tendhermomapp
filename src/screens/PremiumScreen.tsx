@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
@@ -15,6 +15,13 @@ import {
   type PlanId,
   type SubscriptionStatus,
 } from "@/lib/paystack";
+
+import {
+  isAppleBilling,
+  startApplePurchase,
+  restoreApplePurchase,
+  openManageCenter,
+} from "@/lib/revenuecat";
 
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 import LegalModal, { type LegalDoc } from "@/components/LegalModal";
@@ -77,6 +84,8 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
+  // Apple devices use App Store IAP (RevenueCat); Android & web use Paystack.
+  const appleBilling = useMemo(() => isAppleBilling(), []);
 
   useEffect(() => {
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
@@ -85,7 +94,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   }, [user?.id]);
 
   // Coming back from Paystack's checkout page — confirm and unlock.
+  // (On Apple devices checkout happens in the native App Store sheet instead.)
   useEffect(() => {
+    if (appleBilling) return;
     let cancelled = false;
     (async () => {
       const result = await consumeCheckoutReturn();
@@ -105,11 +116,12 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       setPurchasing(false);
     })();
     return () => { cancelled = true; };
-  }, [user?.id, fetchProfile]);
+  }, [appleBilling, user?.id, fetchProfile]);
 
-  // Load subscription details for members.
+  // Load subscription details for members (Paystack only — Apple billing is
+  // shown from the profile and managed through the App Store).
   useEffect(() => {
-    if (!isPremium) return;
+    if (!isPremium || appleBilling) return;
     let cancelled = false;
     getSubscriptionStatus().then((s) => {
       if (!cancelled && !s.error) setSubscription(s);
@@ -122,6 +134,32 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     setStatusMsg(null);
     setPurchasing(true);
     hapticSelection();
+
+    if (appleBilling) {
+      if (!user?.id) {
+        setPurchasing(false);
+        return;
+      }
+      const result = await startApplePurchase(user.id);
+      setPurchasing(false);
+      if (result.cancelled) {
+        setStatusMsg({ kind: "info", text: "Checkout closed — no charge was made." });
+        return;
+      }
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
+        if (user?.id) await fetchProfile(user.id);
+      } else {
+        hapticError();
+        setStatusMsg({
+          kind: "error",
+          text: result.error || "We couldn't confirm your purchase yet. Please try again in a moment.",
+        });
+      }
+      return;
+    }
+
     const result = await startCheckout(selectedPlan);
     if (!result.started) {
       setStatusMsg({ kind: "error", text: result.error || "Could not start the payment. Please try again." });
@@ -135,6 +173,17 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     if (cancelling) return;
     setCancelling(true);
     setStatusMsg(null);
+
+    if (appleBilling) {
+      await openManageCenter(user?.id ?? "");
+      setCancelling(false);
+      setStatusMsg({
+        kind: "info",
+        text: "You can change or cancel your plan in your iPhone/iPad subscription settings.",
+      });
+      return;
+    }
+
     const result = await cancelSubscription();
     setCancelling(false);
     if (result.error) {
@@ -158,7 +207,10 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     try {
       // Use the reference from the checkout we came back from when we still
       // have it — the backend also re-checks Paystack when there is none.
-      const result = await confirmPremiumWithBackend(pendingReference(), 2, 1200);
+      // Apple devices re-check the App Store entitlement instead.
+      const result = appleBilling
+        ? await restoreApplePurchase()
+        : await confirmPremiumWithBackend(pendingReference(), 2, 1200);
       if (result.error) {
         setStatusMsg({ kind: "error", text: result.error });
         return;
@@ -302,18 +354,29 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
                 {/* Right: price */}
                 <div className="flex items-baseline gap-1">
-                  <span
-                    className="text-[26px] font-serif font-bold leading-none"
-                    style={{ color: "hsl(var(--dark))" }}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className="text-[13px] font-sans"
-                    style={{ color: "hsl(var(--text-muted))" }}
-                  >
-                    {plan.period}
-                  </span>
+                  {appleBilling ? (
+                    <span
+                      className="text-[11px] font-sans"
+                      style={{ color: "hsl(var(--text-muted))" }}
+                    >
+                      Apple ID billing
+                    </span>
+                  ) : (
+                    <>
+                      <span
+                        className="text-[26px] font-serif font-bold leading-none"
+                        style={{ color: "hsl(var(--dark))" }}
+                      >
+                        {plan.price}
+                      </span>
+                      <span
+                        className="text-[13px] font-sans"
+                        style={{ color: "hsl(var(--text-muted))" }}
+                      >
+                        {plan.period}
+                      </span>
+                    </>
+                  )}
                 </div>
               </motion.button>
             );
@@ -423,7 +486,11 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             }}
           >
             {purchasing
-              ? "Opening secure checkout…"
+              ? appleBilling
+                ? "Opening the App Store…"
+                : "Opening secure checkout…"
+              : appleBilling
+              ? "Continue — checkout in the App Store"
               : `Subscribe — ${PLANS.find((p) => p.id === selectedPlan)?.price}${PLANS.find((p) => p.id === selectedPlan)?.period}`}
           </motion.button>
 
@@ -432,9 +499,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             className="text-center text-[11px] font-sans leading-relaxed px-2"
             style={{ color: "hsl(var(--text-muted))" }}
           >
-            Payments are processed securely by Paystack — pay with card, bank transfer,
-            USSD or mobile money. Your subscription renews automatically and you can
-            cancel anytime from this screen.
+            {appleBilling
+              ? "Billed securely through your Apple ID. Renews automatically — manage or cancel anytime in your iPhone/iPad subscription settings."
+              : "Payments are processed securely by Paystack — pay with card, bank transfer, USSD or mobile money. Your subscription renews automatically and you can cancel anytime from this screen."}
           </p>
 
           {/* Already paid — re-check entitlement */}
@@ -540,6 +607,8 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                     ? subscription?.status === "cancelled"
                       ? `Access until ${renewalLabel}`
                       : `Renews on ${renewalLabel}`
+                    : appleBilling
+                    ? "Billed through the App Store"
                     : "Billed through Paystack"}
                 </p>
               </div>
@@ -560,7 +629,13 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                 opacity: cancelling ? 0.6 : 1,
               }}
             >
-              {cancelling ? "Stopping…" : "Stop recurring debit"}
+              {cancelling
+                ? appleBilling
+                  ? "Opening…"
+                  : "Stopping…"
+                : appleBilling
+                ? "Manage subscription"
+                : "Stop recurring debit"}
             </motion.button>
           )}
 
