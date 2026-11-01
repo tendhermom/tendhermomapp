@@ -130,11 +130,11 @@ Deno.serve(async (req) => {
       plus_expires_at: expiresAt,
       rc_entitlement: ENTITLEMENT_ID,
     };
-    if (type === "BILLING_ISSUE" || type === "TEMPORARY_ENTITLEMENT_GRANT") {
-      // Short-lived protection grants: fall back to the grace-period expiry
-      // so the flag can't outlive RevenueCat's own window.
+    if (type === "TEMPORARY_ENTITLEMENT_GRANT" && !expiresAt) {
+      // Short-lived outage grant: fall back to the grace-period expiry so the
+      // flag can't outlive RevenueCat's own window (at most 24 hours).
       update.plus_expires_at =
-        expiresAt ?? toIso(Number(event?.grace_period_expiration_at_ms ?? NaN)) ?? null;
+        toIso(Number(event?.grace_period_expiration_at_ms ?? NaN)) ?? null;
     }
     await admin.from("profiles").update(update).eq("id", appUserId);
     return json({ ok: true, action: "granted" });
