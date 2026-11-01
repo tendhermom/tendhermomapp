@@ -16,6 +16,8 @@ import {
   isAppleBilling,
   startApplePurchase,
   restoreApplePurchase,
+  syncIfNativeEntitlementActive,
+  PLUS_UPDATED_EVENT,
 } from "@/lib/revenuecat";
 
 
