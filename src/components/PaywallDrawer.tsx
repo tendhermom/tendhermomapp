@@ -12,6 +12,11 @@ import {
   confirmPremiumWithBackend,
   type PlanId,
 } from "@/lib/paystack";
+import {
+  isAppleBilling,
+  startApplePurchase,
+  restoreApplePurchase,
+} from "@/lib/revenuecat";
 
 
 interface PaywallDrawerProps {
@@ -34,6 +39,8 @@ const BENEFITS = [
 const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: PaywallDrawerProps) => {
   const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
+  // Apple devices use App Store IAP (RevenueCat); Android & web use Paystack.
+  const appleBilling = isAppleBilling();
   const [selected, setSelected] = useState<PlanId>("yearly");
   const [busy, setBusy] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -48,8 +55,9 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
   }, [open]);
 
   // If the mum just came back from Paystack checkout, confirm and unlock.
+  // (On Apple devices checkout happens in the native App Store sheet instead.)
   useEffect(() => {
-    if (!open) return;
+    if (!open || appleBilling) return;
     let cancelled = false;
     (async () => {
       const result = await consumeCheckoutReturn();
@@ -64,7 +72,7 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     return () => {
       cancelled = true;
     };
-  }, [open, user?.id, fetchProfile, onOpenChange]);
+  }, [open, appleBilling, user?.id, fetchProfile, onOpenChange]);
 
   const plan = PLANS.find((p) => p.id === selected)!;
 
@@ -73,6 +81,33 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     setStatus(null);
     setBusy(true);
     hapticSelection();
+
+    if (appleBilling) {
+      if (!user?.id) {
+        setBusy(false);
+        return;
+      }
+      const result = await startApplePurchase(user.id);
+      setBusy(false);
+      if (result.cancelled) {
+        setStatus({ kind: "info", text: "Checkout closed — no charge was made." });
+        return;
+      }
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        setStatus({ kind: "success", text: "Welcome to TendherMom Plus ✨" });
+        if (user?.id) await fetchProfile(user.id);
+        setTimeout(() => onOpenChange(false), 1200);
+      } else {
+        hapticError();
+        setStatus({
+          kind: "error",
+          text: result.error || "We couldn't confirm your purchase yet. Please try again in a moment.",
+        });
+      }
+      return;
+    }
+
     const result = await startCheckout(selected);
     if (!result.started) {
       hapticError();
@@ -87,7 +122,9 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
     if (restoring) return;
     setRestoring(true);
     setStatus(null);
-    const result = await confirmPremiumWithBackend(null, 1);
+    const result = appleBilling
+      ? await restoreApplePurchase()
+      : await confirmPremiumWithBackend(null, 1);
     setRestoring(false);
     if (result.error) {
       setStatus({ kind: "error", text: result.error });
