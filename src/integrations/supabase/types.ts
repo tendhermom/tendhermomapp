@@ -593,6 +593,7 @@ export type Database = {
           plus_provider: string | null
           plus_status: string | null
           plus_store: string | null
+          rc_entitlement: string | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
@@ -630,6 +631,7 @@ export type Database = {
           plus_provider?: string | null
           plus_status?: string | null
           plus_store?: string | null
+          rc_entitlement?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
@@ -667,6 +669,7 @@ export type Database = {
           plus_provider?: string | null
           plus_status?: string | null
           plus_store?: string | null
+          rc_entitlement?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
