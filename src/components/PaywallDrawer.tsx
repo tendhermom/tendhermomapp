@@ -256,9 +256,14 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                         </div>
                         <div className="text-right">
                           {appleBilling ? (
-                            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                              Apple ID billing
-                            </p>
+                            <>
+                              <p className="text-[15px] font-serif" style={{ color: "hsl(var(--dark))" }}>
+                                {p.applePrice}
+                              </p>
+                              <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                                {p.period}
+                              </p>
+                            </>
                           ) : (
                             <>
                               <p className="text-[15px] font-serif" style={{ color: "hsl(var(--dark))" }}>
@@ -331,7 +336,7 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                       ? "Opening the App Store…"
                       : "Opening secure checkout…"
                     : appleBilling
-                    ? "Continue — checkout in the App Store"
+                    ? `Continue — ${plan.applePrice}${plan.period} (App Store)`
                     : `Continue — ${plan.price}${plan.period}`}
                 </motion.button>
 
