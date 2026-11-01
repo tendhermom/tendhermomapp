@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SimpleBackHeader from "@/components/SimpleBackHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import IonIcon from "@/components/IonIcon";
@@ -15,6 +15,13 @@ import {
   type PlanId,
   type SubscriptionStatus,
 } from "@/lib/paystack";
+
+import {
+  isAppleBilling,
+  startApplePurchase,
+  restoreApplePurchase,
+  openManageCenter,
+} from "@/lib/revenuecat";
 
 import { hapticSuccess, hapticError, hapticSelection, screenShield } from "@/lib/despia";
 import LegalModal, { type LegalDoc } from "@/components/LegalModal";
@@ -77,6 +84,8 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
+  // Apple devices use App Store IAP (RevenueCat); Android & web use Paystack.
+  const appleBilling = useMemo(() => isAppleBilling(), []);
 
   useEffect(() => {
     // Screen Shield — block screenshots/recordings of pricing & purchase flow
