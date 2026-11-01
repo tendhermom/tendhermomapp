@@ -94,7 +94,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
   }, [user?.id]);
 
   // Coming back from Paystack's checkout page — confirm and unlock.
+  // (On Apple devices checkout happens in the native App Store sheet instead.)
   useEffect(() => {
+    if (appleBilling) return;
     let cancelled = false;
     (async () => {
       const result = await consumeCheckoutReturn();
@@ -114,11 +116,12 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       setPurchasing(false);
     })();
     return () => { cancelled = true; };
-  }, [user?.id, fetchProfile]);
+  }, [appleBilling, user?.id, fetchProfile]);
 
-  // Load subscription details for members.
+  // Load subscription details for members (Paystack only — Apple billing is
+  // shown from the profile and managed through the App Store).
   useEffect(() => {
-    if (!isPremium) return;
+    if (!isPremium || appleBilling) return;
     let cancelled = false;
     getSubscriptionStatus().then((s) => {
       if (!cancelled && !s.error) setSubscription(s);
