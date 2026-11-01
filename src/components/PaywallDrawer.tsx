@@ -326,15 +326,22 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                     opacity: busy ? 0.7 : 1,
                   }}
                 >
-                  {busy ? "Opening secure checkout…" : `Continue — ${plan.price}${plan.period}`}
+                  {busy
+                    ? appleBilling
+                      ? "Opening the App Store…"
+                      : "Opening secure checkout…"
+                    : appleBilling
+                    ? "Continue — checkout in the App Store"
+                    : `Continue — ${plan.price}${plan.period}`}
                 </motion.button>
 
                 <p
                   className="text-center text-[11px] font-sans leading-relaxed px-1"
                   style={{ color: "hsl(var(--text-muted))" }}
                 >
-                  Secured by Paystack — card, bank transfer or USSD. Renews automatically;
-                  cancel anytime from TendherMom Plus.
+                  {appleBilling
+                    ? "Billed securely through your Apple ID. Renews automatically — manage or cancel anytime in your iPhone/iPad subscription settings."
+                    : "Secured by Paystack — card, bank transfer or USSD. Renews automatically; cancel anytime from TendherMom Plus."}
                 </p>
 
                 <div className="flex items-center justify-center gap-3 flex-wrap">
