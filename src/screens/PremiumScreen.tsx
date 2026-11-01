@@ -354,18 +354,29 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
 
                 {/* Right: price */}
                 <div className="flex items-baseline gap-1">
-                  <span
-                    className="text-[26px] font-serif font-bold leading-none"
-                    style={{ color: "hsl(var(--dark))" }}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className="text-[13px] font-sans"
-                    style={{ color: "hsl(var(--text-muted))" }}
-                  >
-                    {plan.period}
-                  </span>
+                  {appleBilling ? (
+                    <span
+                      className="text-[11px] font-sans"
+                      style={{ color: "hsl(var(--text-muted))" }}
+                    >
+                      Apple ID billing
+                    </span>
+                  ) : (
+                    <>
+                      <span
+                        className="text-[26px] font-serif font-bold leading-none"
+                        style={{ color: "hsl(var(--dark))" }}
+                      >
+                        {plan.price}
+                      </span>
+                      <span
+                        className="text-[13px] font-sans"
+                        style={{ color: "hsl(var(--text-muted))" }}
+                      >
+                        {plan.period}
+                      </span>
+                    </>
+                  )}
                 </div>
               </motion.button>
             );
@@ -475,7 +486,11 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             }}
           >
             {purchasing
-              ? "Opening secure checkout…"
+              ? appleBilling
+                ? "Opening the App Store…"
+                : "Opening secure checkout…"
+              : appleBilling
+              ? "Continue — checkout in the App Store"
               : `Subscribe — ${PLANS.find((p) => p.id === selectedPlan)?.price}${PLANS.find((p) => p.id === selectedPlan)?.period}`}
           </motion.button>
 
@@ -484,9 +499,9 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
             className="text-center text-[11px] font-sans leading-relaxed px-2"
             style={{ color: "hsl(var(--text-muted))" }}
           >
-            Payments are processed securely by Paystack — pay with card, bank transfer,
-            USSD or mobile money. Your subscription renews automatically and you can
-            cancel anytime from this screen.
+            {appleBilling
+              ? "Billed securely through your Apple ID. Renews automatically — manage or cancel anytime in your iPhone/iPad subscription settings."
+              : "Payments are processed securely by Paystack — pay with card, bank transfer, USSD or mobile money. Your subscription renews automatically and you can cancel anytime from this screen."}
           </p>
 
           {/* Already paid — re-check entitlement */}
