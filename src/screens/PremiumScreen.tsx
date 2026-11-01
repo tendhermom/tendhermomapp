@@ -134,6 +134,32 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     setStatusMsg(null);
     setPurchasing(true);
     hapticSelection();
+
+    if (appleBilling) {
+      if (!user?.id) {
+        setPurchasing(false);
+        return;
+      }
+      const result = await startApplePurchase(user.id);
+      setPurchasing(false);
+      if (result.cancelled) {
+        setStatusMsg({ kind: "info", text: "Checkout closed — no charge was made." });
+        return;
+      }
+      if (result.plan_type === "premium") {
+        hapticSuccess();
+        setStatusMsg({ kind: "success", text: "Welcome to Plus! ✨" });
+        if (user?.id) await fetchProfile(user.id);
+      } else {
+        hapticError();
+        setStatusMsg({
+          kind: "error",
+          text: result.error || "We couldn't confirm your purchase yet. Please try again in a moment.",
+        });
+      }
+      return;
+    }
+
     const result = await startCheckout(selectedPlan);
     if (!result.started) {
       setStatusMsg({ kind: "error", text: result.error || "Could not start the payment. Please try again." });
@@ -147,6 +173,17 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
     if (cancelling) return;
     setCancelling(true);
     setStatusMsg(null);
+
+    if (appleBilling) {
+      await openManageCenter(user?.id ?? "");
+      setCancelling(false);
+      setStatusMsg({
+        kind: "info",
+        text: "You can change or cancel your plan in your iPhone/iPad subscription settings.",
+      });
+      return;
+    }
+
     const result = await cancelSubscription();
     setCancelling(false);
     if (result.error) {
