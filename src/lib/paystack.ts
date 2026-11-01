@@ -20,6 +20,8 @@ export interface PlanDefinition {
   id: PlanId;
   label: string;
   price: string;
+  /** Apple App Store price — differs from the Paystack price shown on Android/web. */
+  applePrice: string;
   period: string;
   tag: string | null;
   /** Paystack plan code (the backend re-validates this). */
@@ -27,9 +29,9 @@ export interface PlanDefinition {
 }
 
 export const PLANS: PlanDefinition[] = [
-  { id: "weekly", label: "Weekly", price: "₦300", period: "/week", tag: null, code: "PLN_bkz7wnoqgjs1p8v" },
-  { id: "monthly", label: "Monthly", price: "₦1,000", period: "/month", tag: "Popular", code: "PLN_6c94708t6q0vcj5" },
-  { id: "yearly", label: "Yearly", price: "₦10,000", period: "/year", tag: "Save 36%", code: "PLN_cycbstgc57j5o6f" },
+  { id: "weekly", label: "Weekly", price: "₦300", applePrice: "₦200", period: "/week", tag: null, code: "PLN_bkz7wnoqgjs1p8v" },
+  { id: "monthly", label: "Monthly", price: "₦1,000", applePrice: "₦1,200", period: "/month", tag: "Popular", code: "PLN_6c94708t6q0vcj5" },
+  { id: "yearly", label: "Yearly", price: "₦10,000", applePrice: "₦9,900", period: "/year", tag: "Save 36%", code: "PLN_cycbstgc57j5o6f" },
 ];
 
 export const getPlan = (id: PlanId) => PLANS.find((p) => p.id === id) ?? PLANS[1];

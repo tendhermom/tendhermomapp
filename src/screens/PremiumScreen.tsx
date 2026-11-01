@@ -352,15 +352,23 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                   </p>
                 </div>
 
-                {/* Right: price */}
+                {/* Right: price — App Store pricing on Apple, Paystack pricing elsewhere */}
                 <div className="flex items-baseline gap-1">
                   {appleBilling ? (
-                    <span
-                      className="text-[11px] font-sans"
-                      style={{ color: "hsl(var(--text-muted))" }}
-                    >
-                      Apple ID billing
-                    </span>
+                    <>
+                      <span
+                        className="text-[26px] font-serif font-bold leading-none"
+                        style={{ color: "hsl(var(--dark))" }}
+                      >
+                        {plan.applePrice}
+                      </span>
+                      <span
+                        className="text-[13px] font-sans"
+                        style={{ color: "hsl(var(--text-muted))" }}
+                      >
+                        {plan.period}
+                      </span>
+                    </>
                   ) : (
                     <>
                       <span
@@ -490,7 +498,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                 ? "Opening the App Store…"
                 : "Opening secure checkout…"
               : appleBilling
-              ? "Continue — checkout in the App Store"
+              ? `Continue — ${PLANS.find((p) => p.id === selectedPlan)?.applePrice}${PLANS.find((p) => p.id === selectedPlan)?.period} (App Store)`
               : `Subscribe — ${PLANS.find((p) => p.id === selectedPlan)?.price}${PLANS.find((p) => p.id === selectedPlan)?.period}`}
           </motion.button>
 
