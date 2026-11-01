@@ -104,6 +104,31 @@ export async function restoreApplePurchase(
   return verifyWithBackend(attempts);
 }
 
+/**
+ * Client-side entitlement self-check via the native store. Queries the
+ * Despia runtime (`getpurchasehistory://`) for active entitlements and, when
+ * our entitlement is present, asks the backend to sync the profile. This
+ * self-heals reinstalls or missed webhooks without a manual restore. The
+ * backend stays authoritative — the client never unlocks Plus by itself.
+ */
+export async function syncIfNativeEntitlementActive(): Promise<boolean> {
+  if (!isAppleBilling()) return false;
+  try {
+    const despia = await loadDespia();
+    const data: any = await despia("getpurchasehistory://" as any, ["restoredData"]);
+    const active: any[] = (data?.restoredData ?? []).filter((p: any) => p?.isActive);
+    const ours = active.some(
+      (p) => String(p.entitlementId ?? "").toLowerCase() === ENTITLEMENT_ID.toLowerCase(),
+    );
+    if (!ours) return false;
+    const res = await syncOnce();
+    return res.plan_type === "premium";
+  } catch {
+    /* the shell ignores unknown schemes on non-native builds */
+    return false;
+  }
+}
+
 // ─── Native purchase sheet ────────────────────────────────────
 
 type PurchaseEvent = { status?: string; error?: string; product_id?: string } | null;
