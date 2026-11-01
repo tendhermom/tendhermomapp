@@ -607,6 +607,8 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                     ? subscription?.status === "cancelled"
                       ? `Access until ${renewalLabel}`
                       : `Renews on ${renewalLabel}`
+                    : appleBilling
+                    ? "Billed through the App Store"
                     : "Billed through Paystack"}
                 </p>
               </div>
@@ -627,7 +629,13 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
                 opacity: cancelling ? 0.6 : 1,
               }}
             >
-              {cancelling ? "Stopping…" : "Stop recurring debit"}
+              {cancelling
+                ? appleBilling
+                  ? "Opening…"
+                  : "Stopping…"
+                : appleBilling
+                ? "Manage subscription"
+                : "Stop recurring debit"}
             </motion.button>
           )}
 
