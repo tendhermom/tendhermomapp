@@ -4,7 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { corsHeaders, json } from "../_shared/paystack.ts";
 
-const ENTITLEMENT_ID = "entl38b15a9cf6"; // keep in sync with src/lib/revenuecat.ts
+const ENTITLEMENT_ID = "entl269e323869"; // keep in sync with src/lib/revenuecat.ts
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

@@ -5,7 +5,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { corsHeaders, json } from "../_shared/paystack.ts";
 
-const ENTITLEMENT_ID = "entl38b15a9cf6"; // keep in sync with src/lib/revenuecat.ts
+const ENTITLEMENT_ID = "entl269e323869"; // keep in sync with src/lib/revenuecat.ts
 
 function entitlementsMatch(id?: string | null): boolean {
   return Boolean(id) && String(id).toLowerCase() === ENTITLEMENT_ID.toLowerCase();
