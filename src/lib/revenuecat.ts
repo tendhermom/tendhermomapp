@@ -104,6 +104,31 @@ export async function restoreApplePurchase(
   return verifyWithBackend(attempts);
 }
 
+/**
+ * Client-side entitlement self-check via the native store. Queries the
+ * Despia runtime (`getpurchasehistory://`) for active entitlements and, when
+ * our entitlement is present, asks the backend to sync the profile. This
+ * self-heals reinstalls or missed webhooks without a manual restore. The
+ * backend stays authoritative — the client never unlocks Plus by itself.
+ */
+export async function syncIfNativeEntitlementActive(): Promise<boolean> {
+  if (!isAppleBilling()) return false;
+  try {
+    const despia = await loadDespia();
+    const data: any = await despia("getpurchasehistory://" as any, ["restoredData"]);
+    const active: any[] = (data?.restoredData ?? []).filter((p: any) => p?.isActive);
+    const ours = active.some(
+      (p) => String(p.entitlementId ?? "").toLowerCase() === ENTITLEMENT_ID.toLowerCase(),
+    );
+    if (!ours) return false;
+    const res = await syncOnce();
+    return res.plan_type === "premium";
+  } catch {
+    /* the shell ignores unknown schemes on non-native builds */
+    return false;
+  }
+}
+
 // ─── Native purchase sheet ────────────────────────────────────
 
 type PurchaseEvent = { status?: string; error?: string; product_id?: string } | null;
@@ -119,10 +144,25 @@ function registerNativeCallbacks() {
     pendingPurchaseResolve = null;
     resolve?.(event ?? null);
   };
-  (window as any).onRevenueCatCenter = () => {
-    /* management sheet closed — nothing to do */
+  // Customer Center events: when the user restores or changes anything inside
+  // the native management sheet, re-check the entitlement so the web layer
+  // reflects it immediately, then tell open screens to refresh.
+  (window as any).onRevenueCatCenter = (event: any) => {
+    const kind = typeof event === "string" ? event : (event?.event ?? event?.type);
+    if (kind === "restoreCompleted" || kind === "dismissed") {
+      void syncIfNativeEntitlementActive().finally(() => {
+        try {
+          window.dispatchEvent(new CustomEvent(PLUS_UPDATED_EVENT));
+        } catch {
+          /* non-DOM environment */
+        }
+      });
+    }
   };
 }
+
+/** Fired on the window whenever the Apple entitlement state may have changed. */
+export const PLUS_UPDATED_EVENT = "tendhermom:plus-updated";
 
 /** Runs `open`, waits for the native purchase callback (or a timeout). */
 async function waitForPurchaseEvent(

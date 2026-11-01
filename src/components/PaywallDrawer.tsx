@@ -16,6 +16,8 @@ import {
   isAppleBilling,
   startApplePurchase,
   restoreApplePurchase,
+  syncIfNativeEntitlementActive,
+  PLUS_UPDATED_EVENT,
 } from "@/lib/revenuecat";
 
 
@@ -73,6 +75,24 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
       cancelled = true;
     };
   }, [open, appleBilling, user?.id, fetchProfile, onOpenChange]);
+
+  // Apple devices: self-check the App Store entitlement when the sheet opens
+  // (covers reinstalls / missed webhooks) and refresh on Customer Center events.
+  useEffect(() => {
+    if (!open || !appleBilling || !user?.id) return;
+    let cancelled = false;
+    void syncIfNativeEntitlementActive().then(() => {
+      if (!cancelled) fetchProfile(user.id);
+    });
+    const onPlusUpdated = () => {
+      if (user?.id) void fetchProfile(user.id);
+    };
+    window.addEventListener(PLUS_UPDATED_EVENT, onPlusUpdated);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(PLUS_UPDATED_EVENT, onPlusUpdated);
+    };
+  }, [open, appleBilling, user?.id, fetchProfile]);
 
   const plan = PLANS.find((p) => p.id === selected)!;
 
