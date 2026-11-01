@@ -26,10 +26,11 @@ import type { PlanId } from "@/lib/paystack";
 // Public (publishable) SDK key — safe to ship in the client.
 export const REVENUECAT_PUBLIC_KEY = "appl_SdgfryQpMKqbYYAUhNcXqSzBcfB";
 
-// RevenueCat offering + entitlement identifiers. Confirmed working values from the
-// RevenueCat dashboard — update here if the user recreates them.
+// RevenueCat offering + entitlement identifiers. The entitlement value is the
+// IDENTIFIER string webhooks and the RevenueCat API use, not the dashboard
+// object ID — update here if the user recreates them.
 export const OFFERING_ID = "ofrng0ef46ad753";
-export const ENTITLEMENT_ID = "entl269e323869";
+export const ENTITLEMENT_ID = "thm-plus";
 
 // App Store product identifiers, one per plan.
 export const IOS_PRODUCT_IDS: Record<PlanId, string> = {

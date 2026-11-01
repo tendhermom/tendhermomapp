@@ -5,7 +5,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { corsHeaders, json } from "../_shared/paystack.ts";
 
-const ENTITLEMENT_ID = "entl269e323869"; // keep in sync with src/lib/revenuecat.ts
+// Entitlement IDENTIFIER (what the RC API uses), not the dashboard object ID.
+// Keep in sync with src/lib/revenuecat.ts and revenuecat-webhook.
+const ENTITLEMENT_ID = "thm-plus";
 
 function entitlementsMatch(id?: string | null): boolean {
   return Boolean(id) && String(id).toLowerCase() === ENTITLEMENT_ID.toLowerCase();
@@ -91,6 +93,7 @@ Deno.serve(async (req) => {
         plus_expires_at: ent.expires_date ?? null,
         plus_product_id: ent.product_identifier ?? null,
         plus_last_event: "sync",
+        rc_entitlement: ENTITLEMENT_ID,
       })
       .eq("id", user.id)
       .select("plan_type, plus_expires_at")
