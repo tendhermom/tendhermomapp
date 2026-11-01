@@ -199,7 +199,7 @@ const PremiumScreen = ({ onBack }: PremiumScreenProps) => {
       setCancelling(false);
       setStatusMsg({
         kind: "info",
-        text: "You can change or cancel your plan in your iPhone/iPad subscription settings.",
+        text: "You can restore, change or cancel your plan in the subscription sheet that just opened.",
       });
       return;
     }
