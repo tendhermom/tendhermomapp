@@ -87,7 +87,7 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
         setBusy(false);
         return;
       }
-      const result = await startApplePurchase(user.id);
+      const result = await startApplePurchase(user.id, selected);
       setBusy(false);
       if (result.cancelled) {
         setStatus({ kind: "info", text: "Checkout closed — no charge was made." });
@@ -255,12 +255,20 @@ const PaywallDrawer = ({ open, onOpenChange, feature, onSeeAllFeatures }: Paywal
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-[15px] font-serif" style={{ color: "hsl(var(--dark))" }}>
-                            {p.price}
-                          </p>
-                          <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
-                            {p.period}
-                          </p>
+                          {appleBilling ? (
+                            <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                              Apple ID billing
+                            </p>
+                          ) : (
+                            <>
+                              <p className="text-[15px] font-serif" style={{ color: "hsl(var(--dark))" }}>
+                                {p.price}
+                              </p>
+                              <p className="text-[11px] font-sans" style={{ color: "hsl(var(--text-muted))" }}>
+                                {p.period}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </motion.button>
                     );
